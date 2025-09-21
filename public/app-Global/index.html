@@ -3,55 +3,58 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TEMPO Cast</title>
+    <title>Global TEMPO || Global APP</title>
+    <meta
+      name="description"
+      content="Global TEMPO delivers real-time air quality and weather data worldwide. Powered by NASA's TEMPO satellite for North America and OpenAQ + OpenWeather for global coverage. Stay informed and get tips to protect yourself from pollution."
+    />
+    <meta
+      name="keywords"
+      content="Global TEMPO, air quality, NASA TEMPO, weather app, pollution tracker, openaq, openweather, real-time air quality, AQI, climate data, environment, global"
+    />
+    <meta name="author" content="Zeyad M. Khattab" />
+
+    <meta
+      property="og:title"
+      content="Global TEMPO – Real-Time Air Quality & Weather Insights"
+    />
+    <meta
+      property="og:description"
+      content="Interactive global air quality map powered by NASA's TEMPO satellite and OpenAQ."
+    />
+    <meta
+      property="og:image"
+      content="https://yourdomain.com/images/og-preview.png"
+    />
+    <meta property="og:type" content="website" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <link rel="stylesheet" href="../css/app.css" />
   </head>
   <body>
-    <main class="container">
-      <h1>TEMPO Cast</h1>
-      <hr />
-      <h1>Air Quality</h1>
-
-      <section class="form">
-        <div class="input">
-          <label for="city-input">City name:</label>
-          <input
-            type="text"
-            id="city-input"
-            placeholder="Enter your city"
-            oninput="fetchCitySuggestions(this.value)"
-          />
-          <span id="getLocationBtn">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              height="24px"
-              viewBox="0 -960 960 960"
-              width="24px"
-              fill="#222"
-            >
-              <path
-                d="M480-480q33 0 56.5-23.5T560-560q0-33-23.5-56.5T480-640q-33 0-56.5 23.5T400-560q0 33 23.5 56.5T480-480Zm0 294q122-112 181-203.5T720-552q0-109-69.5-178.5T480-800q-101 0-170.5 69.5T240-552q0 71 59 162.5T480-186Zm0 106Q319-217 239.5-334.5T160-552q0-150 96.5-239T480-880q127 0 223.5 89T800-552q0 100-79.5 217.5T480-80Zm0-480Z"
-              />
-            </svg>
-          </span>
-        </div>
-        <br />
-        <div>Select from the suggestions:</div>
-        <ul id="suggestions"></ul>
-        <br /><br />
-        <div id="locationDisplay"></div>
-        <div id="loadingIndicator" style="display: none">Loading...</div>
-        <div id="errorMessage" style="color: red"></div>
-        <div id="get-data">Get Weather</div>
-      </section>
-      <input type="hidden" id="latitude" />
-      <input type="hidden" id="longitude" />
-
-      <section id="results" style="display: none">
-        <h2>Results:</h2>
-        <div id="openweather-result"></div>
-        <div id="openaq-result"></div>
-      </section>
-    </main>
-    <script src="js/main.js"></script>
+    <header>
+      <nav>
+        <a href="../index.html" class="logo">Global TEMBO</a>
+        <a href="../app-Global/index.html" class="btn">Global ></a>
+      </nav>
+    </header>
+    <div id="map" style="height: 500px"></div>
+    <div id="searchContainer">
+      <input type="text" id="Search" placeholder="Search for a city..." />
+      <ul id="searchResults"></ul>
+      <div id="errorMessage" style="color: red"></div>
+    </div>
+    <div id="locationDisplay"></div>
+    <div id="pollutionSection" style="display: none">
+      <h2 id="cityName"></h2>
+      <div id="pollutionData"></div>
+      <div id="tips" style="display: none"></div>
+    </div>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="../js/mapG.js"></script>
+    <script src="../js/appGlobal.js"></script>
+    <script src="../js/dataFetchG.js"></script>
   </body>
 </html>
