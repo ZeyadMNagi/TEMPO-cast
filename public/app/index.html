@@ -37,20 +37,18 @@
     <header>
       <nav>
         <a href="../index.html" class="logo">Global TEMBO</a>
-        <ul>
-          <li><a href="../WHO.html" class="nav-item">WHO instructions</a></li>
-          <li><a href="./app/index.html" class="nav-item">App</a></li>
-        </ul>
         <a href="../app-Global/index.html" class="btn">Global ></a>
       </nav>
     </header>
     <main class="container">
-      <div id="side">
+      <div class="txt">
         <h2>TEMPO Cast</h2>
         <h3>
           USA Only (Global users
           <a href="../app-Global/index.html">click me</a> )
         </h3>
+      </div>
+      <div id="side">
         <section id="form">
           <label for="Search">Find your Location!!</label>
           <div class="input">
@@ -90,13 +88,33 @@
           <h2 id="cityName">City Name</h2>
           <div id="pollutionData">Fetching air pollution data...</div>
         </section>
+        <section id="tips">
+          <h2>Health Tips</h2>
+          <div id="healthTips">
+            Select a location to see health tips based on air quality.
+          </div>
+        </section>
       </div>
+
       <div id="map"></div>
+      <footer id="credits">
+        <p>
+          Data Sources:
+          <a href="https://www.nasa.gov/tempo" target="_blank">NASA TEMPO</a>,
+          <a href="https://openaq.org" target="_blank">OpenAQ</a>,
+          <a href="https://openweathermap.org" target="_blank">OpenWeather</a>
+        </p>
+        <p>
+          Developed by
+          <a href="https://zeyad.dev" target="_blank">Zeyad M. Khattab</a>
+        </p>
+      </footer>
     </main>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-ajax@0.0.7/dist/leaflet.ajax.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-ajax/2.1.0/leaflet.ajax.min.js"></script>
 
+    <script src="../js/tips.js"></script>
     <script src="../js/map.js"></script>
     <script src="../js/dataFetch.js"></script>
     <script src="../js/appUSA.js"></script>
