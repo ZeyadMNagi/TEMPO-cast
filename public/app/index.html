@@ -27,8 +27,11 @@
       content="https://yourdomain.com/images/og-preview.png"
     />
     <meta property="og:type" content="website" />
-
-    <link rel="stylesheet" href="../css/style.css">
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <link rel="stylesheet" href="../css/app.css" />
   </head>
   <body>
     <header>
@@ -42,7 +45,59 @@
       </nav>
     </header>
     <main class="container">
-        
+      <div id="side">
+        <h2>TEMPO Cast</h2>
+        <h3>
+          USA Only (Global users
+          <a href="../app-Global/index.html">click me</a> )
+        </h3>
+        <section id="form">
+          <label for="Search">Find your Location!!</label>
+          <div class="input">
+            <input
+              id="Search"
+              name="Search"
+              placeholder="Search..."
+              type="text"
+              oninput="fetchUSACitySuggestions(this.value)"
+            />
+            <span id="getLocationBtn">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                height="24px"
+                viewBox="0 -960 960 960"
+                width="24px"
+                fill="#222"
+              >
+                <path
+                  d="M480-480q33 0 56.5-23.5T560-560q0-33-23.5-56.5T480-640q-33 0-56.5 23.5T400-560q0 33 23.5 56.5T480-480Zm0 294q122-112 181-203.5T720-552q0-109-69.5-178.5T480-800q-101 0-170.5 69.5T240-552q0 71 59 162.5T480-186Zm0 106Q319-217 239.5-334.5T160-552q0-150 96.5-239T480-880q127 0 223.5 89T800-552q0 100-79.5 217.5T480-80Zm0-480Z"
+                />
+              </svg>
+            </span>
+          </div>
+          <br />
+          <div >Select from the suggestions:</div>
+          <div id="searchResults">
+            <div class="searchItem">item 1</div>
+            <div class="searchItem">item 2</div>
+            <div class="searchItem">item 3</div>
+            <div class="searchItem">item 4</div>
+            <div class="searchItem">item 5</div>
+          </div>
+
+          <br /><br />
+          <div id="locationDisplay"></div>
+          <div id="loadingIndicator" style="display: none">Loading...</div>
+          <div id="errorMessage" style="color: red"></div>
+          <input type="hidden" id="latitude" />
+          <input type="hidden" id="longitude" />
+        </section>
+      </div>
+      <div id="map"></div>
     </main>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-ajax@0.0.7/dist/leaflet.ajax.min.js"></script>
+    <script src="../js/map.js"></script>
+    <script src="../js/appUSA.js"></script>
   </body>
 </html>

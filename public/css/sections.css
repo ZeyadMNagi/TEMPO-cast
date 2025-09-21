@@ -71,10 +71,10 @@
 }
 
 #keyFeatures {
-    h2{
+  h2 {
     font-size: 2.5em;
     margin-bottom: 20px;
-    }
+  }
   .features-cards {
     display: flex;
     flex-wrap: wrap;
@@ -116,6 +116,46 @@
     .feature-card {
       max-width: 100%;
       width: 90%;
+    }
+  }
+}
+
+#form {
+  padding: 30% 20%;
+  label {
+    font-size: 16px;
+  }
+  #Search {
+    border: solid 2.5px #274375;
+    padding: 5px;
+    border-radius: 5px;
+    margin: 10px 0;
+    width: 95%;
+  }
+  .input {
+    display: flex;
+    align-items: center;
+    span{
+      position: absolute;
+      left: 67%;
+    }
+  }
+  #searchResults {
+    display: none;
+    flex-direction: column;
+    border: solid 2px #4a2adb;
+    border-radius: 8px;
+    padding: 5px 0;
+    .searchItem {
+      width: 100%;
+      text-align: left;
+      height: 25px;
+      transition: ease 0.2s;
+      cursor: pointer;
+      &:hover {
+        background-color: #334155;
+        color: #e6f0ff;
+      }
     }
   }
 }
