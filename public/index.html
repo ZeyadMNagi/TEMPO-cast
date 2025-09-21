@@ -3,55 +3,44 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TEMPO Cast</title>
+    <link rel="stylesheet" href="./css/style.css" />
+    <title>Global TEMPO || Home</title>
   </head>
   <body>
-    <main class="container">
-      <h1>TEMPO Cast</h1>
-      <hr />
-      <h1>Air Quality</h1>
-
-      <section class="form">
-        <div class="input">
-          <label for="city-input">City name:</label>
-          <input
-            type="text"
-            id="city-input"
-            placeholder="Enter your city"
-            oninput="fetchCitySuggestions(this.value)"
-          />
-          <span id="getLocationBtn">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              height="24px"
-              viewBox="0 -960 960 960"
-              width="24px"
-              fill="#222"
-            >
-              <path
-                d="M480-480q33 0 56.5-23.5T560-560q0-33-23.5-56.5T480-640q-33 0-56.5 23.5T400-560q0 33 23.5 56.5T480-480Zm0 294q122-112 181-203.5T720-552q0-109-69.5-178.5T480-800q-101 0-170.5 69.5T240-552q0 71 59 162.5T480-186Zm0 106Q319-217 239.5-334.5T160-552q0-150 96.5-239T480-880q127 0 223.5 89T800-552q0 100-79.5 217.5T480-80Zm0-480Z"
-              />
-            </svg>
-          </span>
+    <header>
+      <nav>
+        <a href="#" class="logo">Global TEMBO</a>
+        <ul>
+          <li><a href="#about" class="nav-item">About</a></li>
+          <li><a href="./WHO.html" class="nav-item">WHO instructions</a></li>
+          <li><a href="./app/index.html" class="nav-item">App</a></li>
+        </ul>
+        <a href="./sign-up.html" class="btn">Sign Up</a>
+      </nav>
+    </header>
+    <main>
+      <section id="hero">
+        <div class="hero-content">
+          <h1>Welcome to Global TEMPO</h1>
+          <p>
+            Your trusted source for real-time weather updates and health
+            guidelines.
+          </p>
+          <a href="./app/index.html" class="btn">Get Started</a>
         </div>
-        <br />
-        <div>Select from the suggestions:</div>
-        <ul id="suggestions"></ul>
-        <br /><br />
-        <div id="locationDisplay"></div>
-        <div id="loadingIndicator" style="display: none">Loading...</div>
-        <div id="errorMessage" style="color: red"></div>
-        <div id="get-data">Get Weather</div>
       </section>
-      <input type="hidden" id="latitude" />
-      <input type="hidden" id="longitude" />
-
-      <section id="results" style="display: none">
-        <h2>Results:</h2>
-        <div id="openweather-result"></div>
-        <div id="openaq-result"></div>
+      <section id="about" class="about">
+        <h2>About Global TEMPO</h2>
+        <p>
+          Global TEMPO is dedicated to providing accurate and timely weather
+          information along with health guidelines from the World Health
+          Organization (WHO). Stay informed and prepared with our easy-to-use
+          platform.
+        </p>
       </section>
     </main>
-    <script src="js/main.js"></script>
+    <footer>
+      <p>&copy; 2025 Global TEMPO. All rights reserved.</p>
+    </footer>
   </body>
 </html>
