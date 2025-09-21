@@ -1,3 +1,121 @@
-#hero{
-    
+#hero {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  height: 100vh;
+  .hero-content {
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: center;
+    h1 {
+      font-size: 3.5em;
+      margin-bottom: 20px;
+      span {
+        color: #274375;
+      }
+    }
+
+    p {
+      font-size: 1.45em;
+      margin-bottom: 30px;
+      line-height: 1.5;
+      max-width: 500px;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 15px 30px;
+      width: 35%;
+      background-color: #274375;
+      color: white;
+      text-decoration: none;
+      font-size: 1.2em;
+      border-radius: 5px;
+      transition: 0.5s;
+      &.start:hover {
+        background-color: #4a2adb;
+        font-weight: bolder;
+      }
+      span {
+        font-size: 1.3em;
+        margin-left: 30%;
+      }
+    }
+  }
+  .canvas {
+    width: 30%;
+    height: 100%;
+    p {
+      font-size: 0.76em;
+      margin: 31px 0;
+    }
+  }
+}
+
+#about {
+  background-color: #e6f0ff;
+  text-align: center;
+  h2 {
+    font-size: 2.5em;
+    margin-bottom: 20px;
+    color: #274375;
+  }
+  p {
+    font-size: 1.2em;
+    max-width: 800px;
+    margin: auto;
+    line-height: 1.6;
+  }
+}
+
+#keyFeatures {
+    h2{
+    font-size: 2.5em;
+    margin-bottom: 20px;
+    }
+  .features-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    margin-top: 16px;
+    justify-content: center;
+  }
+  .feature-card {
+    background: #f8fafc;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+    padding: 24px 18px;
+    max-width: 260px;
+    /* flex: 1 1 220px; */
+    min-width: 220px;
+    transition: box-shadow 0.2s;
+    border: 1px solid #e3e8ee;
+  }
+  .feature-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.13);
+    border-color: #b6c2d1;
+  }
+  .feature-card h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1.15em;
+    color: #2a4365;
+  }
+  .feature-card p {
+    margin: 0;
+    color: #334155;
+    font-size: 0.98em;
+  }
+  @media (max-width: 900px) {
+    .features-cards {
+      flex-direction: column;
+      align-items: center;
+    }
+    .feature-card {
+      max-width: 100%;
+      width: 90%;
+    }
+  }
 }

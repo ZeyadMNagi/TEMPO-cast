@@ -5,6 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="./css/style.css" />
     <title>Global TEMPO || Home</title>
+    <meta
+      name="description"
+      content="Global TEMPO delivers real-time air quality and weather data worldwide. Powered by NASA's TEMPO satellite for North America and OpenAQ + OpenWeather for global coverage. Stay informed and get tips to protect yourself from pollution."
+    />
+    <meta
+      name="keywords"
+      content="Global TEMPO, air quality, NASA TEMPO, weather app, pollution tracker, openaq, openweather, real-time air quality, AQI, climate data, environment, global"
+    />
+    <meta name="author" content="Zeyad M. Khattab" />
+
+    <meta
+      property="og:title"
+      content="Global TEMPO – Real-Time Air Quality & Weather Insights"
+    />
+    <meta
+      property="og:description"
+      content="Interactive global air quality map powered by NASA's TEMPO satellite and OpenAQ."
+    />
+    <meta
+      property="og:image"
+      content="https://yourdomain.com/images/og-preview.png"
+    />
+    <meta property="og:type" content="website" />
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.180.0/three.tsl.js"
+      integrity="sha512-pVsOWriwN/5X/FWYhtqqQLnD+3cm8W1YqGrNrfkKgp+GMykFl7fZ0vorWpckUlZOVIG1tNVnI3D7T8DSea5TQg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script src="https://unpkg.com/three@0.161.0/examples/js/controls/OrbitControls.js"></script>
   </head>
   <body>
     <header>
@@ -15,32 +45,133 @@
           <li><a href="./WHO.html" class="nav-item">WHO instructions</a></li>
           <li><a href="./app/index.html" class="nav-item">App</a></li>
         </ul>
-        <a href="./sign-up.html" class="btn">Sign Up</a>
+        <a href="./app-Global/index.html" class="btn">Global</a>
       </nav>
     </header>
     <main>
       <section id="hero">
         <div class="hero-content">
-          <h1>Welcome to Global TEMPO</h1>
+          <h1>Welcome to <span>Global TEMPO</span></h1>
+          <p>“From Space to Your Screen – The World’s Air, Visualized.”</p>
+          <a href="./app/index.html" class="btn start"
+            >Get Started <span>></span></a
+          >
+        </div>
+        <div class="canvas">
+          <div id="globe-container" style="width: 420px; height: 420px"></div>
           <p>
-            Your trusted source for real-time weather updates and health
-            guidelines.
+            By NASA’s Terra satellite for the MODIS imageries, combined by
+            <a href="//commons.wikimedia.org/wiki/User:Meow" title="User:Meow"
+              >Meow</a
+            >. Credit: NASA Goddard Space Flight Center Image by Reto Stöckli
+            (land surface, shallow water, clouds). Enhancements by Robert Simmon
+            (ocean color, compositing, 3D globes, animation). Data and technical
+            support: MODIS Land Group; MODIS Science Data Support Team; MODIS
+            Atmosphere Group; MODIS Ocean Group Additional data: USGS EROS Data
+            Center (topography); USGS Terrestrial Remote Sensing Flagstaff Field
+            Center (Antarctica); Defense Meteorological Satellite Program (city
+            lights). -
+            <a
+              rel="nofollow"
+              class="external text"
+              href="https://visibleearth.nasa.gov/images/57752/blue-marble-land-surface-shallow-water-and-shaded-topography"
+              >NASA Visible Earth: Blue Marble: Land Surface, Shallow Water, and
+              Shaded Topography</a
+            >, Public Domain,
+            <a href="https://commons.wikimedia.org/w/index.php?curid=50497070"
+              >Link</a
+            >
           </p>
-          <a href="./app/index.html" class="btn">Get Started</a>
         </div>
       </section>
       <section id="about" class="about">
         <h2>About Global TEMPO</h2>
         <p>
-          Global TEMPO is dedicated to providing accurate and timely weather
-          information along with health guidelines from the World Health
-          Organization (WHO). Stay informed and prepared with our easy-to-use
-          platform.
+          Global TEMPO is an interactive platform that makes air quality and
+          weather data easy to understand, for everyone, everywhere. For North
+          America, we use NASA’s TEMPO satellite to deliver near-real-time air
+          quality insights. For the rest of the world, we integrate OpenAQ and
+          OpenWeather data to provide the closest possible view — with a clear
+          disclaimer on data accuracy. Our goal is simple: make the invisible
+          visible — helping communities understand their air, stay safe during
+          pollution events, and take informed action.
         </p>
       </section>
+      <section id="resources">
+        <h2>Resources</h2>
+        <ul>
+          <li>
+            <a href="./WHO.html"
+              >WHO Instructions to Protect Yourself from Air Pollution</a
+            >
+          </li>
+          <li>
+            <a href="https://www.openaq.org/"
+              >OpenAQ - Global Air Quality Data</a
+            >
+          </li>
+          <li>
+            <a href="https://openweathermap.org/"
+              >OpenWeather - Weather Data API</a
+            >
+          </li>
+          <li><a href="https://tempo.si.edu/">NASA TEMPO Mission</a></li>
+          <li>
+            <a
+              href="https://www.epa.gov/air-trends/air-quality-national-summary"
+              >EPA Air Quality Trends</a
+            >
+          </li>
+        </ul>
+      </section>
+      <section id="demoVisualization">
+      </section>
+      <section id="keyFeatures">
+        <h2>Key Features</h2>
+        <div class="features-cards">
+          <div class="feature-card">
+            <h3>Real-Time Data</h3>
+            <p>
+              Access up-to-the-minute air quality and weather information for
+              your location.
+            </p>
+          </div>
+          <div class="feature-card">
+            <h3>Global Coverage</h3>
+            <p>
+              While TEMPO focuses on North America, we provide global data
+              through OpenAQ and OpenWeather, ensuring you stay informed no
+              matter where you are.
+            </p>
+          </div>
+          <div class="feature-card">
+            <h3>Interactive Maps</h3>
+            <p>
+              Explore air quality trends with our user-friendly maps,
+              visualizing pollution levels and weather patterns.
+            </p>
+          </div>
+          <div class="feature-card">
+            <h3>Health Recommendations</h3>
+            <p>
+              Get actionable tips based on current air quality to protect
+              yourself and your loved ones.
+            </p>
+          </div>
+          <div class="feature-card">
+            <h3>Educational Resources</h3>
+            <p>
+              Learn about air pollution, its sources, and its impact on health
+              and the environment.
+            </p>
+          </div>
+        </div>
+      </section>
+      <section id="team"></section>
     </main>
     <footer>
       <p>&copy; 2025 Global TEMPO. All rights reserved.</p>
     </footer>
+    <script src="./js/globe.js"></script>
   </body>
 </html>
