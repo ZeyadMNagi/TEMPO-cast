@@ -1,4 +1,4 @@
-import axios from "axios";
+const axios = require("axios");
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -14,7 +14,6 @@ export async function handler(event, context) {
   }
 
   try {
-    // Fetch weather data from OpenWeather
     const weatherResponse = await axios.get(
       `http://api.openweathermap.org/data/2.5/air_pollution`,
       {
