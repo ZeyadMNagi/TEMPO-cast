@@ -1,6 +1,5 @@
-const axios = require("axios");
+import fetch from "node-fetch";
 import dotenv from "dotenv";
-
 dotenv.config();
 
 export async function handler(event, context) {
@@ -14,37 +13,28 @@ export async function handler(event, context) {
   }
 
   try {
-    const weatherResponse = await axios.get(
-      `http://api.openweathermap.org/data/2.5/air_pollution`,
-      {
-        params: {
-          lat,
-          lon,
-          appid: process.env.OPENWEATHER_API_KEY,
-        },
-      }
+    const weatherRes = await fetch(
+      `http://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${process.env.OPENWEATHER_API_KEY}`
     );
+    const weatherData = await weatherRes.json();
 
-    const airResponse = await axios.get(`https://api.openaq.org/v3/locations`, {
-      headers: { "X-API-Key": process.env.OPENAQ_API_KEY },
-      params: {
-        coordinates: `${lat},${lon}`,
-        radius: 25000,
-        limit: 1,
-      },
-    });
+    const airRes = await fetch(
+      `https://api.openaq.org/v3/locations?coordinates=${lat},${lon}&radius=25000&limit=1`,
+      { headers: { "X-API-Key": process.env.OPENAQ_API_KEY } }
+    );
+    const airData = await airRes.json();
 
     return {
       statusCode: 200,
-      body: JSON.stringify({
-        location: weatherResponse.data.name,
-        weather: weatherResponse.data,
-        airQuality: airResponse.data.results?.[0] || null,
-      }),
       headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        location: weatherData.name || null,
+        weather: weatherData,
+        airQuality: airData.results?.[0] || null,
+      }),
     };
   } catch (err) {
-    console.error(err.message);
+    console.error(err);
     return {
       statusCode: 500,
       body: JSON.stringify({ error: "Failed to fetch data" }),
