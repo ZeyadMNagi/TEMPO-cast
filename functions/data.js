@@ -1,16 +1,10 @@
-import fetch from "node-fetch";
-import dotenv from "dotenv";
-dotenv.config();
-
-export async function handler(event, context) {
+export async function handler(event) {
   const { lat, lon } = event.queryStringParameters || {};
-
-  if (!lat || !lon) {
+  if (!lat || !lon)
     return {
       statusCode: 400,
       body: JSON.stringify({ error: "Missing lat/lon" }),
     };
-  }
 
   try {
     const weatherRes = await fetch(
@@ -19,19 +13,18 @@ export async function handler(event, context) {
     const weatherData = await weatherRes.json();
 
     const airRes = await fetch(
-      `https://api.openaq.org/v3/locations?coordinates=${lat},${lon}&radius=25000&limit=1`,
-      { headers: { "X-API-Key": process.env.OPENAQ_API_KEY } }
+      `https://api.openaq.org/v3/locations?coordinates=${lat},${lon}&radius=25000&limit=1`
     );
     const airData = await airRes.json();
 
     return {
       statusCode: 200,
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         location: weatherData.name || null,
         weather: weatherData,
         airQuality: airData.results?.[0] || null,
       }),
+      headers: { "Content-Type": "application/json" },
     };
   } catch (err) {
     console.error(err);
