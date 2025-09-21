@@ -1,6 +1,6 @@
 function fetchPollutionData(lat, lon, city) {
   console.log("Fetching pollution data for:", lat, lon);
-  fetch(`http://localhost:8080/api/data?lat=${lat}&lon=${lon}`)
+  fetch(`https://globaltempo.netlify.app//api/data?lat=${lat}&lon=${lon}`)
     .then((res) => res.json())
     .then((data) => {
       console.log(data);
