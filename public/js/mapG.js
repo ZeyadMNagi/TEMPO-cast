@@ -1,4 +1,4 @@
-const map = L.map("map").setView([37.8, -96], 4);
+const map = L.map("map").setView([0, 0], 3);
 
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
   attribution:
@@ -15,7 +15,7 @@ L.geoJSON
   })
   .addTo(map);
 
-export function mapZoomToLocation(lat, lon) {
+function mapZoomToLocation(lat, lon) {
   map.setView([lat, lon], 10);
 
   const highlight = L.circle([lat, lon], {

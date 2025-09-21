@@ -73,9 +73,14 @@ function fetchPollutionData(lat, lon, city) {
         const color = getBarColor(value, name);
         return `
           <div class="pollutant">
-            <span class="pollutant-name">${name.toUpperCase()} <span class="info-mark" title="${pollutantInfo[name]}">ℹ</span>:</span>
+            <span class="pollutant-name">${name.toUpperCase()} <span class="info-mark" title="${
+          pollutantInfo[name]
+        }">ℹ</span>:</span>
             <div class="pollutant-bar">
-              <div class="pollutant-bar-fill" style="width: ${Math.min(value * 2, 100)}%; background-color: ${color}"></div>
+              <div class="pollutant-bar-fill" style="width: ${Math.min(
+                value * 2,
+                100
+              )}%; background-color: ${color}"></div>
             </div>
             <span class='value'>${value ?? "N/A"} ${unit}</span>
           </div>

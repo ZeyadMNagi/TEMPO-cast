@@ -32,6 +32,15 @@
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     />
     <link rel="stylesheet" href="../css/app.css" />
+    <style>
+      .txt {
+        text-align: center;
+        margin-bottom: 10px;
+      }
+      #searchResults > li:nth-child(1) {
+        width: 330px;
+      }
+    </style>
   </head>
   <body>
     <header>
@@ -40,21 +49,54 @@
         <a href="../app-Global/index.html" class="btn">Global ></a>
       </nav>
     </header>
-    <div id="map" style="height: 500px"></div>
-    <div id="searchContainer">
-      <input type="text" id="Search" placeholder="Search for a city..." />
-      <ul id="searchResults"></ul>
-      <div id="errorMessage" style="color: red"></div>
-    </div>
-    <div id="locationDisplay"></div>
-    <div id="pollutionSection" style="display: none">
-      <h2 id="cityName"></h2>
-      <div id="pollutionData"></div>
-      <div id="tips" style="display: none"></div>
-    </div>
+
+    <main class="container">
+      <div class="txt">
+        <h2>TEMPO Cast</h2>
+        <h3>
+          Global Coverage (USA users <a href="../app/index.html">click me</a> )
+        </h3>
+      </div>
+      <div id="side">
+        <section id="form">
+          <label for="Search">Find your Location!!</label>
+          <div class="input">
+            <input
+              id="Search"
+              name="Search"
+              placeholder="Search..."
+              type="text"
+              oninput="fetchCitySuggestions(this.value)"
+            />
+            <br />
+          </div>
+          <div>Select from the suggestions:</div>
+          <div id="searchResults"></div>
+
+          <br /><br />
+          <div id="locationDisplay"></div>
+          <div id="loadingIndicator" style="display: none">Loading...</div>
+          <div id="errorMessage" style="color: red"></div>
+          <input type="hidden" id="latitude" />
+          <input type="hidden" id="longitude" />
+        </section>
+        <section id="pollutionSection">
+          <h2 id="cityName">City Name</h2>
+          <div id="pollutionData">Fetching air pollution data...</div>
+        </section>
+        <section id="tips">
+          <h2>Health Tips</h2>
+          <div id="healthTips">
+            Select a location to see health tips based on air quality.
+          </div>
+        </section>
+      </div>
+      <div id="map"></div>
+    </main>
+
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="../js/appG.js"></script>
     <script src="../js/mapG.js"></script>
-    <script src="../js/appGlobal.js"></script>
     <script src="../js/dataFetchG.js"></script>
   </body>
 </html>
