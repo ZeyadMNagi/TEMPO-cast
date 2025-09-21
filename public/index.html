@@ -29,12 +29,9 @@
     />
     <meta property="og:type" content="website" />
     <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.180.0/three.tsl.js"
-      integrity="sha512-pVsOWriwN/5X/FWYhtqqQLnD+3cm8W1YqGrNrfkKgp+GMykFl7fZ0vorWpckUlZOVIG1tNVnI3D7T8DSea5TQg=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
+      async
+      src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"
     ></script>
-    <script src="https://unpkg.com/three@0.161.0/examples/js/controls/OrbitControls.js"></script>
   </head>
   <body>
     <header>
@@ -124,8 +121,7 @@
           </li>
         </ul>
       </section>
-      <section id="demoVisualization">
-      </section>
+      <section id="demoVisualization"></section>
       <section id="keyFeatures">
         <h2>Key Features</h2>
         <div class="features-cards">
@@ -172,6 +168,7 @@
     <footer>
       <p>&copy; 2025 Global TEMPO. All rights reserved.</p>
     </footer>
+
     <script src="./js/globe.js"></script>
   </body>
 </html>
