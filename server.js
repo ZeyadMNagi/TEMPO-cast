@@ -29,9 +29,9 @@ app.get("/api/data", async (req, res) => {
       }
     );
     console.log(weatherResponse.data);
-    // Fetch air quality data from OpenAQ
+
     const airResponse = await axios.get(
-      `https://api.openaq.org/v3/parameters/2/latest`,
+      `https://api.openaq.org/v3/locations`,
       {
         headers: { "X-API-Key": process.env.OPENAQ_API_KEY },
         params: {

@@ -17,18 +17,13 @@ L.geoJSON
 
 function mapZoomToLocation(lat, lon) {
   map.setView([lat, lon], 10);
-  map.dragging.disable();
-  map.touchZoom.disable();
-  map.doubleClickZoom.disable();
-  map.scrollWheelZoom.disable();
-  map.boxZoom.disable();
-  map.keyboard.disable();
+
 
   const highlight = L.circle([lat, lon], {
     radius: 20000,
-    color: 'red',
-    fillColor: 'red',
-    fillOpacity: 0.5,
+    color: 'yellow',
+    fillColor: 'yellow',
+    fillOpacity: 0.3,
   }).addTo(map);
 
   const overlay = L.rectangle(

@@ -12,6 +12,7 @@ async function fetchUSACitySuggestions(query) {
     suggestionsList.innerHTML = "";
     suggestionsList.style.display = "flex";
     console.log(data);
+    console.log(data.length);
     data.forEach((city) => {
       const li = document.createElement("li");
       li.classList.add("searchItem");
@@ -31,6 +32,7 @@ async function fetchUSACitySuggestions(query) {
         document.getElementById("errorMessage").innerText = "";
         suggestionsList.style.display = "none";
         mapZoomToLocation(city.lat, city.lon);
+        fetchPollutionData(city.lat, city.lon, city.name);
       };
       suggestionsList.appendChild(li);
     });
@@ -47,6 +49,11 @@ document.getElementById("getLocationBtn").addEventListener("click", () => {
         const lon = position.coords.longitude;
         document.getElementById("latitude").value = lat;
         document.getElementById("longitude").value = lon;
+        mapZoomToLocation(lat, lon);
+        fetchPollutionData(lat, lon, "Your Location");
+        document.getElementById("Search").value = `Lat: ${lat.toFixed(
+          4
+        )}, Lon: ${lon.toFixed(4)}`;
         document.getElementById(
           "locationDisplay"
         ).innerText = `Latitude: ${lat.toFixed(4)}, Longitude: ${lon.toFixed(
@@ -54,7 +61,6 @@ document.getElementById("getLocationBtn").addEventListener("click", () => {
         )}`;
         document.getElementById("errorMessage").innerText = "";
 
-        // Check if user is in the USA
         try {
           const res = await fetch(
             `https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=6e976d04a47c92a2de198b05560adf59`
@@ -73,8 +79,6 @@ document.getElementById("getLocationBtn").addEventListener("click", () => {
             "Could not verify your location.";
           return;
         }
-
-        mapZoomToLocation(lat, lon);
       },
       (error) => {
         document.getElementById("errorMessage").innerText =

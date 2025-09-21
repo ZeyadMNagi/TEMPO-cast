@@ -76,14 +76,8 @@
             </span>
           </div>
           <br />
-          <div >Select from the suggestions:</div>
-          <div id="searchResults">
-            <div class="searchItem">item 1</div>
-            <div class="searchItem">item 2</div>
-            <div class="searchItem">item 3</div>
-            <div class="searchItem">item 4</div>
-            <div class="searchItem">item 5</div>
-          </div>
+          <div>Select from the suggestions:</div>
+          <div id="searchResults"></div>
 
           <br /><br />
           <div id="locationDisplay"></div>
@@ -92,12 +86,19 @@
           <input type="hidden" id="latitude" />
           <input type="hidden" id="longitude" />
         </section>
+        <section id="pollutionSection">
+          <h2 id="cityName">City Name</h2>
+          <div id="pollutionData">Fetching air pollution data...</div>
+        </section>
       </div>
       <div id="map"></div>
     </main>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-ajax@0.0.7/dist/leaflet.ajax.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-ajax/2.1.0/leaflet.ajax.min.js"></script>
+
     <script src="../js/map.js"></script>
+    <script src="../js/dataFetch.js"></script>
     <script src="../js/appUSA.js"></script>
   </body>
 </html>
