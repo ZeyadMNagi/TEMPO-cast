@@ -10,7 +10,7 @@ app.use(express.json());
 const PORT = process.env.PORT || 3000;
 
 app.get("/api/data", async (req, res) => {
-  const { lat, lon } = req.query;
+  const { lat, lon,day } = req.query;
 
   if (!lat || !lon) {
     return res.status(400).json({ error: "Missing lat/lon" });
