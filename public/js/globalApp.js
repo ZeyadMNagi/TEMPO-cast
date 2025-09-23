@@ -1159,7 +1159,7 @@ async function fetchCompleteLocationData(lat, lon, cityName = "") {
 
   try {
     // Use the complete endpoint for all data at once
-    const response = await fetch(`/api/complete?lat=${lat}&lon=${lon}&days=7`);
+    const response = await fetch(`/.netlify/functions/data?lat=${lat}&lon=${lon}&days=7&endpoint=complete`);
     if (!response.ok) throw new Error("API error");
     const data = await response.json();
 

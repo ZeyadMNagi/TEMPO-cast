@@ -1,9 +1,7 @@
-// Enhanced Netlify function: netlify/functions/data.js
 export async function handler(event) {
   const { httpMethod, path, queryStringParameters } = event;
   const { lat, lon, days } = queryStringParameters || {};
 
-  // CORS headers
   const headers = {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*",
@@ -11,7 +9,6 @@ export async function handler(event) {
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   };
 
-  // Handle preflight requests
   if (httpMethod === "OPTIONS") {
     return { statusCode: 200, headers, body: "" };
   }
@@ -26,7 +23,7 @@ export async function handler(event) {
 
   try {
     // Determine which endpoint based on path or query parameter
-    const endpoint = event.path.split("/").pop() || "data";
+    const endpoint = event.queryStringParameters.endpoint || "data";
 
     switch (endpoint) {
       case "forecast":
