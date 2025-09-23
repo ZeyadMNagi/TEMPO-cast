@@ -124,7 +124,7 @@ async function handleComplete(lat, lon, days, headers) {
       ),
     ]);
 
-    conslole.log(currentRes, forecastRes, weatherRes, historicalRes);
+  console.log(currentRes, forecastRes, weatherRes, historicalRes);
   const [currentData, forecastData, weatherData, historicalData] =
     await Promise.all([
       currentRes.json(),
@@ -133,7 +133,7 @@ async function handleComplete(lat, lon, days, headers) {
       historicalRes.json(),
     ]);
 
-    console.log(currentData, forecastData, weatherData, historicalData);
+  console.log(currentData, forecastData, weatherData, historicalData);
 
   return {
     statusCode: 200,
