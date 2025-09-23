@@ -1,6 +1,75 @@
 // Global variables
 let map, currentMarker, debounceTimer, groundStationLayer, heatMapLayer;
 
+const dataCache = {
+  current: null,
+  forecast: null,
+  historical: null,
+  timestamp: null,
+};
+
+const AQI_BREAKPOINTS = {
+  pm2_5: [
+    { cLow: 0.0, cHigh: 12.0, iLow: 0, iHigh: 50 },
+    { cLow: 12.1, cHigh: 35.4, iLow: 51, iHigh: 100 },
+    { cLow: 35.5, cHigh: 55.4, iLow: 101, iHigh: 150 },
+    { cLow: 55.5, cHigh: 150.4, iLow: 151, iHigh: 200 },
+    { cLow: 150.5, cHigh: 250.4, iLow: 201, iHigh: 300 },
+    { cLow: 250.5, cHigh: 350.4, iLow: 301, iHigh: 400 },
+    { cLow: 350.5, cHigh: 500.4, iLow: 401, iHigh: 500 },
+  ],
+  pm10: [
+    { cLow: 0, cHigh: 54, iLow: 0, iHigh: 50 },
+    { cLow: 55, cHigh: 154, iLow: 51, iHigh: 100 },
+    { cLow: 155, cHigh: 254, iLow: 101, iHigh: 150 },
+    { cLow: 255, cHigh: 354, iLow: 151, iHigh: 200 },
+    { cLow: 355, cHigh: 424, iLow: 201, iHigh: 300 },
+    { cLow: 425, cHigh: 504, iLow: 301, iHigh: 400 },
+    { cLow: 505, cHigh: 604, iLow: 401, iHigh: 500 },
+  ],
+  o3_8hr: [
+    { cLow: 0, cHigh: 54, iLow: 0, iHigh: 50 },
+    { cLow: 55, cHigh: 70, iLow: 51, iHigh: 100 },
+    { cLow: 71, cHigh: 85, iLow: 101, iHigh: 150 },
+    { cLow: 86, cHigh: 105, iLow: 151, iHigh: 200 },
+    { cLow: 106, cHigh: 200, iLow: 201, iHigh: 300 },
+  ],
+  o3_1hr: [
+    { cLow: 125, cHigh: 164, iLow: 101, iHigh: 150 },
+    { cLow: 165, cHigh: 204, iLow: 151, iHigh: 200 },
+    { cLow: 205, cHigh: 404, iLow: 201, iHigh: 300 },
+    { cLow: 405, cHigh: 504, iLow: 301, iHigh: 400 },
+    { cLow: 505, cHigh: 604, iLow: 401, iHigh: 500 },
+  ],
+  co: [
+    { cLow: 0.0, cHigh: 4.4, iLow: 0, iHigh: 50 },
+    { cLow: 4.5, cHigh: 9.4, iLow: 51, iHigh: 100 },
+    { cLow: 9.5, cHigh: 12.4, iLow: 101, iHigh: 150 },
+    { cLow: 12.5, cHigh: 15.4, iLow: 151, iHigh: 200 },
+    { cLow: 15.5, cHigh: 30.4, iLow: 201, iHigh: 300 },
+    { cLow: 30.5, cHigh: 40.4, iLow: 301, iHigh: 400 },
+    { cLow: 40.5, cHigh: 50.4, iLow: 401, iHigh: 500 },
+  ],
+  so2: [
+    { cLow: 0, cHigh: 35, iLow: 0, iHigh: 50 },
+    { cLow: 36, cHigh: 75, iLow: 51, iHigh: 100 },
+    { cLow: 76, cHigh: 185, iLow: 101, iHigh: 150 },
+    { cLow: 186, cHigh: 304, iLow: 151, iHigh: 200 },
+    { cLow: 305, cHigh: 604, iLow: 201, iHigh: 300 },
+    { cLow: 605, cHigh: 804, iLow: 301, iHigh: 400 },
+    { cLow: 805, cHigh: 1004, iLow: 401, iHigh: 500 },
+  ],
+  no2: [
+    { cLow: 0, cHigh: 53, iLow: 0, iHigh: 50 },
+    { cLow: 54, cHigh: 100, iLow: 51, iHigh: 100 },
+    { cLow: 101, cHigh: 360, iLow: 101, iHigh: 150 },
+    { cLow: 361, cHigh: 649, iLow: 151, iHigh: 200 },
+    { cLow: 650, cHigh: 1249, iLow: 201, iHigh: 300 },
+    { cLow: 1250, cHigh: 1649, iLow: 301, iHigh: 400 },
+    { cLow: 1650, cHigh: 2049, iLow: 401, iHigh: 500 },
+  ],
+};
+
 function initMap() {
   map = L.map("map").setView([39.8283, -98.5795], 4);
 
@@ -186,91 +255,314 @@ async function fetchLocationData(lat, lon, cityName = "") {
 
 function displayIntegratedAirQualityData(data, cityName, lat, lon) {
   if (
-    !data.weather ||
-    !Array.isArray(data.weather.list) ||
-    !data.weather.list[0]
+    !data.list ||
+    !Array.isArray(data.list) ||
+    !data.weather
   ) {
+    console.log("No pollution data available in response:", data);
     showError("No pollution data available for this location.");
     document.getElementById("pollutionSection").classList.remove("show");
     document.getElementById("healthSection").style.display = "none";
     return;
   }
-  const pollution = data.weather.list[0];
+
+  const pollution = data.list[0];
   const components = pollution.components;
   const weather = data.weather;
+
   document.getElementById("cityName").innerHTML = `${cityName} 
     <small style="font-weight: 400; color: #6b7280;">(${lat.toFixed(
       4
     )}, ${lon.toFixed(4)})</small>`;
-  const aqi = pollution.main.aqi || 0;
+
+  console.log("Displaying data for:", cityName, lat, lon);
+  console.log("Pollution data:", pollution);
+
+  // Calculate US EPA AQI from the pollutant concentrations
+  const aqiData = calculateOverallAQI(components);
+  const aqi = aqiData.overall;
+  const individualAQIs = aqiData.individual;
+
   const aqiCategory = getAQICategory(aqi);
+
+  console.log("Calculated EPA AQI:", aqi, "Category:", aqiCategory);
+  console.log("Individual AQIs:", individualAQIs);
+
+  // Update AQI display with new EPA values
   document.getElementById("aqiValue").textContent = aqi;
   const categoryElement = document.getElementById("aqiCategory");
   categoryElement.textContent = aqiCategory.label;
   categoryElement.className = `aqi-category aqi-${aqiCategory.class}`;
+
+  // Update pollutant displays with individual AQI values
   document.getElementById("pollutionData").innerHTML =
-    createEnhancedPollutantDisplays(components, weather);
+    createEnhancedPollutantDisplays(components, weather, individualAQIs);
+
   updateHealthRecommendations(aqi, components, weather);
   document.getElementById("pollutionSection").classList.add("show");
   document.getElementById("healthSection").style.display = "block";
 }
 
-function getAQICategory(aqi) {
-  if (aqi <= 1) return { label: "Good", class: "good" };
-  if (aqi === 2) return { label: "Fair", class: "moderate" };
-  if (aqi === 3) return { label: "Moderate", class: "unhealthy-sensitive" };
-  if (aqi === 4) return { label: "Poor", class: "unhealthy" };
-  if (aqi === 5) return { label: "Very Poor", class: "hazardous" };
-  return { label: "Unknown", class: "" };
+/**
+ * Calculate individual AQI for a pollutant using US EPA formula
+ * I = ((Ihigh - Ilow) / (Chigh - Clow)) * (C - Clow) + Ilow
+ */
+function calculateIndividualAQI(concentration, pollutant) {
+  if (concentration < 0) return 0;
+
+  const breakpoints = AQI_BREAKPOINTS[pollutant];
+  if (!breakpoints) return 0;
+
+  // Find the appropriate breakpoint
+  let breakpoint = null;
+  for (let bp of breakpoints) {
+    if (concentration >= bp.cLow && concentration <= bp.cHigh) {
+      breakpoint = bp;
+      break;
+    }
+  }
+
+  // If concentration exceeds all breakpoints, use the highest one
+  if (
+    !breakpoint &&
+    concentration > breakpoints[breakpoints.length - 1].cHigh
+  ) {
+    breakpoint = breakpoints[breakpoints.length - 1];
+    // For concentrations above the highest breakpoint, extend the calculation
+    const lastBp = breakpoints[breakpoints.length - 1];
+    const aqi =
+      ((lastBp.iHigh - lastBp.iLow) / (lastBp.cHigh - lastBp.cLow)) *
+        (concentration - lastBp.cLow) +
+      lastBp.iLow;
+    return Math.round(Math.min(aqi, 500)); // Cap at 500
+  }
+
+  if (!breakpoint) return 0;
+
+  // Apply the EPA AQI formula
+  const aqi =
+    ((breakpoint.iHigh - breakpoint.iLow) /
+      (breakpoint.cHigh - breakpoint.cLow)) *
+      (concentration - breakpoint.cLow) +
+    breakpoint.iLow;
+
+  return Math.round(aqi);
 }
 
-function createEnhancedPollutantDisplays(components, weather) {
+function calculateOverallAQI(components) {
+  const individualAQIs = {};
+
+  // PM2.5 (μg/m³) - direct use
+  if (components.pm2_5) {
+    individualAQIs.pm2_5 = calculateIndividualAQI(components.pm2_5, "pm2_5");
+  }
+
+  // PM10 (μg/m³) - direct use
+  if (components.pm10) {
+    individualAQIs.pm10 = calculateIndividualAQI(components.pm10, "pm10");
+  }
+
+  // O3 (μg/m³) - convert to ppb (μg/m³ / 1.96 ≈ ppb for O3)
+  if (components.o3) {
+    const o3_ppb = components.o3 / 1.96; // Convert μg/m³ to ppb
+    // Use 8-hour ozone standard for general AQI calculation
+    individualAQIs.o3 = calculateIndividualAQI(o3_ppb, "o3_8hr");
+  }
+
+  // CO (μg/m³) - convert to ppm (μg/m³ / 1145 ≈ ppm for CO)
+  if (components.co) {
+    const co_ppm = components.co / 1145; // Convert μg/m³ to ppm
+    individualAQIs.co = calculateIndividualAQI(co_ppm, "co");
+  }
+
+  // SO2 (μg/m³) - convert to ppb (μg/m³ / 2.62 ≈ ppb for SO2)
+  if (components.so2) {
+    const so2_ppb = components.so2 / 2.62; // Convert μg/m³ to ppb
+    individualAQIs.so2 = calculateIndividualAQI(so2_ppb, "so2");
+  }
+
+  // NO2 (μg/m³) - convert to ppb (μg/m³ / 1.88 ≈ ppb for NO2)
+  if (components.no2) {
+    const no2_ppb = components.no2 / 1.88; // Convert μg/m³ to ppb
+    individualAQIs.no2 = calculateIndividualAQI(no2_ppb, "no2");
+  }
+
+  // Overall AQI is the highest individual AQI
+  const aqiValues = Object.values(individualAQIs).filter((val) => val > 0);
+  const overallAQI = aqiValues.length > 0 ? Math.max(...aqiValues) : 0;
+
+  return {
+    overall: overallAQI,
+    individual: individualAQIs,
+  };
+}
+
+/**
+ * Get AQI category based on US EPA standards
+ */
+function getAQICategory(aqi) {
+  if (aqi >= 0 && aqi <= 50)
+    return { label: "Good", class: "good", color: "#00e400" };
+  if (aqi >= 51 && aqi <= 100)
+    return { label: "Moderate", class: "moderate", color: "#ffff00" };
+  if (aqi >= 101 && aqi <= 150)
+    return {
+      label: "Unhealthy for Sensitive Groups",
+      class: "unhealthy-sensitive",
+      color: "#ff7e00",
+    };
+  if (aqi >= 151 && aqi <= 200)
+    return { label: "Unhealthy", class: "unhealthy", color: "#ff0000" };
+  if (aqi >= 201 && aqi <= 300)
+    return {
+      label: "Very Unhealthy",
+      class: "very-unhealthy",
+      color: "#8f3f97",
+    };
+  if (aqi >= 301 && aqi <= 500)
+    return { label: "Hazardous", class: "hazardous", color: "#7e0023" };
+  if (aqi > 500)
+    return {
+      label: "Very Hazardous",
+      class: "very-hazardous",
+      color: "#7e0023",
+    };
+  return { label: "Unknown", class: "", color: "#999999" };
+}
+
+function getColorForPollutant(pollutant, value) {
+  let aqi = 0;
+
+  switch (pollutant) {
+    case "pm2_5":
+      aqi = calculateIndividualAQI(value, "pm2_5");
+      break;
+    case "pm10":
+      aqi = calculateIndividualAQI(value, "pm10");
+      break;
+    case "o3":
+      aqi = calculateIndividualAQI(value / 1.96, "o3_8hr"); // Convert μg/m³ to ppb
+      break;
+    case "no2":
+      aqi = calculateIndividualAQI(value / 1.88, "no2"); // Convert μg/m³ to ppb
+      break;
+    case "so2":
+      aqi = calculateIndividualAQI(value / 2.62, "so2"); // Convert μg/m³ to ppb
+      break;
+    case "co":
+      aqi = calculateIndividualAQI(value / 1145, "co"); // Convert μg/m³ to ppm
+      break;
+    default:
+      // Fallback to old color system for unknown pollutants
+      const thresholds = {
+        pm2_5: [12, 35, 55],
+        pm10: [54, 154, 254],
+        o3: [100, 160, 240],
+        no2: [40, 80, 120],
+        so2: [20, 80, 250],
+        co: [4400, 9400, 12400],
+      };
+      const limits = thresholds[pollutant] || [50, 100, 150];
+      if (value <= limits[0]) return "#00e400";
+      if (value <= limits[1]) return "#ffff00";
+      if (value <= limits[2]) return "#ff7e00";
+      return "#ff0000";
+  }
+
+  return getAQICategory(aqi).color;
+}
+
+function createEnhancedPollutantDisplays(components, weather, individualAQIs) {
   let weatherDesc = "";
   let temp = "";
   let wind = "";
-  if (weather.weather && Array.isArray(weather.weather) && weather.weather[0]?.description) {
+
+  if (
+    weather.weather &&
+    Array.isArray(weather.weather) &&
+    weather.weather[0]?.description
+  ) {
     weatherDesc = weather.weather[0].description;
   }
   if (weather.main && typeof weather.main.temp !== "undefined") {
     temp = `${Math.round(weather.main.temp)}°C`;
   }
   if (weather.wind) {
-    wind = `Wind: ${weather.wind.speed || 0} m/s ${weather.wind.deg ? `(${getWindDirection(weather.wind.deg)})` : ""}`;
+    wind = `Wind: ${weather.wind.speed || 0} m/s ${
+      weather.wind.deg ? `(${getWindDirection(weather.wind.deg)})` : ""
+    }`;
   }
 
   let html = `<div style="background: #f0f9ff; padding: 12px; border-radius: 8px; margin-bottom: 15px; border-left: 3px solid #0ea5e9;">
     <small style="color: #0c4a6e;">
-      <strong>🌤️ Weather Context:</strong> ${weatherDesc ? weatherDesc + ", " : ""}${temp}${wind ? ", " + wind : ""}
+      <strong>🌤️ Weather Context:</strong> ${
+        weatherDesc ? weatherDesc + ", " : ""
+      }${temp}${wind ? ", " + wind : ""}
     </small>
   </div>`;
+
   const pollutants = [
     {
       key: "pm2_5",
       name: "PM2.5",
-      unit: "µg/m³",
-      max: 50,
+      unit: "μg/m³",
       value: components.pm2_5,
+      standard: "24-hour average",
     },
-    { key: "no2", name: "NO₂", unit: "µg/m³", max: 100, value: components.no2 },
-    { key: "o3", name: "O₃", unit: "µg/m³", max: 200, value: components.o3 },
     {
       key: "pm10",
       name: "PM10",
-      unit: "µg/m³",
-      max: 100,
+      unit: "μg/m³",
       value: components.pm10,
+      standard: "24-hour average",
+    },
+    {
+      key: "o3",
+      name: "O₃",
+      unit: "μg/m³",
+      value: components.o3,
+      standard: "8-hour average",
+    },
+    {
+      key: "no2",
+      name: "NO₂",
+      unit: "μg/m³",
+      value: components.no2,
+      standard: "1-hour average",
+    },
+    {
+      key: "so2",
+      name: "SO₂",
+      unit: "μg/m³",
+      value: components.so2,
+      standard: "1-hour average",
+    },
+    {
+      key: "co",
+      name: "CO",
+      unit: "μg/m³",
+      value: components.co,
+      standard: "8-hour average",
     },
   ];
+
   pollutants.forEach((pollutant) => {
     const value = pollutant.value || 0;
-    const percentage = Math.min((value / pollutant.max) * 100, 100);
+    const individualAQI = individualAQIs[pollutant.key] || 0;
     const color = getColorForPollutant(pollutant.key, value);
+    const aqiCategory = getAQICategory(individualAQI);
+
+    // Calculate percentage based on AQI (0-500 scale)
+    const percentage = Math.min((individualAQI / 500) * 100, 100);
+
     html += `
       <div class="pollutant" style="border-left-color: ${color};">
         <div class="pollutant-info">
           <div>
             <span class="pollutant-name">${pollutant.name}</span>
-            <span class="pollutant-source">Ground Monitor</span>
+            <span class="pollutant-source">EPA Standard (${
+              pollutant.standard
+            })</span>
           </div>
           <div class="pollutant-bar">
             <div class="pollutant-bar-fill" style="width: ${percentage}%; background: linear-gradient(90deg, ${color}, ${color}aa);"></div>
@@ -280,11 +572,17 @@ function createEnhancedPollutantDisplays(components, weather) {
           }')">i</span>
         </div>
         <div class="pollutant-value">
-          ${value.toFixed(1)} ${pollutant.unit}
+          <div style="font-size: 1.1em; font-weight: bold;">${value.toFixed(
+            1
+          )} ${pollutant.unit}</div>
+          <div style="font-size: 0.85em; color: ${color}; font-weight: 500;">
+            AQI: ${individualAQI} (${aqiCategory.label})
+          </div>
         </div>
       </div>
     `;
   });
+
   return html;
 }
 
@@ -368,49 +666,128 @@ function updateHealthRecommendations(aqi, components, weather) {
   const recommendationsList = document.getElementById("recommendationsList");
   let alertHTML = "";
   let recommendations = [];
-  if (aqi > 3) {
+
+  // Health alerts based on US EPA AQI levels
+  if (aqi >= 301) {
     alertHTML = `
-      <div class="health-alert">
+      <div class="health-alert" style="background: linear-gradient(135deg, #7e0023, #8f3f97); color: white;">
+        <div class="alert-icon">☠️</div>
+        <div class="alert-content">
+          <h4>HAZARDOUS Air Quality Emergency</h4>
+          <p>AQI: ${aqi}. Health warnings of emergency conditions. Everyone should avoid all outdoor activities.</p>
+          <div class="alert-actions">
+            <button class="alert-btn" onclick="shareHealthAlert('${aqi}')">Share Emergency Alert</button>
+          </div>
+        </div>
+      </div>
+    `;
+  } else if (aqi >= 201) {
+    alertHTML = `
+      <div class="health-alert" style="background: linear-gradient(135deg, #8f3f97, #7e0023); color: white;">
         <div class="alert-icon">⚠️</div>
         <div class="alert-content">
-          <h4>Unhealthy Air Quality Alert</h4>
-          <p>Current AQI: ${aqi}. Limit outdoor activities.</p>
+          <h4>Very Unhealthy Air Quality Alert</h4>
+          <p>AQI: ${aqi}. Health alert: everyone may experience serious health effects.</p>
           <div class="alert-actions">
             <button class="alert-btn" onclick="shareHealthAlert('${aqi}')">Share Alert</button>
           </div>
         </div>
       </div>
     `;
-  } else if (aqi > 2) {
+  } else if (aqi >= 151) {
     alertHTML = `
-      <div class="health-alert" style="background: linear-gradient(135deg, #fef3c7, #fed7aa); color: #92400e;">
+      <div class="health-alert" style="background: linear-gradient(135deg, #ff0000, #ff4444); color: white;">
+        <div class="alert-icon">⚠️</div>
+        <div class="alert-content">
+          <h4>Unhealthy Air Quality Alert</h4>
+          <p>AQI: ${aqi}. Everyone may experience health effects. Limit outdoor activities.</p>
+          <div class="alert-actions">
+            <button class="alert-btn" onclick="shareHealthAlert('${aqi}')">Share Alert</button>
+          </div>
+        </div>
+      </div>
+    `;
+  } else if (aqi >= 101) {
+    alertHTML = `
+      <div class="health-alert" style="background: linear-gradient(135deg, #ff7e00, #ffaa44); color: white;">
         <div class="alert-icon">⚡</div>
         <div class="alert-content">
-          <h4>Sensitive Groups Advisory</h4>
-          <p>AQI: ${aqi}. Sensitive individuals should consider reducing outdoor activities.</p>
+          <h4>Unhealthy for Sensitive Groups</h4>
+          <p>AQI: ${aqi}. Sensitive individuals should avoid outdoor activities.</p>
+        </div>
+      </div>
+    `;
+  } else if (aqi >= 51) {
+    alertHTML = `
+      <div class="health-alert" style="background: linear-gradient(135deg, #ffff00, #ffff77); color: #333;">
+        <div class="alert-icon">ℹ️</div>
+        <div class="alert-content">
+          <h4>Moderate Air Quality</h4>
+          <p>AQI: ${aqi}. Air quality is acceptable for most people.</p>
         </div>
       </div>
     `;
   }
-  if (components.pm2_5 > 35) {
-    recommendations.push("🏠 Stay indoors - high PM2.5 detected");
-    recommendations.push("😷 Wear N95 mask outdoors");
-  } else if (components.pm2_5 > 12) {
-    recommendations.push("🚶‍♀️ Limit outdoor activities for sensitive groups");
+
+  // Specific recommendations based on pollutant levels and EPA guidelines
+  if (components.pm2_5 > 55.5) {
+    recommendations.push("🏠 Stay indoors - very unhealthy PM2.5 levels");
+    recommendations.push("😷 Wear N95 or P100 mask if you must go outside");
+    recommendations.push("💨 Use air purifiers indoors with HEPA filters");
+  } else if (components.pm2_5 > 35.5) {
+    recommendations.push(
+      "🚶‍♀️ Limit outdoor activities, especially for sensitive groups"
+    );
+    recommendations.push("😷 Consider wearing N95 mask outdoors");
+  } else if (components.pm2_5 > 12.1) {
+    recommendations.push(
+      "⚠️ Unusually sensitive people should limit outdoor activities"
+    );
   }
-  if (components.no2 > 80) {
-    recommendations.push("🚗 Avoid busy roads - elevated NO₂");
+
+  if (components.no2 / 1.88 > 361) {
+    // Convert to ppb and check
+    recommendations.push("🚗 Avoid busy roads - very high NO₂ levels");
+    recommendations.push("🏠 Keep windows closed near traffic");
+  } else if (components.no2 / 1.88 > 101) {
+    recommendations.push("🚗 Limit time near busy roads");
   }
+
+  const o3_ppb = components.o3 / 1.96;
+  if (o3_ppb > 125) {
+    recommendations.push(
+      "☀️ Avoid outdoor activities during peak sun hours (10am-4pm)"
+    );
+    recommendations.push("🏃‍♂️ Postpone outdoor exercise");
+  }
+
+  // Weather-based recommendations
   if (weather.wind?.speed < 2) {
-    recommendations.push("💨 Low wind may trap pollutants");
+    recommendations.push(
+      "💨 Low wind may trap pollutants - avoid outdoor activities"
+    );
   } else if (weather.wind?.speed > 5) {
-    recommendations.push("🌬️ Good wind dispersion expected");
+    recommendations.push("🌬️ Good wind dispersion may help air quality");
   }
-  recommendations.push(
-    "👥 Children, elderly, and those with respiratory conditions should take extra precautions"
-  );
-  recommendations.push("💧 Stay hydrated");
-  recommendations.push("📱 Check air quality regularly");
+
+  // General recommendations based on AQI level
+  if (aqi >= 101) {
+    recommendations.push(
+      "👥 Children, elderly, and those with heart/lung conditions should stay indoors"
+    );
+    recommendations.push(
+      "🏥 Seek medical attention if experiencing breathing difficulties"
+    );
+    recommendations.push("🚭 Avoid smoking and exposure to secondhand smoke");
+  }
+
+  recommendations.push("💧 Stay well hydrated");
+  recommendations.push("📱 Monitor air quality regularly");
+
+  if (aqi <= 50) {
+    recommendations.push("✅ Air quality is good - enjoy outdoor activities");
+  }
+
   healthAlert.innerHTML = alertHTML;
   recommendationsList.innerHTML = recommendations
     .map((rec) => `<li>${rec}</li>`)
@@ -775,3 +1152,373 @@ if ("serviceWorker" in navigator) {
     // Commented out to avoid 404 errors in demo
   });
 }
+
+async function fetchCompleteLocationData(lat, lon, cityName = "") {
+  showLoading();
+  hideError();
+
+  try {
+    // Use the complete endpoint for all data at once
+    const response = await fetch(`/api/complete?lat=${lat}&lon=${lon}&days=7`);
+    if (!response.ok) throw new Error("API error");
+    const data = await response.json();
+
+    console.log("Complete data fetched:", data);
+
+    // Cache the data
+    dataCache.current = data.current;
+    dataCache.forecast = data.forecast;
+    dataCache.historical = data.historical;
+    dataCache.timestamp = Date.now();
+
+    // Use city name from various sources
+    if (!cityName) {
+      cityName =
+        data.location ||
+        data.current?.weather?.name ||
+        data.airQuality?.city ||
+        `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
+    }
+
+    console.log("Using city name:", cityName);
+
+    // Display all the integrated data
+    displayIntegratedAirQualityData(data.current, cityName, lat, lon);
+    generateEnhancedForecast(data.forecast, data.current);
+    updateEnhancedHistoricalTrends(data.historical, cityName);
+
+    hideLoading();
+  } catch (error) {
+    console.error("Error fetching complete location data:", error);
+    showError("Failed to fetch air quality data.");
+    hideLoading();
+  }
+}
+
+// Enhanced forecast generation with real OpenWeatherMap data
+function generateEnhancedForecast(forecastData, currentData) {
+  const forecastSection = document.getElementById("forecastSection");
+  const forecastTime = document.getElementById("forecastTime");
+  const forecastGrid = document.getElementById("forecastGrid");
+
+  if (!forecastData || !forecastData.list || forecastData.list.length === 0) {
+    forecastSection.style.display = "none";
+    return;
+  }
+
+  // Take next 8 forecast points (next 2-3 days typically)
+  const forecasts = forecastData.list.slice(0, 8).map((item) => {
+    const date = new Date(item.dt * 1000);
+    const aqiData = calculateOverallAQI(item.components);
+    const aqi = aqiData.overall;
+    const category = getAQICategory(aqi);
+
+    return {
+      time: date.toLocaleDateString([], {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+      }),
+      fullTime: date,
+      aqi: aqi,
+      category: category.label,
+      color: category.color,
+      components: item.components,
+      individualAQIs: aqiData.individual,
+    };
+  });
+
+  forecastTime.textContent = `Updated: ${new Date().toLocaleTimeString()}`;
+
+  // Create enhanced forecast grid
+  forecastGrid.innerHTML = forecasts
+    .map(
+      (forecast, index) => `
+      <div class="forecast-item enhanced-forecast" onclick="showForecastDetails(${index})">
+        <div class="forecast-label">${forecast.time}</div>
+        <div class="forecast-value forecast-aqi" style="color: ${
+          forecast.color
+        }">${forecast.aqi}</div>
+        <small class="forecast-category">${forecast.category}</small>
+        <div class="forecast-trend ${
+          index > 0
+            ? getForecastTrend(forecasts[index - 1].aqi, forecast.aqi)
+            : ""
+        }">
+          ${
+            index > 0
+              ? getForecastTrendIcon(forecasts[index - 1].aqi, forecast.aqi)
+              : ""
+          }
+        </div>
+      </div>`
+    )
+    .join("");
+
+  // Store forecast data for detailed view
+  window.forecastDetails = forecasts;
+
+  forecastSection.style.display = "block";
+}
+
+// Get forecast trend
+function getForecastTrend(prevAqi, currentAqi) {
+  const diff = currentAqi - prevAqi;
+  if (Math.abs(diff) <= 5) return "stable";
+  return diff > 0 ? "worsening" : "improving";
+}
+
+function getForecastTrendIcon(prevAqi, currentAqi) {
+  const diff = currentAqi - prevAqi;
+  if (Math.abs(diff) <= 5) return "→";
+  return diff > 0 ? "↗️" : "↘️";
+}
+
+// Show detailed forecast information
+function showForecastDetails(index) {
+  const forecast = window.forecastDetails[index];
+  if (!forecast) return;
+
+  const modal = document.getElementById("pollutantModal");
+  const body = document.getElementById("pollutantModalBody");
+
+  const pollutants = [
+    { key: "pm2_5", name: "PM2.5", unit: "μg/m³" },
+    { key: "pm10", name: "PM10", unit: "μg/m³" },
+    { key: "o3", name: "O₃", unit: "μg/m³" },
+    { key: "no2", name: "NO₂", unit: "μg/m³" },
+    { key: "so2", name: "SO₂", unit: "μg/m³" },
+    { key: "co", name: "CO", unit: "μg/m³" },
+  ];
+
+  let pollutantDetails = pollutants
+    .map((p) => {
+      const value = forecast.components[p.key] || 0;
+      const individualAQI = forecast.individualAQIs[p.key] || 0;
+      const category = getAQICategory(individualAQI);
+
+      return `
+      <div class="forecast-pollutant-detail">
+        <span class="pollutant-name">${p.name}</span>
+        <span class="pollutant-values">
+          ${value.toFixed(1)} ${p.unit} 
+          <small style="color: ${
+            category.color
+          }">(AQI: ${individualAQI})</small>
+        </span>
+      </div>
+    `;
+    })
+    .join("");
+
+  body.innerHTML = `
+    <h2>Forecast Details - ${forecast.time}</h2>
+    <div class="forecast-summary">
+      <div class="forecast-aqi-big" style="color: ${forecast.color}">
+        AQI ${forecast.aqi}
+      </div>
+      <div class="forecast-category-big">${forecast.category}</div>
+    </div>
+    <h3>Individual Pollutants</h3>
+    <div class="forecast-pollutants">
+      ${pollutantDetails}
+    </div>
+    <div class="forecast-health-advice">
+      <h4>Health Recommendations</h4>
+      ${generateForecastHealthAdvice(forecast.aqi, forecast.components)}
+    </div>
+  `;
+
+  modal.classList.add("show");
+}
+
+// Generate health advice for forecast
+function generateForecastHealthAdvice(aqi, components) {
+  let advice = [];
+
+  if (aqi >= 151) {
+    advice.push("🏠 Plan to stay indoors during this period");
+    advice.push("😷 Wear N95 masks if outdoor activity is necessary");
+  } else if (aqi >= 101) {
+    advice.push("⚠️ Sensitive individuals should limit outdoor activities");
+    advice.push("🏃‍♀️ Consider rescheduling outdoor exercise");
+  } else if (aqi >= 51) {
+    advice.push("ℹ️ Air quality is moderate - acceptable for most people");
+    advice.push("👥 Sensitive groups should monitor symptoms");
+  } else {
+    advice.push("✅ Air quality is good - enjoy outdoor activities");
+  }
+
+  return advice.map((a) => `<li>${a}</li>`).join("");
+}
+
+// Enhanced historical trends with real data
+function updateEnhancedHistoricalTrends(historicalData, cityName) {
+  const trendsSection = document.getElementById("trendsSection");
+  const trendsData = document.getElementById("trendsData");
+
+  if (
+    !historicalData ||
+    !historicalData.list ||
+    historicalData.list.length === 0
+  ) {
+    trendsSection.style.display = "none";
+    return;
+  }
+
+  // Process historical data into meaningful trends
+  const historical = historicalData.list.map((item) => ({
+    timestamp: item.dt,
+    date: new Date(item.dt * 1000),
+    aqi: calculateOverallAQI(item.components).overall,
+    components: item.components,
+  }));
+
+  // Calculate trend periods
+  const trends = calculateHistoricalTrends(historical);
+
+  trendsData.innerHTML = trends
+    .map(
+      (trend) => `
+      <div class="trend-item enhanced-trend">
+        <div class="trend-period">${trend.period}</div>
+        <div class="trend-change trend-${trend.changeType}">
+          <span class="trend-value">${trend.value}</span>
+          <span class="trend-description">${trend.description}</span>
+        </div>
+        <div class="trend-details">
+          <small>Avg AQI: ${trend.avgAqi} | Range: ${trend.minAqi}-${trend.maxAqi}</small>
+        </div>
+      </div>`
+    )
+    .join("");
+
+  // Add historical chart if we have enough data
+  if (historical.length > 24) {
+    addHistoricalChart(historical);
+  }
+
+  trendsSection.style.display = "block";
+}
+
+// Calculate meaningful historical trends
+function calculateHistoricalTrends(historical) {
+  const trends = [];
+  const now = new Date();
+
+  // Last 24 hours
+  const last24h = historical.filter((h) => now - h.date <= 24 * 60 * 60 * 1000);
+  if (last24h.length > 0) {
+    const avg = Math.round(
+      last24h.reduce((sum, h) => sum + h.aqi, 0) / last24h.length
+    );
+    const min = Math.min(...last24h.map((h) => h.aqi));
+    const max = Math.max(...last24h.map((h) => h.aqi));
+    trends.push({
+      period: "Past 24 hours",
+      avgAqi: avg,
+      minAqi: min,
+      maxAqi: max,
+      value: `Range: ${min}-${max}`,
+      description: `Average: ${avg}`,
+      changeType: avg <= 50 ? "improving" : avg <= 100 ? "stable" : "worsening",
+    });
+  }
+
+  // Last 3 days vs previous 3 days
+  const last3days = historical.filter(
+    (h) => now - h.date <= 3 * 24 * 60 * 60 * 1000
+  );
+  const prev3days = historical.filter(
+    (h) =>
+      now - h.date > 3 * 24 * 60 * 60 * 1000 &&
+      now - h.date <= 6 * 24 * 60 * 60 * 1000
+  );
+
+  if (last3days.length > 0 && prev3days.length > 0) {
+    const lastAvg =
+      last3days.reduce((sum, h) => sum + h.aqi, 0) / last3days.length;
+    const prevAvg =
+      prev3days.reduce((sum, h) => sum + h.aqi, 0) / prev3days.length;
+    const change = ((lastAvg - prevAvg) / prevAvg) * 100;
+
+    trends.push({
+      period: "Past 3 days",
+      avgAqi: Math.round(lastAvg),
+      minAqi: Math.min(...last3days.map((h) => h.aqi)),
+      maxAqi: Math.max(...last3days.map((h) => h.aqi)),
+      value: `${change > 0 ? "+" : ""}${change.toFixed(1)}%`,
+      description:
+        change > 0 ? "vs previous 3 days" : "improvement vs previous 3 days",
+      changeType:
+        Math.abs(change) <= 5
+          ? "stable"
+          : change > 0
+          ? "worsening"
+          : "improving",
+    });
+  }
+
+  // Weekly average
+  const avgWeekly = Math.round(
+    historical.reduce((sum, h) => sum + h.aqi, 0) / historical.length
+  );
+  const minWeekly = Math.min(...historical.map((h) => h.aqi));
+  const maxWeekly = Math.max(...historical.map((h) => h.aqi));
+
+  trends.push({
+    period: "7-day average",
+    avgAqi: avgWeekly,
+    minAqi: minWeekly,
+    maxAqi: maxWeekly,
+    value: `AQI ${avgWeekly}`,
+    description: getAQICategory(avgWeekly).label,
+    changeType:
+      avgWeekly <= 50 ? "improving" : avgWeekly <= 100 ? "stable" : "worsening",
+  });
+
+  return trends;
+}
+
+// Add simple historical chart
+function addHistoricalChart(historical) {
+  // Create a simple chart container if it doesn't exist
+  let chartContainer = document.getElementById("historicalChart");
+  if (!chartContainer) {
+    chartContainer = document.createElement("div");
+    chartContainer.id = "historicalChart";
+    chartContainer.className = "historical-chart";
+    document.getElementById("trendsData").appendChild(chartContainer);
+  }
+
+  // Create simple ASCII-style chart for last 24 hours
+  const last24h = historical.slice(-24);
+  const maxAqi = Math.max(...last24h.map((h) => h.aqi));
+  const minAqi = Math.min(...last24h.map((h) => h.aqi));
+
+  let chartHTML = '<h4>24-Hour AQI Trend</h4><div class="mini-chart">';
+
+  last24h.forEach((point, index) => {
+    const height =
+      maxAqi > minAqi
+        ? ((point.aqi - minAqi) / (maxAqi - minAqi)) * 40 + 10
+        : 20;
+    const color = getAQICategory(point.aqi).color;
+
+    chartHTML += `
+      <div class="chart-bar" style="height: ${height}px; background: ${color}" 
+           title="${point.date.toLocaleTimeString()}: AQI ${point.aqi}">
+      </div>
+    `;
+  });
+
+  chartHTML += "</div>";
+  chartContainer.innerHTML = chartHTML;
+}
+
+// Update the main fetch function to use the enhanced version
+async function fetchLocationData(lat, lon, cityName = "") {
+  return fetchCompleteLocationData(lat, lon, cityName);
+}
+
+

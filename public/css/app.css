@@ -69,7 +69,7 @@ nav {
 /* Main Container */
 .main-container {
   display: grid;
-  grid-template-columns: 420px 1fr;
+  grid-template-columns: 40% 1fr;
   min-height: 100vh;
   padding-top: 65px;
 }
@@ -906,4 +906,348 @@ footer a:hover {
   50% {
     opacity: 0.7;
   }
+}
+
+.aqi-category {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.9em;
+}
+
+.aqi-good {
+  background: linear-gradient(135deg, #00e400, #44ff44);
+  color: #004d00;
+}
+
+.aqi-moderate {
+  background: linear-gradient(135deg, #ffff00, #ffff77);
+  color: #666600;
+}
+
+.aqi-unhealthy-sensitive {
+  background: linear-gradient(135deg, #ff7e00, #ffaa44);
+  color: white;
+}
+
+.aqi-unhealthy {
+  background: linear-gradient(135deg, #ff0000, #ff4444);
+  color: white;
+}
+
+.aqi-very-unhealthy {
+  background: linear-gradient(135deg, #8f3f97, #aa66bb);
+  color: white;
+}
+
+.aqi-hazardous {
+  background: linear-gradient(135deg, #7e0023, #aa1144);
+  color: white;
+}
+
+.aqi-very-hazardous {
+  background: linear-gradient(135deg, #4a0000, #7e0023);
+  color: white;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Enhanced pollutant display */
+.pollutant-value {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 2px;
+}
+
+.pollutant-source {
+  font-size: 0.75em;
+  color: #6b7280;
+  font-weight: normal;
+}
+
+/* Health alert enhancements */
+.health-alert {
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.alert-icon {
+  font-size: 2em;
+  flex-shrink: 0;
+}
+
+.alert-content {
+  flex: 1;
+}
+
+.alert-content h4 {
+  margin: 0 0 8px 0;
+  font-size: 1.1em;
+  font-weight: 700;
+}
+
+.alert-content p {
+  margin: 0 0 12px 0;
+  font-size: 0.95em;
+  line-height: 1.4;
+}
+
+.alert-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.alert-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.85em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.alert-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+/* AQI value display enhancement */
+#aqiValue {
+  font-size: 3em;
+  font-weight: 800;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Pollutant bar enhancements */
+.pollutant-bar {
+  height: 6px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 8px 0;
+  position: relative;
+}
+
+.pollutant-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.8s ease;
+  position: relative;
+}
+
+.pollutant-bar-fill::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Enhanced trend indicators */
+.trend-improving {
+  color: #22c55e;
+}
+
+.trend-stable {
+  color: #f59e0b;
+}
+
+.trend-worsening {
+  color: #ef4444;
+}
+
+.trend-item {
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 8px;
+}
+
+.trend-period {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.trend-change {
+  font-size: 0.9em;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Forecast enhancements */
+.forecast-item {
+  text-align: center;
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.forecast-item:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.forecast-label {
+  font-size: 0.85em;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.forecast-value {
+  font-size: 1.2em;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+/* Responsive design for mobile */
+@media (max-width: 768px) {
+  .pollutant-value {
+    text-align: center;
+  }
+
+  .pollutant-info {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  #aqiValue {
+    font-size: 2.5em;
+  }
+
+  .health-alert {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .alert-icon {
+    font-size: 1.5em;
+  }
+}
+
+.enhanced-forecast {
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.enhanced-forecast:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.forecast-trend {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  font-size: 0.8em;
+}
+
+.forecast-pollutant-detail {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.forecast-aqi-big {
+  font-size: 2em;
+  font-weight: bold;
+  text-align: center;
+}
+
+.forecast-category-big {
+  text-align: center;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+.enhanced-trend {
+  border-left: 4px solid #e5e7eb;
+  transition: all 0.2s ease;
+}
+
+.enhanced-trend:hover {
+  border-left-color: #667eea;
+  background: #f8fafc;
+}
+
+.trend-details {
+  margin-top: 5px;
+  opacity: 0.7;
+}
+
+.historical-chart {
+  margin-top: 15px;
+  padding: 15px;
+  background: #f9fafb;
+  border-radius: 8px;
+}
+
+.mini-chart {
+  display: flex;
+  align-items: end;
+  gap: 2px;
+  height: 60px;
+  margin-top: 10px;
+}
+
+.chart-bar {
+  flex: 1;
+  min-width: 3px;
+  border-radius: 2px 2px 0 0;
+  transition: all 0.2s ease;
+}
+
+.chart-bar:hover {
+  opacity: 0.8;
+  transform: scaleY(1.1);
 }

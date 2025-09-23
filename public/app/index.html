@@ -91,6 +91,15 @@
             <div id="errorMessage" class="error hidden"></div>
           </div>
 
+          <div id="pollutionSection" class="data-section">
+            <h2 id="cityName" class="section-title">📊 Current Air Quality</h2>
+            <div id="aqiDisplay" class="aqi-display">
+              <div class="aqi-value" id="aqiValue">--</div>
+              <div class="aqi-label">Air Quality Index</div>
+              <div id="aqiCategory" class="aqi-category">Select location</div>
+            </div>
+            <div id="pollutionData"></div>
+          </div>
           <div
             id="forecastSection"
             class="forecast-section"
@@ -102,17 +111,6 @@
             </div>
             <div class="forecast-grid" id="forecastGrid"></div>
           </div>
-
-          <div id="pollutionSection" class="data-section">
-            <h2 id="cityName" class="section-title">📊 Current Air Quality</h2>
-            <div id="aqiDisplay" class="aqi-display">
-              <div class="aqi-value" id="aqiValue">--</div>
-              <div class="aqi-label">Air Quality Index</div>
-              <div id="aqiCategory" class="aqi-category">Select location</div>
-            </div>
-            <div id="pollutionData"></div>
-          </div>
-
           <div id="healthSection" class="health-section" style="display: none">
             <h2 class="section-title">🏥 Health Impact Assessment</h2>
             <div id="healthAlert"></div>
