@@ -102,3 +102,49 @@ async function handleCurrent(lat, lon, headers) {
     }),
   };
 }
+
+async function handleComplete(lat, lon, days, headers) {
+  const daysBack = parseInt(days) || 7;
+  const endTime = Math.floor(Date.now() / 1000);
+  const startTime = endTime - daysBack * 24 * 60 * 60;
+
+  const [currentRes, forecastRes, weatherRes, historicalRes] =
+    await Promise.all([
+      fetch(
+        `http://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${process.env.OPENWEATHER_API_KEY}`
+      ),
+      fetch(
+        `http://api.openweathermap.org/data/2.5/air_pollution/forecast?lat=${lat}&lon=${lon}&appid=${process.env.OPENWEATHER_API_KEY}`
+      ),
+      fetch(
+        `http://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${process.env.OPENWEATHER_API_KEY}&units=metric`
+      ),
+      fetch(
+        `http://api.openweathermap.org/data/2.5/air_pollution/history?lat=${lat}&lon=${lon}&start=${startTime}&end=${endTime}&appid=${process.env.OPENWEATHER_API_KEY}`
+      ),
+    ]);
+
+  const [currentData, forecastData, weatherData, historicalData] =
+    await Promise.all([
+      currentRes.json(),
+      forecastRes.json(),
+      weatherRes.json(),
+      historicalRes.json(),
+    ]);
+
+  return {
+    statusCode: 200,
+    headers,
+    body: JSON.stringify({
+      location: weatherData.name,
+      current: { ...currentData, weather: weatherData },
+      forecast: { coord: forecastData.coord, list: forecastData.list },
+      historical: {
+        coord: historicalData.coord,
+        list: historicalData.list,
+        period: { start: startTime, end: endTime, days: daysBack },
+      },
+      timestamp: Date.now(),
+    }),
+  };
+}
