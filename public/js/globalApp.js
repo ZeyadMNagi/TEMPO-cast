@@ -1155,14 +1155,17 @@ if ("serviceWorker" in navigator) {
   });
 }
 
+
+
 async function fetchCompleteLocationData(lat, lon, cityName = "") {
   showLoading();
   hideError();
 
   try {
     // Use the complete endpoint for all data at once
-    const response = await fetch(`/.netlify/functions/data?lat=${lat}&lon=${lon}&days=7`);
-    if (!response.ok) throw new Error("API error") + response.status;
+    const response = await fetch(
+      `/api/complete?lat=${lat}&lon=${lon}&days=7`
+    );    if (!response.ok) throw new Error("API error") + response.status;
     const data = await response.json();
 
     console.log("Complete data fetched:", data);
