@@ -150,3 +150,84 @@ document.getElementById("checkMyCityBtn").onclick = function () {
     window.location.href = `./app-global?${params}`;
   }
 };
+
+function showResourceModal(resource) {
+  const modal = document.getElementById("resourceModal");
+  const body = document.getElementById("modalBody");
+  let html = "";
+  switch (resource) {
+    case "WHO":
+      html = `<h3>WHO Instructions</h3>
+        <p>Official World Health Organization guidelines for protecting yourself from air pollution. <a href="./WHO.html" target="_blank">Read more</a></p>`;
+      break;
+    case "OpenAQ":
+      html = `<h3>OpenAQ</h3>
+        <p>Global air quality data from thousands of stations. <a href="https://openaq.org" target="_blank">Visit OpenAQ</a></p>`;
+      break;
+    case "OpenWeather":
+      html = `<h3>OpenWeather</h3>
+        <p>Weather and pollution data APIs for developers and researchers. <a href="https://openweathermap.org" target="_blank">Visit OpenWeather</a></p>`;
+      break;
+    case "TEMPO":
+      html = `<h3>NASA TEMPO</h3>
+        <p>NASA's mission for real-time air quality monitoring over North America. <a href="https://tempo.si.edu/" target="_blank">Learn more</a></p>`;
+      break;
+    case "EPA":
+      html = `<h3>EPA Air Trends</h3>
+        <p>US Environmental Protection Agency air quality trends and reports. <a href="https://www.epa.gov/air-trends/air-quality-national-summary" target="_blank">View EPA Data</a></p>`;
+      break;
+    default:
+      html = `<p>Resource info not found.</p>`;
+  }
+  body.innerHTML = html;
+  modal.style.display = "flex";
+}
+function closeResourceModal() {
+  document.getElementById("resourceModal").style.display = "none";
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  const text = "From Space to Your Screen –  The World’s Air, Visualized.";
+  let i = 0;
+  const el = document.querySelector(".typewriter");
+  function type() {
+    if (i < text.length) {
+      el.textContent += text.charAt(i);
+      i++;
+      setTimeout(type, 40);
+    }
+  }
+  el.textContent = "";
+  type();
+});
+
+document.getElementById("micBtn").onclick = function () {
+  if (!("webkitSpeechRecognition" in window)) {
+    alert("Voice search not supported in this browser.");
+    return;
+  }
+  const recognition = new webkitSpeechRecognition();
+  recognition.lang = "en-US";
+  recognition.onresult = function (event) {
+    const transcript = event.results[0][0].transcript;
+    document.getElementById("Search").value = transcript;
+    fetchCitySuggestions(transcript);
+  };
+  recognition.start();
+};
+
+
+// ...existing code...
+
+document.querySelectorAll('nav a.nav-item').forEach(link => {
+  link.addEventListener('click', function(e) {
+    const href = this.getAttribute('href');
+    if (href.startsWith('#')) {
+      e.preventDefault();
+      const target = document.querySelector(href);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  });
+});

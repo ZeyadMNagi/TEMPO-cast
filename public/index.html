@@ -40,6 +40,7 @@
         <a href="#" class="logo">Global TEMPO</a>
         <ul>
           <li><a href="#about" class="nav-item">About</a></li>
+          <li><a href="#resources" class="nav-item">Resources</a></li>
           <li><a href="./WHO.html" class="nav-item">WHO instructions</a></li>
           <li><a href="./app/index.html" class="nav-item">USA App</a></li>
           <a href="./app-Global/index.html" class="btn">Global APP</a>
@@ -49,22 +50,23 @@
     <main>
       <section id="hero">
         <div class="hero-content">
-          <h1>Welcome to <span>Global TEMPO</span></h1>
-          <p>“From Space to Your Screen – The World’s Air, Visualized.”</p>
+          <h1 id="headline">
+            <span class="typewriter"></span>
+          </h1>
+          <p>Explore real-time air quality from space, anywhere on Earth.</p>
           <div class="CTA">
             <div class="input">
               <input
                 id="Search"
                 name="Search"
-                placeholder="Search..."
+                placeholder="Search your city..."
                 type="text"
                 oninput="fetchCitySuggestions(this.value)"
               />
-              <span id="getLocationBtn">
+              <span id="getLocationBtn" title="Use my location">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   height="24px"
-                  viewBox="0 -960 960 960"
                   width="24px"
                   fill="#222"
                 >
@@ -73,75 +75,102 @@
                   />
                 </svg>
               </span>
+              <span id="micBtn" title="Voice search">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  height="24px"
+                  width="24px"
+                  fill="#222"
+                >
+                  <path
+                    d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 14 0h-2zm-5 7a7 7 0 0 0 7-7h-2a5 5 0 0 1-10 0H5a7 7 0 0 0 7 7z"
+                  />
+                </svg>
+              </span>
             </div>
-            <br />
             <div id="searchResults"></div>
           </div>
           <button class="button" id="checkMyCityBtn">
             <span class="text">Check my city's Air</span>
-            <svg
-              class="arrow"
-              viewBox="0 0 448 512"
-              height="1em"
-              xmlns="http://www.w3.org/2000/svg"
-            >
+            <svg class="arrow" viewBox="0 0 448 512" height="1em">
               <path
                 d="M438.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L338.8 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l306.7 0L233.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160z"
-              ></path>
+              />
             </svg>
           </button>
         </div>
         <div class="canvas">
-          <div id="globe-container" style="width: 420px; height: 420px">
+          <div id="globe-container">
             <img
-              style="border-radius: 50%; width: 100%"
-              src="./assets/R.gif"
+              src="./assets/a-sky-view-of-earth-from-suomi-npp_16611703184_o~medium.jpg"
               alt="Earth"
+              style="width: 100%; height: 100%; object-fit: cover"
             />
           </div>
-          <p>By NASA’s Terra satellite for the MODIS imageries</p>
+          <p>
+            Satellite: Suomi-NPP Sensor: VIIRS Date: 9 April 2015 Description:
+            Data from six orbits of the Suomi-NPP spacecraft have been assembled
+            into this perspective composite of southern Africa and the
+            surrounding oceans. Tropical Cyclone Joalane is seen over the Indian
+            Ocean.
+          </p>
         </div>
       </section>
       <section id="about" class="about">
         <h2>About Global TEMPO</h2>
+        <div class="about-icons">
+          <img src="./assets/logos/nasa.png" alt="NASA" title="NASA TEMPO" />
+          <img src="./assets/logos/openaq.png" alt="OpenAQ" title="OpenAQ" />
+          <img
+            src="./assets/logos/openweather.png"
+            alt="OpenWeather"
+            title="OpenWeather"
+          />
+        </div>
         <p>
           Global TEMPO is an interactive platform that makes air quality and
           weather data easy to understand, for everyone, everywhere. For North
           America, we use NASA’s TEMPO satellite to deliver near-real-time air
           quality insights. For the rest of the world, we integrate OpenAQ and
-          OpenWeather data to provide the closest possible view — with a clear
-          disclaimer on data accuracy. Our goal is simple: make the invisible
-          visible — helping communities understand their air, stay safe during
-          pollution events, and take informed action.
+          OpenWeather data to provide the closest possible view.
         </p>
+        <div class="disclaimer">
+          <strong>Disclaimer:</strong> Global data is sourced from public APIs
+          and may not be as accurate as local government sources. Always check
+          official advisories for health decisions.
+        </div>
       </section>
       <section id="resources">
         <h2>Resources</h2>
-        <ul>
-          <li>
-            <a href="./WHO.html"
-              >WHO Instructions to Protect Yourself from Air Pollution</a
-            >
-          </li>
-          <li>
-            <a href="https://www.openaq.org/"
-              >OpenAQ - Global Air Quality Data</a
-            >
-          </li>
-          <li>
-            <a href="https://openweathermap.org/"
-              >OpenWeather - Weather Data API</a
-            >
-          </li>
-          <li><a href="https://tempo.si.edu/">NASA TEMPO Mission</a></li>
-          <li>
-            <a
-              href="https://www.epa.gov/air-trends/air-quality-national-summary"
-              >EPA Air Quality Trends</a
-            >
-          </li>
-        </ul>
+        <div class="resource-cards">
+          <div class="resource-card" onclick="showResourceModal('WHO')">
+            <img src="./assets/Logos/WHO.png" alt="WHO" />
+            <span>WHO Instructions</span>
+          </div>
+          <div class="resource-card" onclick="showResourceModal('OpenAQ')">
+            <img src="./assets/logos/openaq.png" alt="OpenAQ" />
+            <span>OpenAQ</span>
+          </div>
+          <div class="resource-card" onclick="showResourceModal('OpenWeather')">
+            <img src="./assets/logos/openweather.png" alt="OpenWeather" />
+            <span>OpenWeather</span>
+          </div>
+          <div class="resource-card" onclick="showResourceModal('TEMPO')">
+            <img src="./assets/logos/nasa.png" alt="NASA TEMPO" />
+            <span>NASA TEMPO</span>
+          </div>
+          <div class="resource-card" onclick="showResourceModal('EPA')">
+            <img src="./assets/logos/epa.png" alt="EPA" />
+            <span>EPA Air Trends</span>
+          </div>
+        </div>
       </section>
+      <div id="resourceModal" class="modal" style="display: none">
+        <div class="modal-content">
+          <span class="close" onclick="closeResourceModal()">&times;</span>
+          <div id="modalBody"></div>
+        </div>
+      </div>
       <section id="demoVisualization"></section>
       <section id="keyFeatures">
         <h2>Key Features</h2>
