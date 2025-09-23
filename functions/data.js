@@ -52,23 +52,32 @@ export async function handler(event) {
 }
 
 // Handle current air quality data
-async function handleCurrent(lat, lon, headers) {
-  const [pollutionRes, weatherRes] = await Promise.all([
+// ...
+async function handleComplete(lat, lon, days, headers) {
+  const daysBack = parseInt(days, 10);
+  const endTime = Math.floor(Date.now() / 1000);
+  const startTime = endTime - daysBack * 24 * 60 * 60;
+
+  const [currentRes, forecastRes, historicalRes] = await Promise.all([
     fetch(
-      `http://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${process.env.OPENWEATHER_API_KEY}`
+      `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${process.env.OPENWEATHER_API_KEY}&units=metric`
     ),
     fetch(
-      `http://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${process.env.OPENWEATHER_API_KEY}&units=metric`
+      `https://api.openweathermap.org/data/2.5/air_pollution/forecast?lat=${lat}&lon=${lon}&appid=${process.env.OPENWEATHER_API_KEY}`
+    ),
+    fetch(
+      `https://api.openweathermap.org/data/2.5/air_pollution/history?lat=${lat}&lon=${lon}&start=${startTime}&end=${endTime}&appid=${process.env.OPENWEATHER_API_KEY}`
     ),
   ]);
 
-  if (!pollutionRes.ok || !weatherRes.ok) {
-    throw new Error("Failed to fetch current data from OpenWeatherMap");
+  if (!currentRes.ok || !forecastRes.ok || !historicalRes.ok) {
+    throw new Error("Failed to fetch data from OpenWeatherMap");
   }
 
-  const [pollutionData, weatherData] = await Promise.all([
-    pollutionRes.json(),
-    weatherRes.json(),
+  const [currentData, forecastData, historicalData] = await Promise.all([
+    currentRes.json(),
+    forecastRes.json(),
+    historicalRes.json(),
   ]);
 
   // Try to get OpenAQ data (non-blocking)
@@ -83,22 +92,34 @@ async function handleCurrent(lat, lon, headers) {
       airQualityData = airData.results?.[0] || null;
     }
   } catch (airError) {
-    console.warn("OpenAQ API unavailable:", airError.message);
+    console.warn("OpenAQ API unavailable");
   }
 
-  // Combine pollution data with weather data
-  const combinedData = {
-    ...pollutionData,
-    weather: weatherData,
+  // Combine pollution with weather
+  const combinedCurrent = {
+    ...currentData,
+    weather: currentData,
+  };
+
+  const responseBody = {
+    location: currentData.name,
+    current: combinedCurrent,
+    forecast: {
+      coord: forecastData.coord,
+      list: forecastData.list,
+    },
+    historical: {
+      coord: historicalData.coord,
+      list: historicalData.list,
+      period: { start: startTime, end: endTime, days: daysBack },
+    },
+    airQuality: airQualityData,
+    timestamp: Date.now(),
   };
 
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify({
-      location: weatherData.name,
-      weather: combinedData,
-      airQuality: airQualityData,
-    }),
+    body: JSON.stringify(responseBody),
   };
 }
