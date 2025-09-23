@@ -254,8 +254,6 @@ async function fetchLocationData(lat, lon, cityName = "") {
 }
 
 function displayIntegratedAirQualityData(data, cityName, lat, lon) {
-  console.log("Displaying integrated data:", data);
-  
   if (!data.list || !Array.isArray(data.list) || !data.weather) {
     console.log("No pollution data available in response:", data);
     showError("No pollution data available for this location.");
@@ -1155,17 +1153,14 @@ if ("serviceWorker" in navigator) {
   });
 }
 
-
-
 async function fetchCompleteLocationData(lat, lon, cityName = "") {
   showLoading();
   hideError();
 
   try {
     // Use the complete endpoint for all data at once
-    const response = await fetch(
-      `/api/data?lat=${lat}&lon=${lon}&days=7`
-    );    if (!response.ok) throw new Error("API error") + response.status;
+    const response = await fetch(`/api/complete?lat=${lat}&lon=${lon}&days=7`);
+    if (!response.ok) throw new Error("API error");
     const data = await response.json();
 
     console.log("Complete data fetched:", data);
