@@ -477,6 +477,8 @@ function createEnhancedPollutantDisplays(components, weather, individualAQIs) {
   let temp = "";
   let wind = "";
 
+  
+console.log("Weather data for display:", weather);
   if (
     weather.weather &&
     Array.isArray(weather.weather) &&
@@ -484,6 +486,7 @@ function createEnhancedPollutantDisplays(components, weather, individualAQIs) {
   ) {
     weatherDesc = weather.weather[0].description;
   }
+
   if (weather.main && typeof weather.main.temp !== "undefined") {
     temp = `${Math.round(weather.main.temp)}°C`;
   }
@@ -492,6 +495,8 @@ function createEnhancedPollutantDisplays(components, weather, individualAQIs) {
       weather.wind.deg ? `(${getWindDirection(weather.wind.deg)})` : ""
     }`;
   }
+
+  console.log("Weather context:", weatherDesc, temp, wind);
 
   let html = `<div style="background: #f0f9ff; padding: 12px; border-radius: 8px; margin-bottom: 15px; border-left: 3px solid #0ea5e9;">
     <small style="color: #0c4a6e;">
