@@ -1164,7 +1164,7 @@ async function fetchCompleteLocationData(lat, lon, cityName = "") {
   try {
     // Use the complete endpoint for all data at once
     const response = await fetch(
-      `/api/complete?lat=${lat}&lon=${lon}&days=7`
+      `/api/data?lat=${lat}&lon=${lon}&days=7`
     );    if (!response.ok) throw new Error("API error") + response.status;
     const data = await response.json();
 
