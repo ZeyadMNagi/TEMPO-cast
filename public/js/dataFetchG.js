@@ -71,11 +71,25 @@ function fetchPollutionData(lat, lon, city) {
 
       function createPollutantHTML(name, value, unit) {
         const color = getBarColor(value, name);
+        const extraInfo = {
+          pm2_5: "This comes from car exhaust, burning, etc.",
+          pm10: "Dust, pollen, mold, construction.",
+          o3: "Formed by sunlight and pollutants.",
+          no2: "Vehicle emissions, power plants.",
+          so2: "Coal burning, industrial processes.",
+          co: "Car exhaust, fires.",
+        };
         return `
           <div class="pollutant">
-            <span class="pollutant-name">${name.toUpperCase()} <span class="info-mark" title="${
-          pollutantInfo[name]
-        }">ℹ</span>:</span>
+            <span class="pollutant-name">
+              ${name.toUpperCase()}
+              <span class="info-mark" title="${
+                pollutantInfo[name]
+              }" onclick="openPollutantModal('${name}')">ℹ</span>
+              <span class="extra-tooltip" title="${
+                extraInfo[name] || ""
+              }">?</span>
+            </span>
             <div class="pollutant-bar">
               <div class="pollutant-bar-fill" style="width: ${Math.min(
                 value * 2,
@@ -99,17 +113,22 @@ function fetchPollutionData(lat, lon, city) {
         ${createPollutantHTML("co", components.co, "ppb")}
       `;
 
-      document.getElementById("tips").innerHTML = `
-        <h3>Health Tips:</h3>
-        <ul>
-          <li>${getTip("pm2_5", components.pm2_5)}</li>
-          <li>${getTip("pm10", components.pm10)}</li>
-          <li>${getTip("o3", components.o3)}</li>
-          <li>${getTip("no2", components.no2)}</li>
-          <li>${getTip("so2", components.so2)}</li>
-          <li>${getTip("co", components.co)}</li>
-        </ul>
-      `;
+      let tipsHtml = "<h3>Health Tips:</h3><ul>";
+      let aqiWarning = "";
+      if (aqi > 150) {
+        aqiWarning = `<div class="aqi-warning" style="background:#ffeaea;color:#d9534f;padding:12px;border-radius:8px;margin-bottom:10px;">
+          ⚠️ Air quality is unhealthy! Limit outdoor activities.
+          <button onclick="shareAlert('${cityName}',${aqi})" style="margin-left:10px;">Share this alert</button>
+        </div>`;
+      }
+      tipsHtml += `<li>${getTip("pm2_5", components.pm2_5)}</li>
+      <li>${getTip("pm10", components.pm10)}</li>
+      <li>${getTip("o3", components.o3)}</li>
+      <li>${getTip("no2", components.no2)}</li>
+      <li>${getTip("so2", components.so2)}</li>
+      <li>${getTip("co", components.co)}</li></ul>`;
+      tipsHtml += `<div class="forecast">Expected to improve by evening.</div>`;
+      document.getElementById("tips").innerHTML = aqiWarning + tipsHtml;
 
       function getTip(pollutant, value) {
         if (!value) return `No data for ${pollutant.toUpperCase()}.`;
@@ -167,6 +186,36 @@ function fetchPollutionData(lat, lon, city) {
       document.getElementById("pollutionData").textContent =
         "Failed to fetch air pollution data.";
     });
+}
+
+function openPollutantModal(pollutant) {
+  const modal = document.getElementById("pollutantModal");
+  const body = document.getElementById("pollutantModalBody");
+  const info = {
+    pm2_5: "<strong>PM2.5</strong>: Fine particles from car exhaust, burning, etc. Can penetrate deep into lungs and cause health issues.",
+    pm10: "<strong>PM10</strong>: Coarse particles from dust, pollen, mold, construction. Can irritate eyes and respiratory tract.",
+    o3: "<strong>Ozone (O3)</strong>: Formed by sunlight and pollutants. High levels can cause breathing issues.",
+    no2: "<strong>Nitrogen Dioxide (NO2)</strong>: From vehicle emissions, power plants. Can affect lungs and worsen asthma.",
+    so2: "<strong>Sulfur Dioxide (SO2)</strong>: From coal burning, industry. Can trigger respiratory problems.",
+    co: "<strong>Carbon Monoxide (CO)</strong>: From car exhaust, fires. Reduces oxygen delivery in the body.",
+  };
+  body.innerHTML = info[pollutant] || "No info available.";
+  modal.style.display = "flex";
+}
+function closePollutantModal() {
+  document.getElementById("pollutantModal").style.display = "none";
+}
+
+function shareAlert(city, aqi) {
+  const text = encodeURIComponent(`⚠️ Air quality alert for ${city}: AQI ${aqi}. Check details at ${window.location.href}`);
+  const twitterUrl = `https://twitter.com/intent/tweet?text=${text}`;
+  const whatsappUrl = `https://wa.me/?text=${text}`;
+  // Show options
+  if (confirm("Share on Twitter? (Cancel for WhatsApp)")) {
+    window.open(twitterUrl, "_blank");
+  } else {
+    window.open(whatsappUrl, "_blank");
+  }
 }
 
 document.addEventListener("DOMContentLoaded", function () {

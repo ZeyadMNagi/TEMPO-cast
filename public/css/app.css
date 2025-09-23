@@ -155,3 +155,73 @@ footer {
   position: relative;
   width: 330px;
 }
+
+/* Add to your app.css or style.css */
+.extra-tooltip {
+  margin-left: 5px;
+  font-size: 0.9em;
+  color: #888;
+  cursor: pointer;
+  border-bottom: 1px dotted #888;
+}
+.extra-tooltip:hover {
+  color: #274375;
+}
+.modal {
+  position: fixed;
+  z-index: 2000;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-content {
+  background: #fff;
+  border-radius: 12px;
+  padding: 32px 24px;
+  max-width: 400px;
+  width: 90vw;
+  position: relative;
+  box-shadow: 0 8px 32px rgba(44, 62, 80, 0.18);
+}
+.close {
+  position: absolute;
+  top: 12px;
+  right: 18px;
+  font-size: 2em;
+  color: #274375;
+  cursor: pointer;
+}
+
+/* Add to your app.css or style.css */
+.aqi-warning {
+  background: #ffeaea;
+  color: #d9534f;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+}
+.aqi-warning button {
+  background: #d9534f;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  margin-left: 10px;
+  cursor: pointer;
+}
+.aqi-warning button:hover {
+  background: #b52b27;
+}
+.forecast {
+  margin-top: 12px;
+  font-style: italic;
+  color: #2980b9;
+}

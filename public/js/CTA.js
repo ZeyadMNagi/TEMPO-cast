@@ -216,18 +216,31 @@ document.getElementById("micBtn").onclick = function () {
   recognition.start();
 };
 
-
-// ...existing code...
-
-document.querySelectorAll('nav a.nav-item').forEach(link => {
-  link.addEventListener('click', function(e) {
-    const href = this.getAttribute('href');
-    if (href.startsWith('#')) {
+document.querySelectorAll("nav a.nav-item").forEach((link) => {
+  link.addEventListener("click", function (e) {
+    const href = this.getAttribute("href");
+    if (href.startsWith("#")) {
       e.preventDefault();
       const target = document.querySelector(href);
       if (target) {
-        target.scrollIntoView({ behavior: 'smooth' });
+        target.scrollIntoView({ behavior: "smooth" });
       }
     }
+  });
+});
+
+const navToggle = document.getElementById("navToggle");
+const navLinks = document.getElementById("navLinks");
+
+navToggle.addEventListener("click", function () {
+  navToggle.classList.toggle("active");
+  navLinks.classList.toggle("open");
+});
+
+// Optional: Close nav when a link is clicked (mobile)
+document.querySelectorAll(".nav-links a").forEach((link) => {
+  link.addEventListener("click", () => {
+    navToggle.classList.remove("active");
+    navLinks.classList.remove("open");
   });
 });
