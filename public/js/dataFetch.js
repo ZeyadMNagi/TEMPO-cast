@@ -173,3 +173,25 @@ function fetchPollutionData(lat, lon, city) {
         "Failed to fetch air pollution data.";
     });
 }
+document.addEventListener("DOMContentLoaded", function () {
+  const params = new URLSearchParams(window.location.search);
+  const lat = params.get("lat");
+  const lon = params.get("lon");
+  const name = params.get("name");
+  const state = params.get("state");
+  const country = params.get("country");
+
+  if (lat && lon) {
+    if (name) {
+      document.getElementById("cityName").textContent = `${name}${
+        state ? ", " + state : ""
+      }${country ? ", " + country : ""}`;
+    }
+    // Fetch and display pollution data
+    fetchPollutionData(lat, lon, name);
+    // Zoom map to location
+    if (typeof mapZoomToLocation === "function") {
+      mapZoomToLocation(lat, lon);
+    }
+  }
+});
