@@ -254,6 +254,8 @@ async function fetchLocationData(lat, lon, cityName = "") {
 }
 
 function displayIntegratedAirQualityData(data, cityName, lat, lon) {
+  console.log("Displaying integrated data:", data);
+  
   if (!data.list || !Array.isArray(data.list) || !data.weather) {
     console.log("No pollution data available in response:", data);
     showError("No pollution data available for this location.");
