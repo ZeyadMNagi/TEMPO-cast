@@ -225,66 +225,69 @@ function hideSearchResults() {
   document.getElementById("searchResults").style.display = "none";
 }
 
-// Updated fetch function to handle both /api/data and /api/complete endpoints
 async function fetchLocationData(lat, lon, cityName = "") {
   showLoading();
   hideError();
 
   try {
-    // Try the complete endpoint first, fallback to data endpoint
-    let response;
-    let endpoint = `/api/complete?lat=${lat}&lon=${lon}&days=7`;
+    // First, try to fetch from the /api/complete endpoint for all data
+    let response = await fetch(`/api/complete?lat=${lat}&lon=${lon}&days=7`);
+    let data;
 
-    try {
-      response = await fetch(endpoint);
-    } catch (err) {
-      console.log("Complete endpoint not available, using data endpoint");
-      endpoint = `/api/data?lat=${lat}&lon=${lon}`;
-      response = await fetch(endpoint);
-    }
+    if (response.ok) {
+      data = await response.json();
+      console.log("Fetched data from /api/complete:", data);
 
-    console.log("Fetch response:", response);
-    if (!response.ok) throw new Error("API error");
-    const data = await response.json();
+      // Cache the data
+      dataCache.current = data.current;
+      dataCache.forecast = data.forecast;
+      dataCache.historical = data.historical;
+      dataCache.timestamp = Date.now();
 
-    console.log("Fetched data:", data);
+      // Use city name from various sources
+      if (!cityName) {
+        cityName =
+          data.location ||
+          data.current?.weather?.name ||
+          data.airQuality?.city ||
+          `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
+      }
+      console.log("Using city name:", cityName);
 
-    // Use OpenAQ for city name if available
-    if (!cityName) {
-      cityName =
-        data.location ||
-        data.current?.weather?.name ||
-        data.weather?.weather?.name ||
-        data.airQuality?.city ||
-        `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
-    }
-
-    console.log("Using city name:", cityName);
-
-    console.log(data);
-    // Handle both data structures (complete vs simple)
-    if (data.current) {
-      // Complete endpoint response
+      // Display all the integrated data
       displayIntegratedAirQualityData(data.current, cityName, lat, lon);
-      if (data.forecast) {
-        generateEnhancedForecast(data.forecast, data.current);
-      }
-      if (data.historical) {
-        updateEnhancedHistoricalTrends(data.historical, cityName);
-      }
+      generateEnhancedForecast(data.forecast, data.current);
+      updateEnhancedHistoricalTrends(data.historical, cityName);
     } else {
-      // Simple data endpoint response
-      console.log(data);
+      // Fallback to the /api/data endpoint if /api/complete fails
+      console.warn(
+        `'/api/complete' failed with status ${response.status}. Falling back to '/api/data'.`
+      );
+      response = await fetch(`/api/data?lat=${lat}&lon=${lon}`);
+      if (!response.ok) throw new Error("API error on fallback");
+      data = await response.json();
+      console.log("Fetched data from /api/data:", data);
+
+      // Determine city name if not provided
+      if (!cityName) {
+        cityName =
+          data.location ||
+          data.weather?.weather?.name ||
+          data.airQuality?.city ||
+          `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
+      }
+      console.log("Using city name:", cityName);
+
       displayIntegratedAirQualityData(data, cityName, lat, lon);
       generateForecast(data);
       updateHistoricalTrends(cityName);
     }
 
+    console.log(data);
     hideLoading();
   } catch (error) {
     console.error("Error fetching location data:", error);
-    console.log(error);
-
+    console.log(dataCache);
     showError("Failed to fetch air quality data.");
     hideLoading();
   }
@@ -357,64 +360,6 @@ function displayIntegratedAirQualityData(data, cityName, lat, lon) {
   document.getElementById("healthSection").style.display = "block";
 }
 
-// Also fix the fetchCompleteLocationData function to match the expected data structure
-async function fetchCompleteLocationData(lat, lon, cityName = "") {
-  showLoading();
-  hideError();
-
-  try {
-    // Use the complete endpoint for all data at once
-    const response = await fetch(`/api/data?lat=${lat}&lon=${lon}&days=7`);
-    console.log("Fetching complete data from API:", response);
-    if (!response.ok) throw new Error("API error");
-    const data = await response.json();
-
-    console.log("Complete data fetched:", data);
-
-    // Cache the data - adjust for your server's response structure
-    dataCache.current = data;
-    dataCache.timestamp = Date.now();
-
-    // Use city name from various sources
-    if (!cityName) {
-      cityName =
-        data.location ||
-        data.weather?.weather?.name ||
-        data.airQuality?.city ||
-        `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
-    }
-
-    console.log("Using city name:", cityName);
-
-    // Display the integrated data
-    displayIntegratedAirQualityData(data, cityName, lat, lon);
-
-    // Generate enhanced forecast if available
-    if (data.forecast) {
-      generateEnhancedForecast(data.forecast, data);
-    } else {
-      // Generate simple forecast from current data
-      generateForecast(data);
-    }
-
-    // Update historical trends if available
-    if (data.historical) {
-      updateEnhancedHistoricalTrends(data.historical, cityName);
-    } else {
-      // Generate placeholder trends
-      updateHistoricalTrends(cityName);
-    }
-
-    hideLoading();
-  } catch (error) {
-    console.error("Error fetching complete location data:", error);
-    console.log(error);
-    console.log(dataCache);
-
-    showError("Failed to fetch air quality data.");
-    hideLoading();
-  }
-}
 /**
  * Calculate individual AQI for a pollutant using US EPA formula
  * I = ((Ihigh - Ilow) / (Chigh - Clow)) * (C - Clow) + Ilow
@@ -1269,74 +1214,6 @@ if ("serviceWorker" in navigator) {
   });
 }
 
-async function fetchCompleteLocationData(lat, lon, cityName = "") {
-  showLoading();
-  hideError();
-
-  try {
-    // First, try to fetch from the /api/complete endpoint for all data
-    let response = await fetch(`/api/complete?lat=${lat}&lon=${lon}&days=7`);
-    let data;
-
-    if (response.ok) {
-      data = await response.json();
-      console.log("Fetched data from /api/complete:", data);
-
-      // Cache the data
-      dataCache.current = data.current;
-      dataCache.forecast = data.forecast;
-      dataCache.historical = data.historical;
-      dataCache.timestamp = Date.now();
-
-      // Use city name from various sources
-      if (!cityName) {
-        cityName =
-          data.location ||
-          data.current?.weather?.name ||
-          data.airQuality?.city ||
-          `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
-      }
-      console.log("Using city name:", cityName);
-
-      // Display all the integrated data
-      displayIntegratedAirQualityData(data.current, cityName, lat, lon);
-      generateEnhancedForecast(data.forecast, data.current);
-      updateEnhancedHistoricalTrends(data.historical, cityName);
-    } else {
-      // Fallback to the /api/data endpoint if /api/complete fails
-      console.warn(
-        `'/api/complete' failed with status ${response.status}. Falling back to '/api/data'.`
-      );
-      response = await fetch(`/api/data?lat=${lat}&lon=${lon}`);
-      if (!response.ok) throw new Error("API error on fallback");
-      data = await response.json();
-      console.log("Fetched data from /api/data:", data);
-
-      // Determine city name if not provided
-      if (!cityName) {
-        cityName =
-          data.location ||
-          data.weather?.weather?.name ||
-          data.airQuality?.city ||
-          `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
-      }
-      console.log("Using city name:", cityName);
-
-      displayIntegratedAirQualityData(data, cityName, lat, lon);
-      generateForecast(data);
-      updateHistoricalTrends(cityName);
-    }
-
-    console.log(data);
-    hideLoading();
-  } catch (error) {
-    console.error("Error fetching complete location data:", error);
-    console.log(dataCache);
-    showError("Failed to fetch air quality data.");
-    hideLoading();
-  }
-}
-
 // Enhanced forecast generation with real OpenWeatherMap data
 function generateEnhancedForecast(forecastData, currentData) {
   const forecastSection = document.getElementById("forecastSection");
@@ -1656,9 +1533,4 @@ function addHistoricalChart(historical) {
 
   chartHTML += "</div>";
   chartContainer.innerHTML = chartHTML;
-}
-
-// Update the main fetch function to use the enhanced version
-async function fetchLocationData(lat, lon, cityName = "") {
-  return fetchCompleteLocationData(lat, lon, cityName);
 }
