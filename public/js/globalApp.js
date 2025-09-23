@@ -254,11 +254,7 @@ async function fetchLocationData(lat, lon, cityName = "") {
 }
 
 function displayIntegratedAirQualityData(data, cityName, lat, lon) {
-  if (
-    !data.list ||
-    !Array.isArray(data.list) ||
-    !data.weather
-  ) {
+  if (!data.list || !Array.isArray(data.list) || !data.weather) {
     console.log("No pollution data available in response:", data);
     showError("No pollution data available for this location.");
     document.getElementById("pollutionSection").classList.remove("show");
@@ -477,8 +473,7 @@ function createEnhancedPollutantDisplays(components, weather, individualAQIs) {
   let temp = "";
   let wind = "";
 
-  
-console.log("Weather data for display:", weather);
+  console.log("Weather data for display:", weather);
   if (
     weather.weather &&
     Array.isArray(weather.weather) &&
@@ -1158,15 +1153,13 @@ if ("serviceWorker" in navigator) {
   });
 }
 
-
-
 async function fetchCompleteLocationData(lat, lon, cityName = "") {
   showLoading();
   hideError();
 
   try {
     // Use the complete endpoint for all data at once
-    const response = await fetch(`/.netlify/functions/data?lat=${lat}&lon=${lon}&days=7&endpoint=complete`);
+    const response = await fetch(`/api/complete?lat=${lat}&lon=${lon}&days=7`);
     if (!response.ok) throw new Error("API error");
     const data = await response.json();
 
@@ -1527,5 +1520,3 @@ function addHistoricalChart(historical) {
 async function fetchLocationData(lat, lon, cityName = "") {
   return fetchCompleteLocationData(lat, lon, cityName);
 }
-
-
