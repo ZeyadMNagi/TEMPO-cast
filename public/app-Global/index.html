@@ -3,120 +3,105 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Global TEMPO || Global APP</title>
+    <title>Global TEMPO - Air Quality Monitor</title>
     <meta
       name="description"
-      content="Global TEMPO delivers real-time air quality and weather data worldwide. Powered by NASA's TEMPO satellite for North America and OpenAQ + OpenWeather for global coverage. Stay informed and get tips to protect yourself from pollution."
+      content="Global TEMPO delivers real-time air quality and weather data worldwide. Stay informed and get tips to protect yourself from pollution."
     />
-    <meta
-      name="keywords"
-      content="Global TEMPO, air quality, NASA TEMPO, weather app, pollution tracker, openaq, openweather, real-time air quality, AQI, climate data, environment, global"
-    />
-    <meta name="author" content="Zeyad M. Khattab" />
 
-    <meta
-      property="og:title"
-      content="Global TEMPO – Real-Time Air Quality & Weather Insights"
-    />
-    <meta
-      property="og:description"
-      content="Interactive global air quality map powered by NASA's TEMPO satellite and OpenAQ."
-    />
-    <meta
-      property="og:image"
-      content="https://globaltempo.netlify.app/public/assets/logo.jpg"
-    />
-    <link rel="shortcut icon" href="../assets/logo.jpg" type="image/x-icon" />
-    <meta property="og:type" content="website" />
+    <!-- Leaflet CSS -->
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     />
     <link rel="stylesheet" href="../css/app.css" />
-    <style>
-      .txt {
-        text-align: center;
-        margin-bottom: 10px;
-      }
-      #searchResults > li:nth-child(1) {
-        width: 330px;
-      }
-    </style>
   </head>
   <body>
     <header>
       <nav>
         <a href="../index.html" class="logo">Global TEMPO</a>
-        <a href="../app-Global/index.html" class="btn">Global ></a>
+        <a href="../app/index.html" class="nav-btn">USA App</a>
       </nav>
     </header>
 
-    <main class="container">
-      <div class="txt">
-        <h2>TEMPO Cast</h2>
-        <h3>
-          Global Coverage (USA users <a href="../app/index.html">click me</a> )
-        </h3>
-      </div>
-      <div id="side">
-        <section id="form">
-          <label for="Search">Find your Location!!</label>
-          <div class="input">
-            <input
-              id="Search"
-              name="Search"
-              placeholder="Search..."
-              type="text"
-              oninput="fetchCitySuggestions(this.value)"
-            />
-            <br />
-          </div>
-          <div>Select from the suggestions:</div>
-          <div id="searchResults"></div>
+    <button class="sidebar-toggle" onclick="toggleSidebar()">📊</button>
 
-          <br /><br />
-          <div id="locationDisplay"></div>
-          <div id="loadingIndicator" style="display: none">Loading...</div>
-          <div id="errorMessage" style="color: red"></div>
-          <input type="hidden" id="latitude" />
-          <input type="hidden" id="longitude" />
-        </section>
-        <section id="pollutionSection">
-          <h2 id="cityName">City Name</h2>
-          <div id="pollutionData">Fetching air pollution data...</div>
-        </section>
-        <section id="tips">
-          <h2>Health Tips</h2>
-          <div id="healthTips">
-            Select a location to see health tips based on air quality.
+    <div class="main-container">
+      <div class="sidebar" id="sidebar">
+        <div class="sidebar-content">
+          <div class="app-title">
+            <h2>TEMPO Cast</h2>
+            <h3>Global Air Quality Monitor</h3>
           </div>
-        </section>
+
+          <div class="search-section">
+            <label for="searchInput">Find your Location</label>
+            <div class="search-container">
+              <input
+                type="text"
+                id="searchInput"
+                class="search-input"
+                placeholder="Search for a city..."
+                oninput="handleSearchInput(this.value)"
+              />
+              <div id="searchResults" class="search-results"></div>
+            </div>
+            <div
+              id="locationDisplay"
+              class="location-display"
+              style="display: none"
+            ></div>
+            <div id="loadingIndicator" class="loading hidden">
+              <div class="spinner"></div>
+              Loading data...
+            </div>
+            <div id="errorMessage" class="error hidden"></div>
+          </div>
+
+          <div id="pollutionSection" class="data-section">
+            <h2 id="cityName" class="section-title">City Data</h2>
+            <div id="aqiDisplay" class="aqi-display">
+              <div class="aqi-value" id="aqiValue">--</div>
+              <div class="aqi-label">Air Quality Index</div>
+            </div>
+            <div id="pollutionData"></div>
+          </div>
+
+          <div id="tipsSection" class="data-section">
+            <h2 class="section-title">Health Recommendations</h2>
+            <div id="healthTips" class="health-tips">
+              <p>
+                Select a location to see health recommendations based on air
+                quality.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
-      <div id="map"></div>
-      <footer id="credits">
-        <p>
-          Data Sources:
-          <a href="https://www.nasa.gov/tempo" target="_blank">NASA TEMPO</a>,
-          <a href="https://openaq.org" target="_blank">OpenAQ</a>,
-          <a href="https://openweathermap.org" target="_blank">OpenWeather</a>
-        </p>
-        <p>
-          Developed by
-          <a href="https://zeyad.dev" target="_blank">Zeyad M. Khattab</a>
-        </p>
-      </footer>
-    </main>
-    
-    <div id="pollutantModal" class="modal" style="display: none">
+
+      <div class="map-container">
+        <div id="map"></div>
+      </div>
+    </div>
+
+    <div id="pollutantModal" class="modal">
       <div class="modal-content">
-        <span class="close" onclick="closePollutantModal()">&times;</span>
+        <span class="modal-close" onclick="closeModal()">&times;</span>
         <div id="pollutantModalBody"></div>
       </div>
     </div>
-    <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src="../js/appG.js"></script>
-    <script src="../js/mapG.js"></script>
-    <script src="../js/dataFetchG.js"></script>
+
+    <footer>
+      <p>
+        Data Sources:
+        <a href="https://openaq.org" target="_blank">OpenAQ</a> •
+        <a href="https://openweathermap.org" target="_blank">OpenWeather</a> •
+        <a href="https://www.nasa.gov/tempo" target="_blank">NASA TEMPO</a>
+      </p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="../js/globalApp.js"></script>
   </body>
 </html>
