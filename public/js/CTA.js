@@ -144,11 +144,7 @@ document.getElementById("checkMyCityBtn").onclick = function () {
   }).toString();
 
   console.log("Navigating with params:", params);
-  if (city.country === "US") {
-    window.location.href = `./app?${params}`;
-  } else {
-    window.location.href = `./app-global?${params}`;
-  }
+  window.location.href = `./app?${params}`;
 };
 
 function showResourceModal(resource) {

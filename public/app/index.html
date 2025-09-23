@@ -3,31 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Global TEMPO || APP</title>
+    <title>Global TEMPO - NASA Air Quality Forecasting</title>
     <meta
       name="description"
-      content="Global TEMPO delivers real-time air quality and weather data worldwide. Powered by NASA's TEMPO satellite for North America and OpenAQ + OpenWeather for global coverage. Stay informed and get tips to protect yourself from pollution."
+      content="NASA TEMPO-powered air quality forecasting app integrating satellite, ground-based, and weather data to protect public health through real-time alerts and predictions."
     />
-    <meta
-      name="keywords"
-      content="Global TEMPO, air quality, NASA TEMPO, weather app, pollution tracker, openaq, openweather, real-time air quality, AQI, climate data, environment, global"
-    />
-    <meta name="author" content="Zeyad M. Khattab" />
 
-    <meta
-      property="og:title"
-      content="Global TEMPO – Real-Time Air Quality & Weather Insights"
-    />
-    <meta
-      property="og:description"
-      content="Interactive global air quality map powered by NASA's TEMPO satellite and OpenAQ."
-    />
-    <meta
-      property="og:image"
-      content="https://globaltempo.netlify.app/public/assets/logo.jpg"
-    />
-    <link rel="shortcut icon" href="../assets/logo.jpg" type="image/x-icon">
-    <meta property="og:type" content="website" />
+    <!-- Leaflet CSS -->
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -38,86 +20,309 @@
     <header>
       <nav>
         <a href="../index.html" class="logo">Global TEMPO</a>
-        <a href="../app-Global/index.html" class="btn">Global ></a>
+        <div class="nav-links">
+          <button class="nav-btn" onclick="toggleDataSources()">
+            Data Sources
+          </button>
+          <button class="nav-btn" onclick="showAbout()">About</button>
+        </div>
       </nav>
     </header>
-    <main class="container">
-      <div class="txt">
-        <h2>TEMPO Cast</h2>
-        <h3>
-          USA Only (Global users
-          <a href="../app-Global/index.html">click me</a> )
-        </h3>
-      </div>
-      <div id="side">
-        <section id="form">
-          <label for="Search">Find your Location!!</label>
-          <div class="input">
-            <input
-              id="Search"
-              name="Search"
-              placeholder="Search..."
-              type="text"
-              oninput="fetchUSACitySuggestions(this.value)"
-            />
-            <span id="getLocationBtn">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                height="24px"
-                viewBox="0 -960 960 960"
-                width="24px"
-                fill="#222"
+
+    <div class="main-container">
+      <div class="sidebar">
+        <div class="sidebar-content">
+          <div class="data-sources">
+            <h3>📡 Live Data Integration</h3>
+            <div class="source-status">
+              <span
+                ><span class="status-indicator status-active"></span>NASA TEMPO
+                Satellite</span
               >
-                <path
-                  d="M480-480q33 0 56.5-23.5T560-560q0-33-23.5-56.5T480-640q-33 0-56.5 23.5T400-560q0 33 23.5 56.5T480-480Zm0 294q122-112 181-203.5T720-552q0-109-69.5-178.5T480-800q-101 0-170.5 69.5T240-552q0 71 59 162.5T480-186Zm0 106Q319-217 239.5-334.5T160-552q0-150 96.5-239T480-880q127 0 223.5 89T800-552q0 100-79.5 217.5T480-80Zm0-480Z"
-                />
-              </svg>
-            </span>
+              <small>Real-time NO₂, O₃</small>
+            </div>
+            <div class="source-status">
+              <span
+                ><span class="status-indicator status-active"></span>OpenWeather
+                API</span
+              >
+              <small>Ground measurements</small>
+            </div>
+            <div class="source-status">
+              <span
+                ><span class="status-indicator status-limited"></span>Pandora
+                Network</span
+              >
+              <small>Validation data</small>
+            </div>
+            <div class="source-status">
+              <span
+                ><span class="status-indicator status-active"></span>Weather
+                Integration</span
+              >
+              <small>Meteorological factors</small>
+            </div>
           </div>
-          <br />
-          <div>Select from the suggestions:</div>
-          <div id="searchResults"></div>
 
-          <br /><br />
-          <div id="locationDisplay"></div>
-          <div id="loadingIndicator" style="display: none">Loading...</div>
-          <div id="errorMessage" style="color: red"></div>
-          <input type="hidden" id="latitude" />
-          <input type="hidden" id="longitude" />
-        </section>
-        <section id="pollutionSection">
-          <h2 id="cityName">City Name</h2>
-          <div id="pollutionData">Fetching air pollution data...</div>
-        </section>
-        <section id="tips">
-          <h2>Health Tips</h2>
-          <div id="healthTips">
-            Select a location to see health tips based on air quality.
+          <div class="search-section">
+            <label for="searchInput">🔍 Location Search</label>
+            <div class="search-container">
+              <input
+                type="text"
+                id="searchInput"
+                class="search-input"
+                placeholder="Enter city, state, or coordinates..."
+                oninput="handleSearchInput(this.value)"
+              />
+              <div id="searchResults" class="search-results"></div>
+            </div>
+            <button class="location-btn" onclick="getUserLocation()">
+              📍 Use My Current Location
+            </button>
+            <div
+              id="locationDisplay"
+              class="location-display"
+              style="display: none"
+            ></div>
+            <div id="loadingIndicator" class="loading hidden">
+              <div class="spinner"></div>
+              Integrating satellite and ground data...
+            </div>
+            <div id="errorMessage" class="error hidden"></div>
           </div>
-        </section>
+
+          <div
+            id="forecastSection"
+            class="forecast-section"
+            style="display: none"
+          >
+            <div class="forecast-header">
+              <h3 class="forecast-title">🔮 Air Quality Forecast</h3>
+              <span class="forecast-time" id="forecastTime"></span>
+            </div>
+            <div class="forecast-grid" id="forecastGrid"></div>
+          </div>
+
+          <div id="pollutionSection" class="data-section">
+            <h2 id="cityName" class="section-title">📊 Current Air Quality</h2>
+            <div id="aqiDisplay" class="aqi-display">
+              <div class="aqi-value" id="aqiValue">--</div>
+              <div class="aqi-label">Air Quality Index</div>
+              <div id="aqiCategory" class="aqi-category">Select location</div>
+            </div>
+            <div id="pollutionData"></div>
+          </div>
+
+          <div id="healthSection" class="health-section" style="display: none">
+            <h2 class="section-title">🏥 Health Impact Assessment</h2>
+            <div id="healthAlert"></div>
+            <div id="recommendations" class="recommendations-list">
+              <h4>💡 Personalized Recommendations</h4>
+              <ul id="recommendationsList"></ul>
+            </div>
+          </div>
+
+          <div id="trendsSection" class="trends-section" style="display: none">
+            <h2 class="section-title">📈 Historical Trends</h2>
+            <div id="trendsData"></div>
+            <small style="color: #6b7280; margin-top: 10px; display: block">
+              *Trends based on integrated satellite and ground observations
+            </small>
+          </div>
+        </div>
       </div>
 
-      <div id="map"></div>
-      <footer id="credits">
-        <p>
-          Data Sources:
-          <a href="https://www.nasa.gov/tempo" target="_blank">NASA TEMPO</a>,
-          <a href="https://openaq.org" target="_blank">OpenAQ</a>,
-          <a href="https://openweathermap.org" target="_blank">OpenWeather</a>
-        </p>
-        <p>
-          Developed by
-          <a href="https://zeyad.dev" target="_blank">Zeyad M. Khattab</a>
-        </p>
-      </footer>
-    </main>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet-ajax@0.0.7/dist/leaflet.ajax.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-ajax/2.1.0/leaflet.ajax.min.js"></script>
+      <div class="map-container">
+        <div id="map"></div>
+        <div class="map-controls">
+          <button class="map-control-btn" onclick="toggleSatelliteView()">
+            🛰️ Satellite
+          </button>
+          <button class="map-control-btn" onclick="toggleGroundStations()">
+            📡 Stations
+          </button>
+          <button class="map-control-btn" onclick="showHeatMap()">
+            🌡️ Heat Map
+          </button>
+        </div>
+      </div>
+    </div>
 
-    <script src="../js/tips.js"></script>
-    <script src="../js/map.js"></script>
-    <script src="../js/dataFetch.js"></script>
-    <script src="../js/appUSA.js"></script>
+    <!-- Modals -->
+    <div id="pollutantModal" class="modal">
+      <div class="modal-content">
+        <span class="modal-close" onclick="closeModal('pollutantModal')"
+          >&times;</span
+        >
+        <div id="pollutantModalBody"></div>
+      </div>
+    </div>
+
+    <div id="aboutModal" class="modal">
+      <div class="modal-content">
+        <span class="modal-close" onclick="closeModal('aboutModal')"
+          >&times;</span
+        >
+        <div id="aboutModalBody">
+          <h2>About Global TEMPO</h2>
+          <p><strong>NASA TEMPO Mission Integration</strong></p>
+          <p>
+            Global TEMPO leverages NASA's Tropospheric Emissions: Monitoring of
+            Pollution (TEMPO) satellite mission to provide unprecedented air
+            quality forecasting capabilities across North America.
+          </p>
+
+          <h3>Mission Objectives</h3>
+          <ul>
+            <li>
+              <strong>Real-time Integration:</strong> Combines TEMPO satellite
+              data with ground-based measurements
+            </li>
+            <li>
+              <strong>Health Protection:</strong> Provides timely alerts to
+              protect vulnerable populations
+            </li>
+            <li>
+              <strong>Forecast Accuracy:</strong> Uses weather integration for
+              improved predictions
+            </li>
+            <li>
+              <strong>Community Impact:</strong> Supports public health
+              decision-making
+            </li>
+          </ul>
+
+          <h3>Data Sources & Validation</h3>
+          <ul>
+            <li>
+              <strong>NASA TEMPO:</strong> Hourly NO₂, O₃, formaldehyde
+              observations
+            </li>
+            <li>
+              <strong>Ground Networks:</strong> OpenAQ, Pandora, TolNet
+              validation data
+            </li>
+            <li>
+              <strong>Weather Integration:</strong> Meteorological factors
+              affecting pollutant transport
+            </li>
+            <li>
+              <strong>Historical Analysis:</strong> Trend identification and
+              seasonal patterns
+            </li>
+          </ul>
+
+          <h3>Target Communities</h3>
+          <ul>
+            <li>
+              Health-sensitive groups (children, elderly, respiratory
+              conditions)
+            </li>
+            <li>School administrators and athletic coordinators</li>
+            <li>Municipal leaders and policy makers</li>
+            <li>Emergency response teams</li>
+            <li>Industrial and transportation authorities</li>
+          </ul>
+
+          <p class="nasa-attribution">
+            <strong>NASA TEMPO Mission:</strong> Revolutionizing air quality
+            monitoring through space-based observations to protect public health
+            and improve environmental understanding.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div id="dataSourcesModal" class="modal">
+      <div class="modal-content">
+        <span class="modal-close" onclick="closeModal('dataSourcesModal')"
+          >&times;</span
+        >
+        <div id="dataSourcesModalBody">
+          <h2>📡 Integrated Data Sources</h2>
+
+          <div class="data-source-detail">
+            <h3>🛰️ NASA TEMPO Satellite</h3>
+            <p>
+              <strong>Status:</strong>
+              <span class="status-indicator status-active"></span> Active
+            </p>
+            <p>
+              <strong>Coverage:</strong> North America (hourly observations)
+            </p>
+            <p><strong>Parameters:</strong> NO₂, O₃, formaldehyde, aerosols</p>
+            <p><strong>Resolution:</strong> ~4km at city-scale</p>
+            <p>
+              Primary satellite data source providing unprecedented temporal
+              resolution for air quality monitoring.
+            </p>
+          </div>
+
+          <div class="data-source-detail">
+            <h3>Ground-Based Networks</h3>
+            <p><strong>OpenAQ:</strong> Global ground station network</p>
+            <p>
+              <strong>Pandora:</strong> Direct-sun spectrometer network for
+              validation
+            </p>
+            <p><strong>TolNet:</strong> Tropospheric ozone lidar network</p>
+            <p>
+              Ground-based measurements provide validation and calibration for
+              satellite observations.
+            </p>
+          </div>
+
+          <div class="data-source-detail">
+            <h3>Weather Integration</h3>
+            <p>
+              <strong>Parameters:</strong> Wind speed/direction, temperature,
+              humidity, pressure
+            </p>
+            <p>
+              <strong>Purpose:</strong> Understanding pollutant transport and
+              transformation
+            </p>
+            <p>
+              <strong>Forecasting:</strong> Meteorological influence on air
+              quality predictions
+            </p>
+          </div>
+
+          <div class="data-source-detail">
+            <h3>Data Processing & Validation</h3>
+            <ul>
+              <li>Real-time satellite-ground comparison</li>
+              <li>Quality assurance and cloud screening</li>
+              <li>Bias correction and calibration</li>
+              <li>Uncertainty quantification</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <div class="data-attribution">
+        <strong>Data Sources:</strong>
+        <a href="https://tempo.si.edu/" target="_blank">NASA TEMPO</a> •
+        <a href="https://openaq.org" target="_blank">OpenAQ</a> •
+        <a href="https://pandora.gsfc.nasa.gov/" target="_blank"
+          >Pandora Network</a
+        >
+        •
+        <a href="https://www-air.larc.nasa.gov/TolNet.htm" target="_blank"
+          >TolNet</a
+        >
+        •
+        <a href="https://openweathermap.org" target="_blank">OpenWeather</a>
+      </div>
+      <p>
+        NASA Global TEMPO - Protecting Public Health Through Space-Based Air
+        Quality Monitoring
+      </p>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="../js/globalApp.js"></script>
   </body>
 </html>
