@@ -23,7 +23,7 @@ export async function handler(event) {
 
   try {
     // Determine which endpoint based on path or query parameter
-    const endpoint = event.queryStringParameters.endpoint || "data";
+    const endpoint = event.queryStringParameters.endpoint || "complete";
 
     switch (endpoint) {
       case "forecast":
