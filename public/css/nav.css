@@ -17,7 +17,7 @@ nav {
   display: flex;
   margin: 10px 0;
   text-align: center;
-  justify-content: space-between;
+  justify-content: space-around;
   text-align: center;
   ul {
     list-style: none;

@@ -37,13 +37,13 @@
   <body>
     <header>
       <nav>
-        <a href="#" class="logo">Global TEMBO</a>
+        <a href="#" class="logo">Global TEMPO</a>
         <ul>
           <li><a href="#about" class="nav-item">About</a></li>
           <li><a href="./WHO.html" class="nav-item">WHO instructions</a></li>
-          <li><a href="./app/index.html" class="nav-item">App</a></li>
+          <li><a href="./app/index.html" class="nav-item">USA App</a></li>
+          <a href="./app-Global/index.html" class="btn">Global APP</a>
         </ul>
-        <a href="./app-Global/index.html" class="btn">Global</a>
       </nav>
     </header>
     <main>
@@ -51,41 +51,55 @@
         <div class="hero-content">
           <h1>Welcome to <span>Global TEMPO</span></h1>
           <p>“From Space to Your Screen – The World’s Air, Visualized.”</p>
-          <a href="./app/index.html" class="btn start"
-            >Get Started <span>></span></a
-          >
+          <div class="CTA">
+            <div class="input">
+              <input
+                id="Search"
+                name="Search"
+                placeholder="Search..."
+                type="text"
+                oninput="fetchCitySuggestions(this.value)"
+              />
+              <span id="getLocationBtn">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  height="24px"
+                  viewBox="0 -960 960 960"
+                  width="24px"
+                  fill="#222"
+                >
+                  <path
+                    d="M480-480q33 0 56.5-23.5T560-560q0-33-23.5-56.5T480-640q-33 0-56.5 23.5T400-560q0 33 23.5 56.5T480-480Zm0 294q122-112 181-203.5T720-552q0-109-69.5-178.5T480-800q-101 0-170.5 69.5T240-552q0 71 59 162.5T480-186Zm0 106Q319-217 239.5-334.5T160-552q0-150 96.5-239T480-880q127 0 223.5 89T800-552q0 100-79.5 217.5T480-80Zm0-480Z"
+                  />
+                </svg>
+              </span>
+            </div>
+            <br />
+            <div id="searchResults"></div>
+          </div>
+          <button class="button" id="checkMyCityBtn">
+            <span class="text">Check my city's Air</span>
+            <svg
+              class="arrow"
+              viewBox="0 0 448 512"
+              height="1em"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M438.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L338.8 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l306.7 0L233.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160z"
+              ></path>
+            </svg>
+          </button>
         </div>
         <div class="canvas">
           <div id="globe-container" style="width: 420px; height: 420px">
             <img
               style="border-radius: 50%; width: 100%"
               src="./assets/R.gif"
-              alt="EArth"
+              alt="Earth"
             />
           </div>
-          <p>
-            By NASA’s Terra satellite for the MODIS imageries, combined by
-            <a href="//commons.wikimedia.org/wiki/User:Meow" title="User:Meow"
-              >Meow</a
-            >. Credit: NASA Goddard Space Flight Center Image by Reto Stöckli
-            (land surface, shallow water, clouds). Enhancements by Robert Simmon
-            (ocean color, compositing, 3D globes, animation). Data and technical
-            support: MODIS Land Group; MODIS Science Data Support Team; MODIS
-            Atmosphere Group; MODIS Ocean Group Additional data: USGS EROS Data
-            Center (topography); USGS Terrestrial Remote Sensing Flagstaff Field
-            Center (Antarctica); Defense Meteorological Satellite Program (city
-            lights). -
-            <a
-              rel="nofollow"
-              class="external text"
-              href="https://visibleearth.nasa.gov/images/57752/blue-marble-land-surface-shallow-water-and-shaded-topography"
-              >NASA Visible Earth: Blue Marble: Land Surface, Shallow Water, and
-              Shaded Topography</a
-            >, Public Domain,
-            <a href="https://commons.wikimedia.org/w/index.php?curid=50497070"
-              >Link</a
-            >
-          </p>
+          <p>By NASA’s Terra satellite for the MODIS imageries</p>
         </div>
       </section>
       <section id="about" class="about">
@@ -186,5 +200,6 @@
     </footer>
 
     <script src="./js/globe.js"></script>
+    <script src="./js/CTA.js"></script>
   </body>
 </html>
