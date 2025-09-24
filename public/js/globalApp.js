@@ -330,12 +330,12 @@ function displayIntegratedAirQualityData(data, cityName, lat, lon) {
 
   let pollutionList, weatherData;
 
-  if (data.weather && data.weather.list) {
-    pollutionList = data.weather.list;
-    weatherData = data.weather.weather;
-  } else if (data.list) {
-    pollutionList = data.list;
-    weatherData = data.weather;
+  if (data.current.weather && data.current.weather.list) {
+    pollutionList = data.current.weather.list;
+    weatherData = data.current.weather.weather;
+  } else if (data.current.list) {
+    pollutionList = data.current.list;
+    weatherData = data.current.weather;
   } else {
     console.log("No pollution data available in response:", data);
     showError("No pollution data available for this location.");
@@ -739,7 +739,7 @@ function generateForecast(data) {
     const hour = new Date();
     hour.setHours(hour.getHours() + i * 3);
     let forecastAQI = aqi;
-    const windSpeed = data.weather.wind?.speed || 0;
+    const windSpeed = data.current.weather.wind.speed || 0;
     if (windSpeed > 5) forecastAQI = Math.max(1, aqi - 1);
     else if (windSpeed < 2) forecastAQI = Math.min(5, aqi + 1);
     forecasts.push({
