@@ -309,10 +309,10 @@ async function fetchLocationData(lat, lon, cityName = "") {
       }
       console.log("Using city name:", cityName);
 
-      displayIntegratedAirQualityData(data, cityName, lat, lon);
-
-      generateForecast(data);
-      updateHistoricalTrends(cityName);
+      // Display all the integrated data
+      displayIntegratedAirQualityData(data.current, cityName, lat, lon);
+      generateEnhancedForecast(data.forecast, data.current);
+      updateEnhancedHistoricalTrends(data.historical, cityName);
     }
 
     console.log(data);
@@ -330,12 +330,12 @@ function displayIntegratedAirQualityData(data, cityName, lat, lon) {
 
   let pollutionList, weatherData;
 
-  if (data.current.weather && data.current.weather.list) {
-    pollutionList = data.current.weather.list;
-    weatherData = data.current.weather.weather;
-  } else if (data.current.list) {
-    pollutionList = data.current.list;
-    weatherData = data.current.weather;
+  if (data.weather && data.weather.list) {
+    pollutionList = data.weather.list;
+    weatherData = data.weather.weather;
+  } else if (data.list) {
+    pollutionList = data.list;
+    weatherData = data.weather;
   } else {
     console.log("No pollution data available in response:", data);
     showError("No pollution data available for this location.");
@@ -1270,14 +1270,12 @@ if ("serviceWorker" in navigator) {
 }
 
 // Enhanced forecast generation with real OpenWeatherMap data
-function generateEnhancedForecast(Data, currentData) {
+function generateEnhancedForecast(forecastData, currentData) {
   const forecastSection = document.getElementById("forecastSection");
   const forecastTime = document.getElementById("forecastTime");
   const forecastGrid = document.getElementById("forecastGrid");
 
-  console.log("Generating enhanced forecast with data:", Data);
-
-  const forecastData = Data.forecast;
+  console.log("Generating enhanced forecast with data:", forecastData);
 
   if (!forecastData || !forecastData.list || forecastData.list.length === 0) {
     forecastSection.style.display = "none";
@@ -1291,11 +1289,7 @@ function generateEnhancedForecast(Data, currentData) {
     const aqi = aqiData.overall;
     const category = getAQICategory(aqi);
 
-    console.log("Forecast item:",       date,
-      aqiData,
-      aqi,
-      category,
-    );
+    console.log("Forecast item:", date, aqiData, aqi, category);
     return {
       time: date.toLocaleDateString([], {
         month: "short",
@@ -1441,7 +1435,6 @@ function updateEnhancedHistoricalTrends(historicalData, cityName) {
   const trendsData = document.getElementById("trendsData");
 
   console.log("Updating enhanced historical trends with data:", historicalData);
-
   if (
     !historicalData ||
     !historicalData.list ||
