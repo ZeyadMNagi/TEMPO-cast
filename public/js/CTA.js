@@ -195,6 +195,12 @@ document.addEventListener("DOMContentLoaded", function () {
   }
   el.textContent = "";
   type();
+  // Restart typing effect on click
+  el.onclick = () => {
+    el.textContent = "";
+    i = 0;
+    type();
+  };
 });
 
 document.getElementById("micBtn").onclick = function () {
