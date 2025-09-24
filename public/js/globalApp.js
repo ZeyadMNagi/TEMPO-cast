@@ -732,14 +732,14 @@ function generateForecast(data) {
   const forecastTime = document.getElementById("forecastTime");
   const forecastGrid = document.getElementById("forecastGrid");
   console.log("Generating forecast with data:", data);
-  const pollution = data.current.list[0];
+  const pollution = data.list[0];
   const aqi = pollution.main.aqi || 0;
   const forecasts = [];
   for (let i = 1; i <= 3; i++) {
     const hour = new Date();
     hour.setHours(hour.getHours() + i * 3);
     let forecastAQI = aqi;
-    const windSpeed = data.current.weather.wind.speed || 0;
+    const windSpeed = data.weather.wind.speed || 0;
     if (windSpeed > 5) forecastAQI = Math.max(1, aqi - 1);
     else if (windSpeed < 2) forecastAQI = Math.min(5, aqi + 1);
     forecasts.push({
