@@ -1275,6 +1275,8 @@ function generateEnhancedForecast(forecastData, currentData) {
   const forecastTime = document.getElementById("forecastTime");
   const forecastGrid = document.getElementById("forecastGrid");
 
+  console.log("Generating enhanced forecast with data:", forecastData);
+
   if (!forecastData || !forecastData.list || forecastData.list.length === 0) {
     forecastSection.style.display = "none";
     return;
@@ -1287,6 +1289,11 @@ function generateEnhancedForecast(forecastData, currentData) {
     const aqi = aqiData.overall;
     const category = getAQICategory(aqi);
 
+    console.log("Forecast item:",       date,
+      aqiData,
+      aqi,
+      category,
+    );
     return {
       time: date.toLocaleDateString([], {
         month: "short",
@@ -1430,6 +1437,8 @@ function generateForecastHealthAdvice(aqi, components) {
 function updateEnhancedHistoricalTrends(historicalData, cityName) {
   const trendsSection = document.getElementById("trendsSection");
   const trendsData = document.getElementById("trendsData");
+
+  console.log("Updating enhanced historical trends with data:", historicalData);
 
   if (
     !historicalData ||
