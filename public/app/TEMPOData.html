@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title data-i18n="tempo_viewer_title">TEMPO Multi-Layer Viewer</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/esri-leaflet@3.0.11/dist/esri-leaflet.js"></script>
+    <link rel="stylesheet" href="../css/style.css" />
+    <link id="rtl-stylesheet" rel="stylesheet" href="../css/rtl.css" disabled />
+    <style>
+      html,
+      body,
+      #map {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+      #map {
+        flex-grow: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <nav>
+        <a href="../index.html" class="logo">Global TEMPO</a>
+        <button class="nav-toggle" id="navToggle" aria-label="Open menu">
+          <span class="hamburger"></span>
+        </button>
+        <div class="nav-links" id="navLinks">
+          <ul>
+            <li><a href="../index.html#about" class="nav-item" data-i18n="nav_about">About</a></li>
+            <li><a href="../index.html#resources" class="nav-item" data-i18n="nav_resources">Resources</a></li>
+            <li><a href="../WHO.html" class="nav-item" data-i18n="nav_who">WHO Instructions</a></li>
+            <li><a href="./index.html" class="nav-item" data-i18n="nav_app">App</a></li>
+            <li><a href="./TEMPOData.html" class="nav-item active" data-i18n="nav_tempo_data">TEMPO Data</a></li>
+            <button id="lang-toggle-btn" class="nav-btn" style="cursor: pointer; background: transparent; border: 1px solid white; margin: 0 10px;">English</button>
+          </ul>
+        </div>
+      </nav>
+    </header>
+
+    <div id="map"></div>
+    <footer>
+      <p>
+        Developed by
+        <a href="https://zeyad.dev" target="_blank">Zeyad M. Khattab</a>
+      </p>
+    </footer>
+    <script src="../js/i18n.js"></script>
+    <script>
+      const map = L.map("map").setView([39.8283, -98.5795], 4);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap contributors",
+      }).addTo(map);
+
+      // ---- TEMPO Layers ----
+      const no2Layer = L.esri.imageMapLayer({
+        url: "https://gis.earthdata.nasa.gov/image/rest/services/C3685896708-LARC_CLOUD/TEMPO_NO2_L3_V04_HOURLY_TROPOSPHERIC_VERTICAL_COLUMN/ImageServer",
+        attribution: "NASA TEMPO NO₂",
+      });
+
+      const o3Layer = L.esri.imageMapLayer({
+        url: "https://gis.earthdata.nasa.gov/image/rest/services/C3685896625-LARC_CLOUD/TEMPO_O3TOT_L3_V04_HOURLY_OZONE_COLUMN_AMOUNT/ImageServer",
+        attribution: "NASA TEMPO O₃",
+      });
+
+      const hchoLayer = L.esri.imageMapLayer({
+        url: "https://gis.earthdata.nasa.gov/image/rest/services/C3685897141-LARC_CLOUD/TEMPO_HCHO_L3_V04_HOURLY_VERTICAL_COLUMN/ImageServer",
+        attribution: "NASA TEMPO HCHO",
+      });
+
+      no2Layer.addTo(map);
+
+      let layerControl;
+
+      function updateLayerControl() {
+        if (layerControl) {
+          map.removeControl(layerControl);
+        }
+        const overlayMaps = {
+          [getTranslation("tempo_layer_no2")]: no2Layer,
+          [getTranslation("tempo_layer_o3")]: o3Layer,
+          [getTranslation("tempo_layer_hcho")]: hchoLayer,
+        };
+        layerControl = L.control.layers(null, overlayMaps, { collapsed: false }).addTo(map);
+      }
+
+      const info = L.control({ position: "bottomleft" });
+      info.onAdd = function () {
+        this._div = L.DomUtil.create("div", "info-box leaflet-control-layers");
+        this.update();
+        return this._div;
+      };
+      info.update = function() {
+        this._div.innerHTML = getTranslation("tempo_select_layer");
+      }
+      info.addTo(map);
+
+      // Nav toggle script
+      const navToggle = document.getElementById("navToggle");
+      const navLinks = document.getElementById("navLinks");
+
+      navToggle.addEventListener("click", function () {
+        navToggle.classList.toggle("active");
+        navLinks.classList.toggle("open");
+      });
+
+      document.querySelectorAll(".nav-links a").forEach((link) => {
+        link.addEventListener("click", () => {
+          navToggle.classList.remove("active");
+          navLinks.classList.remove("open");
+        });
+      });
+
+      // Override setLanguage to update map layers
+      const originalSetLanguage = window.setLanguage;
+      window.setLanguage = async function(lang) {
+        await originalSetLanguage(lang);
+        updateLayerControl();
+        info.update();
+      }
+    </script>
+  </body>
+</html>

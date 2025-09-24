@@ -1,5 +1,12 @@
 // Global variables
-let map, currentMarker, debounceTimer, groundStationLayer, heatMapLayer;
+let map,
+  currentMarker,
+  debounceTimer,
+  groundStationLayer,
+  heatMapLayer,
+  tempoLayerGroup,
+  tempoControl,
+  tempoLayersVisible = false;
 
 const dataCache = {
   current: null,
@@ -86,6 +93,30 @@ function initMap() {
   L.control
     .layers({ "Street Map": osmLayer, Satellite: satelliteLayer })
     .addTo(map);
+
+  // --- Initialize TEMPO Data Layers ---
+  const no2Layer = L.esri.imageMapLayer({
+    url: "https://gis.earthdata.nasa.gov/image/rest/services/C3685896708-LARC_CLOUD/TEMPO_NO2_L3_V04_HOURLY_TROPOSPHERIC_VERTICAL_COLUMN/ImageServer",
+    attribution: "NASA TEMPO NO₂",
+  });
+
+  const o3Layer = L.esri.imageMapLayer({
+    url: "https://gis.earthdata.nasa.gov/image/rest/services/C3685896625-LARC_CLOUD/TEMPO_O3TOT_L3_V04_HOURLY_OZONE_COLUMN_AMOUNT/ImageServer",
+    attribution: "NASA TEMPO O₃",
+  });
+
+  const hchoLayer = L.esri.imageMapLayer({
+    url: "https://gis.earthdata.nasa.gov/image/rest/services/C3685897141-LARC_CLOUD/TEMPO_HCHO_L3_V04_HOURLY_VERTICAL_COLUMN/ImageServer",
+    attribution: "NASA TEMPO HCHO",
+  });
+
+  const tempoOverlays = {
+    "NO₂ (Tropospheric Column)": no2Layer,
+    "O₃ (Total Column)": o3Layer,
+    "HCHO (Formaldehyde)": hchoLayer,
+  };
+  tempoLayerGroup = L.layerGroup([no2Layer]); // Add NO2 by default
+  tempoControl = L.control.layers(null, tempoOverlays, { collapsed: false });
 
   map.on("click", onMapClick);
   groundStationLayer = L.layerGroup().addTo(map);
@@ -343,7 +374,7 @@ function displayIntegratedAirQualityData(data, cityName, lat, lon) {
   const aqiCategory = getAQICategory(aqi);
 
   console.log("Calculated EPA AQI:", aqi, "Category:", aqiCategory);
-  console.log("Individual AQIs:", individualAQIs);
+  console.log("Individual AQIs:", individualAQIs); 
 
   // Update AQI display with new EPA values
   document.getElementById("aqiValue").textContent = aqi;
@@ -458,13 +489,11 @@ function calculateOverallAQI(components) {
  * Get AQI category based on US EPA standards
  */
 function getAQICategory(aqi) {
-  if (aqi >= 0 && aqi <= 50)
-    return { label: "Good", class: "good", color: "#00e400" };
-  if (aqi >= 51 && aqi <= 100)
-    return { label: "Moderate", class: "moderate", color: "#ffff00" };
-  if (aqi >= 101 && aqi <= 150)
+  if (aqi >= 0 && aqi <= 50) return { label: getTranslation("good"), class: "good", color: "#00e400" };
+  if (aqi >= 51 && aqi <= 100) return { label: getTranslation("moderate"), class: "moderate", color: "#ffff00" };
+  if (aqi >= 101 && aqi <= 150) 
     return {
-      label: "Unhealthy for Sensitive Groups",
+      label: getTranslation("unhealthy_sensitive"),
       class: "unhealthy-sensitive",
       color: "#ff7e00",
     };
@@ -472,19 +501,19 @@ function getAQICategory(aqi) {
     return { label: "Unhealthy", class: "unhealthy", color: "#ff0000" };
   if (aqi >= 201 && aqi <= 300)
     return {
-      label: "Very Unhealthy",
+      label: getTranslation("very_unhealthy"),
       class: "very-unhealthy",
       color: "#8f3f97",
     };
   if (aqi >= 301 && aqi <= 500)
-    return { label: "Hazardous", class: "hazardous", color: "#7e0023" };
+    return { label: getTranslation("hazardous"), class: "hazardous", color: "#7e0023" };
   if (aqi > 500)
     return {
-      label: "Very Hazardous",
+      label: getTranslation("very_hazardous"),
       class: "very-hazardous",
       color: "#7e0023",
     };
-  return { label: "Unknown", class: "", color: "#999999" };
+  return { label: getTranslation("unknown"), class: "", color: "#999999" };
 }
 
 function getColorForPollutant(pollutant, value) {
@@ -554,11 +583,11 @@ function createEnhancedPollutantDisplays(components, weather, individualAQIs) {
 
   console.log("Weather context:", weatherDesc, temp, wind);
 
-  let html = `<div style="background: #f0f9ff; padding: 12px; border-radius: 8px; margin-bottom: 15px; border-left: 3px solid #0ea5e9;">
+  let html = `<div style="background: #f0f9ff; padding: 12px; border-radius: 8px; margin-bottom: 15px; border-left: 3px solid #0ea5e9; text-align: ${document.body.dir === 'rtl' ? 'right' : 'left'};">
     <small style="color: #0c4a6e;">
-      <strong>🌤️ Weather Context:</strong> ${
+      <strong>${getTranslation("weather_context_title")}</strong> ${
         weatherDesc ? weatherDesc + ", " : ""
-      }${temp}${wind ? ", " + wind : ""}
+      }${temp}${wind ? ", " + getTranslation("wind_label") + ": " + wind : ""}
     </small>
   </div>`;
 
@@ -568,42 +597,42 @@ function createEnhancedPollutantDisplays(components, weather, individualAQIs) {
       name: "PM2.5",
       unit: "μg/m³",
       value: components.pm2_5,
-      standard: "24-hour average",
+      standard: getTranslation("pollutant_standard_24h"),
     },
     {
       key: "pm10",
       name: "PM10",
       unit: "μg/m³",
       value: components.pm10,
-      standard: "24-hour average",
+      standard: getTranslation("pollutant_standard_24h"),
     },
     {
       key: "o3",
       name: "O₃",
       unit: "μg/m³",
       value: components.o3,
-      standard: "8-hour average",
+      standard: getTranslation("pollutant_standard_8h"),
     },
     {
       key: "no2",
       name: "NO₂",
       unit: "μg/m³",
       value: components.no2,
-      standard: "1-hour average",
+      standard: getTranslation("pollutant_standard_1h"),
     },
     {
       key: "so2",
       name: "SO₂",
       unit: "μg/m³",
       value: components.so2,
-      standard: "1-hour average",
+      standard: getTranslation("pollutant_standard_1h"),
     },
     {
       key: "co",
       name: "CO",
       unit: "μg/m³",
       value: components.co,
-      standard: "8-hour average",
+      standard: getTranslation("pollutant_standard_8h"),
     },
   ];
 
@@ -621,9 +650,7 @@ function createEnhancedPollutantDisplays(components, weather, individualAQIs) {
         <div class="pollutant-info">
           <div>
             <span class="pollutant-name">${pollutant.name}</span>
-            <span class="pollutant-source">EPA Standard (${
-              pollutant.standard
-            })</span>
+            <span class="pollutant-source">(${pollutant.standard})</span>
           </div>
           <div class="pollutant-bar">
             <div class="pollutant-bar-fill" style="width: ${percentage}%; background: linear-gradient(90deg, ${color}, ${color}aa);"></div>
@@ -637,7 +664,7 @@ function createEnhancedPollutantDisplays(components, weather, individualAQIs) {
             1
           )} ${pollutant.unit}</div>
           <div style="font-size: 0.85em; color: ${color}; font-weight: 500;">
-            AQI: ${individualAQI} (${aqiCategory.label})
+            ${getTranslation("aqi_value_label")}: ${individualAQI} (${aqiCategory.label})
           </div>
         </div>
       </div>
@@ -792,34 +819,32 @@ function updateHealthRecommendations(aqi, components, weather) {
 
   // Specific recommendations based on pollutant levels and EPA guidelines
   if (components.pm2_5 > 55.5) {
-    recommendations.push("🏠 Stay indoors - very unhealthy PM2.5 levels");
-    recommendations.push("😷 Wear N95 or P100 mask if you must go outside");
-    recommendations.push("💨 Use air purifiers indoors with HEPA filters");
+    recommendations.push(getTranslation("rec_stay_indoors"));
+    recommendations.push(getTranslation("rec_wear_mask"));
+    recommendations.push(getTranslation("rec_air_purifier"));
   } else if (components.pm2_5 > 35.5) {
     recommendations.push(
-      "🚶‍♀️ Limit outdoor activities, especially for sensitive groups"
+      getTranslation("rec_limit_outdoor")
     );
-    recommendations.push("😷 Consider wearing N95 mask outdoors");
+    recommendations.push(getTranslation("rec_wear_mask"));
   } else if (components.pm2_5 > 12.1) {
     recommendations.push(
-      "⚠️ Unusually sensitive people should limit outdoor activities"
+      getTranslation("rec_limit_outdoor")
     );
   }
 
   if (components.no2 / 1.88 > 361) {
     // Convert to ppb and check
-    recommendations.push("🚗 Avoid busy roads - very high NO₂ levels");
-    recommendations.push("🏠 Keep windows closed near traffic");
+    recommendations.push(getTranslation("rec_avoid_busy_roads"));
   } else if (components.no2 / 1.88 > 101) {
-    recommendations.push("🚗 Limit time near busy roads");
+    recommendations.push(getTranslation("rec_avoid_busy_roads"));
   }
 
   const o3_ppb = components.o3 / 1.96;
   if (o3_ppb > 125) {
     recommendations.push(
-      "☀️ Avoid outdoor activities during peak sun hours (10am-4pm)"
+      getTranslation("rec_avoid_peak_sun")
     );
-    recommendations.push("🏃‍♂️ Postpone outdoor exercise");
   }
 
   // Weather-based recommendations
@@ -901,54 +926,60 @@ function updateHistoricalTrends(cityName) {
 function showPollutantInfo(pollutant) {
   const modal = document.getElementById("pollutantModal");
   const body = document.getElementById("pollutantModalBody");
-  const pollutantDetails = {
-    pm2_5: {
-      title: "PM2.5 - Fine Particulate Matter",
-      description:
-        "Particles smaller than 2.5 micrometers that can penetrate deep into lungs and bloodstream.",
-      sources:
-        "Vehicle emissions, industrial processes, wildfires, cooking, secondary formation",
-      health:
-        "Respiratory and cardiovascular problems, premature death, reduced lung function",
-      protection:
-        "Use N95 masks, air purifiers, limit outdoor activities during high levels",
-    },
-    no2: {
-      title: "NO₂ - Nitrogen Dioxide",
-      description:
-        "A reddish-brown gas primarily from combustion processes, key precursor to ozone and PM2.5.",
-      sources:
-        "Vehicle engines, power plants, industrial boilers, ships, aircraft",
-      health:
-        "Airway inflammation, reduced lung function, increased respiratory infections",
-      protection:
-        "Avoid busy roads, ensure proper ventilation, limit outdoor exercise near traffic",
-    },
-    o3: {
-      title: "O₃ - Ground-level Ozone",
-      description:
-        "Secondary pollutant formed when NOx and VOCs react in sunlight, creating photochemical smog.",
-      sources:
-        "Vehicle emissions, industrial facilities, chemical solvents reacting in sunlight",
-      health:
-        "Chest pain, throat irritation, reduced lung function, asthma attacks",
-      protection:
-        "Avoid outdoor activities during peak sun hours (10am-4pm), stay indoors when levels are high",
-    },
-    pm10: {
-      title: "PM10 - Coarse Particulate Matter",
-      description:
-        "Particles smaller than 10 micrometers including dust, pollen, mold, and crustal material.",
-      sources:
-        "Road dust, construction, agriculture, natural sources, sea salt",
-      health:
-        "Eye, nose, throat irritation, respiratory symptoms, asthma exacerbation",
-      protection:
-        "Keep windows closed during dusty conditions, use air filters, avoid dusty areas",
-    },
-  };
-  const info = pollutantDetails[pollutant];
-  if (info) {
+  
+  // For simplicity, we'll handle the main ones. This can be expanded.
+  let info = {};
+  if (pollutant === 'pm2_5') {
+    info = {
+      title: getTranslation('pollutant_modal_pm25_title'),
+      description: getTranslation('pollutant_modal_pm25_desc'),
+      sources: getTranslation('pollutant_modal_pm25_sources'),
+      health: getTranslation('pollutant_modal_pm25_health'),
+      protection: getTranslation('pollutant_modal_pm25_protection'),
+    }
+  } else if (pollutant === 'no2') {
+     info = {
+      title: getTranslation('pollutant_modal_no2_title'),
+      description: getTranslation('pollutant_modal_no2_desc'),
+      sources: getTranslation('pollutant_modal_no2_sources'),
+      health: getTranslation('pollutant_modal_no2_health'),
+      protection: getTranslation('pollutant_modal_no2_protection'),
+    }
+  } else if (pollutant === 'o3') {
+    info = {
+      title: getTranslation('pollutant_modal_o3_title'),
+      description: getTranslation('pollutant_modal_o3_desc'),
+      sources: getTranslation('pollutant_modal_o3_sources'),
+      health: getTranslation('pollutant_modal_o3_health'),
+      protection: getTranslation('pollutant_modal_o3_protection'),
+    }
+  } else if (pollutant === 'pm10') {
+    info = {
+      title: getTranslation('pollutant_modal_pm10_title'),
+      description: getTranslation('pollutant_modal_pm10_desc'),
+      sources: getTranslation('pollutant_modal_pm10_sources'),
+      health: getTranslation('pollutant_modal_pm10_health'),
+      protection: getTranslation('pollutant_modal_pm10_protection'),
+    }
+  } else if (pollutant === 'so2') {
+    info = {
+      title: getTranslation('pollutant_modal_so2_title'),
+      description: getTranslation('pollutant_modal_so2_desc'),
+      sources: getTranslation('pollutant_modal_so2_sources'),
+      health: getTranslation('pollutant_modal_so2_health'),
+      protection: getTranslation('pollutant_modal_so2_protection'),
+    }
+  } else if (pollutant === 'co') {
+    info = {
+      title: getTranslation('pollutant_modal_co_title'),
+      description: getTranslation('pollutant_modal_co_desc'),
+      sources: getTranslation('pollutant_modal_co_sources'),
+      health: getTranslation('pollutant_modal_co_health'),
+      protection: getTranslation('pollutant_modal_co_protection'),
+    }
+  }
+
+  if (info.title) {
     body.innerHTML = `
       <h2>${info.title}</h2>
       <h4>📋 Description</h4>
@@ -979,7 +1010,16 @@ function toggleDataSources() {
 }
 
 function toggleSatelliteView() {
-  alert("Satellite view toggled!");
+  tempoLayersVisible = !tempoLayersVisible;
+  if (tempoLayersVisible) {
+    map.addLayer(tempoLayerGroup);
+    tempoControl.addTo(map);
+    document.querySelector(".map-control-btn[onclick='toggleSatelliteView()']").classList.add('active');
+  } else {
+    map.removeLayer(tempoLayerGroup);
+    map.removeControl(tempoControl);
+    document.querySelector(".map-control-btn[onclick='toggleSatelliteView()']").classList.remove('active');
+  }
 }
 
 function toggleGroundStations() {
@@ -1126,6 +1166,7 @@ function hideError() {
 
 function initApp() {
   initMap();
+  // The i18n.js script handles its own initialization on DOMContentLoaded
   document.querySelectorAll(".modal").forEach((modal) => {
     modal.addEventListener("click", (e) => {
       if (e.target === modal) modal.classList.remove("show");

@@ -14,17 +14,29 @@
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     />
+    <link id="rtl-stylesheet" rel="stylesheet" href="../css/rtl.css" disabled />
     <link rel="stylesheet" href="../css/app.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
   </head>
   <body>
     <header>
       <nav>
-        <a href="../index.html" class="logo">Global TEMPO</a>
+        <a href="../index.html" class="logo" data-i18n="logo_text">Global TEMPO</a>
         <div class="nav-links">
-          <button class="nav-btn" onclick="toggleDataSources()">
+          <button id="lang-toggle-btn" class="nav-btn">English</button>
+          <button class="nav-btn" onclick="toggleDataSources()" data-i18n="nav_data_sources">
             Data Sources
           </button>
-          <button class="nav-btn" onclick="showAbout()">About</button>
+          <button class="nav-btn" onclick="showAbout()" data-i18n="nav_about">About</button>
+          <a
+            href="./TEMPOData.html"
+            class="nav-btn"
+            style="text-decoration: none; align-items: center; display: inline-flex;"
+            data-i18n="nav_tempo_data">
+            TEMPO Data
+          </a>
         </div>
       </nav>
     </header>
@@ -32,8 +44,8 @@
     <div class="main-container">
       <div class="sidebar">
         <div class="sidebar-content">
-          <div class="data-sources">
-            <h3>📡 Live Data Integration</h3>
+          <div class="data-sources" >
+            <h3 data-i18n="sidebar_live_data">📡 Live Data Integration</h3>
             <div class="source-status">
               <span
                 ><span class="status-indicator status-active"></span>NASA TEMPO
@@ -65,18 +77,18 @@
           </div>
 
           <div class="search-section">
-            <label for="searchInput">🔍 Location Search</label>
+            <label for="searchInput" data-i18n="sidebar_location_search">🔍 Location Search</label>
             <div class="search-container">
               <input
                 type="text"
                 id="searchInput"
                 class="search-input"
-                placeholder="Enter city, state, or coordinates..."
+                placeholder="Enter city, state, or coordinates..." data-i18n="search_placeholder"
                 oninput="handleSearchInput(this.value)"
               />
               <div id="searchResults" class="search-results"></div>
             </div>
-            <button class="location-btn" onclick="getUserLocation()">
+            <button class="location-btn" onclick="getUserLocation()" data-i18n="use_my_location">
               📍 Use My Current Location
             </button>
             <div
@@ -86,17 +98,17 @@
             ></div>
             <div id="loadingIndicator" class="loading hidden">
               <div class="spinner"></div>
-              Integrating satellite and ground data...
+              <span data-i18n="loading_text">Integrating satellite and ground data...</span>
             </div>
             <div id="errorMessage" class="error hidden"></div>
           </div>
 
           <div id="pollutionSection" class="data-section">
-            <h2 id="cityName" class="section-title">📊 Current Air Quality</h2>
+            <h2 id="cityName" class="section-title" data-i18n="section_title_current_aq">📊 Current Air Quality</h2>
             <div id="aqiDisplay" class="aqi-display">
               <div class="aqi-value" id="aqiValue">--</div>
-              <div class="aqi-label">Air Quality Index</div>
-              <div id="aqiCategory" class="aqi-category">Select location</div>
+              <div class="aqi-label" data-i18n="aqi_label">Air Quality Index</div>
+              <div id="aqiCategory" class="aqi-category" data-i18n="aqi_category_default">Select location</div>
             </div>
             <div id="pollutionData"></div>
           </div>
@@ -106,24 +118,24 @@
             style="display: none"
           >
             <div class="forecast-header">
-              <h3 class="forecast-title">🔮 Air Quality Forecast</h3>
+              <h3 class="forecast-title" data-i18n="section_title_forecast">🔮 Air Quality Forecast</h3>
               <span class="forecast-time" id="forecastTime"></span>
             </div>
             <div class="forecast-grid" id="forecastGrid"></div>
           </div>
           <div id="healthSection" class="health-section" style="display: none">
-            <h2 class="section-title">🏥 Health Impact Assessment</h2>
+            <h2 class="section-title" data-i18n="section_title_health">🏥 Health Impact Assessment</h2>
             <div id="healthAlert"></div>
             <div id="recommendations" class="recommendations-list">
-              <h4>💡 Personalized Recommendations</h4>
+              <h4 data-i18n="section_title_recommendations">💡 Personalized Recommendations</h4>
               <ul id="recommendationsList"></ul>
             </div>
           </div>
 
           <div id="trendsSection" class="trends-section" style="display: none">
-            <h2 class="section-title">📈 Historical Trends</h2>
+            <h2 class="section-title" data-i18n="section_title_trends">📈 Historical Trends</h2>
             <div id="trendsData"></div>
-            <small style="color: #6b7280; margin-top: 10px; display: block">
+            <small style="color: #6b7280; margin-top: 10px; display: block" data-i1n="trends_disclaimer">
               *Trends based on integrated satellite and ground observations
             </small>
           </div>
@@ -133,13 +145,13 @@
       <div class="map-container">
         <div id="map"></div>
         <div class="map-controls">
-          <button class="map-control-btn" onclick="toggleSatelliteView()">
+          <button class="map-control-btn" onclick="toggleSatelliteView()" data-i18n="map_btn_satellite">
             🛰️ Satellite
           </button>
-          <button class="map-control-btn" onclick="toggleGroundStations()">
+          <button class="map-control-btn" onclick="toggleGroundStations()" data-i18n="map_btn_stations">
             📡 Stations
           </button>
-          <button class="map-control-btn" onclick="showHeatMap()">
+          <button class="map-control-btn" onclick="showHeatMap()" data-i18n="map_btn_heatmap">
             🌡️ Heat Map
           </button>
         </div>
@@ -322,6 +334,8 @@
     </footer>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/esri-leaflet@3.0.11/dist/esri-leaflet.js"></script>
+    <script src="../js/i18n.js"></script>
     <script src="../js/globalApp.js"></script>
   </body>
 </html>

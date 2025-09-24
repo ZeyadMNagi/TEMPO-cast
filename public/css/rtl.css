@@ -1,0 +1,30 @@
+/* RTL specific styles */
+body[dir="rtl"] {
+  text-align: right;
+  font-family: "Tajawal", "Inter", system-ui, sans-serif;
+}
+
+
+body[dir="rtl"] .search-section label,
+body[dir="rtl"] .data-sources h3 {
+  text-align: right;
+}
+
+body[dir="rtl"] .source-status,
+body[dir="rtl"] .section-title {
+  flex-direction: row-reverse;
+}
+
+body[dir="rtl"] .pollutant-info,
+body[dir="rtl"] .pollutant {
+  flex-direction: row-reverse;
+}
+
+body[dir="rtl"] .pollutant-name {
+  text-align: right;
+}
+
+body[dir="rtl"] .info-icon {
+  margin-right: 10px;
+  margin-left: 0;
+}
