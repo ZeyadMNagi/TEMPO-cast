@@ -716,6 +716,7 @@ function generateForecast(data) {
   const forecastSection = document.getElementById("forecastSection");
   const forecastTime = document.getElementById("forecastTime");
   const forecastGrid = document.getElementById("forecastGrid");
+  console.log("Generating forecast with data:", data);
   const pollution = data.weather.list[0];
   const aqi = pollution.main.aqi || 0;
   const forecasts = [];
