@@ -588,10 +588,8 @@ section {
 
 /* Map Container - Mobile First */
 #map {
-  position: absolute;
   height: calc(100vh - 60px);
   width: 100%;
-  z-index: -2;
   top: 60px;
   left: 0;
 }

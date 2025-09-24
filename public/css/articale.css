@@ -102,6 +102,14 @@ body {
     background: #fff;
     padding: 6px;
   }
+  #frame {
+    width: 100%;
+    height: 480px;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(44, 62, 80, 0.1);
+    margin-top: 16px;
+  }
 }
 
 @media (max-width: 700px) {
@@ -114,5 +122,8 @@ body {
   .img-row {
     flex-direction: column;
     gap: 12px;
+  }
+  #frame {
+    height: 260px;
   }
 }
