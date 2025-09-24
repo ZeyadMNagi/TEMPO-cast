@@ -310,6 +310,7 @@ async function fetchLocationData(lat, lon, cityName = "") {
       console.log("Using city name:", cityName);
 
       displayIntegratedAirQualityData(data, cityName, lat, lon);
+
       generateForecast(data);
       updateHistoricalTrends(cityName);
     }
@@ -731,7 +732,7 @@ function generateForecast(data) {
   const forecastTime = document.getElementById("forecastTime");
   const forecastGrid = document.getElementById("forecastGrid");
   console.log("Generating forecast with data:", data);
-  const pollution = data.current.weather.list;
+  const pollution = data.current.list[0];
   const aqi = pollution.main.aqi || 0;
   const forecasts = [];
   for (let i = 1; i <= 3; i++) {
