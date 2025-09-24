@@ -374,7 +374,7 @@ function displayIntegratedAirQualityData(data, cityName, lat, lon) {
   const aqiCategory = getAQICategory(aqi);
 
   console.log("Calculated EPA AQI:", aqi, "Category:", aqiCategory);
-  console.log("Individual AQIs:", individualAQIs); 
+  console.log("Individual AQIs:", individualAQIs);
 
   // Update AQI display with new EPA values
   document.getElementById("aqiValue").textContent = aqi;
@@ -489,9 +489,15 @@ function calculateOverallAQI(components) {
  * Get AQI category based on US EPA standards
  */
 function getAQICategory(aqi) {
-  if (aqi >= 0 && aqi <= 50) return { label: getTranslation("good"), class: "good", color: "#00e400" };
-  if (aqi >= 51 && aqi <= 100) return { label: getTranslation("moderate"), class: "moderate", color: "#ffff00" };
-  if (aqi >= 101 && aqi <= 150) 
+  if (aqi >= 0 && aqi <= 50)
+    return { label: getTranslation("good"), class: "good", color: "#00e400" };
+  if (aqi >= 51 && aqi <= 100)
+    return {
+      label: getTranslation("moderate"),
+      class: "moderate",
+      color: "#ffff00",
+    };
+  if (aqi >= 101 && aqi <= 150)
     return {
       label: getTranslation("unhealthy_sensitive"),
       class: "unhealthy-sensitive",
@@ -506,7 +512,11 @@ function getAQICategory(aqi) {
       color: "#8f3f97",
     };
   if (aqi >= 301 && aqi <= 500)
-    return { label: getTranslation("hazardous"), class: "hazardous", color: "#7e0023" };
+    return {
+      label: getTranslation("hazardous"),
+      class: "hazardous",
+      color: "#7e0023",
+    };
   if (aqi > 500)
     return {
       label: getTranslation("very_hazardous"),
@@ -583,11 +593,13 @@ function createEnhancedPollutantDisplays(components, weather, individualAQIs) {
 
   console.log("Weather context:", weatherDesc, temp, wind);
 
-  let html = `<div style="background: #f0f9ff; padding: 12px; border-radius: 8px; margin-bottom: 15px; border-left: 3px solid #0ea5e9; text-align: ${document.body.dir === 'rtl' ? 'right' : 'left'};">
+  let html = `<div style="background: #f0f9ff; padding: 12px; border-radius: 8px; margin-bottom: 15px; border-left: 3px solid #0ea5e9; text-align: ${
+    document.body.dir === "rtl" ? "right" : "left"
+  };">
     <small style="color: #0c4a6e;">
       <strong>${getTranslation("weather_context_title")}</strong> ${
-        weatherDesc ? weatherDesc + ", " : ""
-      }${temp}${wind ? ", " + getTranslation("wind_label") + ": " + wind : ""}
+    weatherDesc ? weatherDesc + ", " : ""
+  }${temp}${wind ? ", " + getTranslation("wind_label") + ": " + wind : ""}
     </small>
   </div>`;
 
@@ -664,7 +676,9 @@ function createEnhancedPollutantDisplays(components, weather, individualAQIs) {
             1
           )} ${pollutant.unit}</div>
           <div style="font-size: 0.85em; color: ${color}; font-weight: 500;">
-            ${getTranslation("aqi_value_label")}: ${individualAQI} (${aqiCategory.label})
+            ${getTranslation("aqi_value_label")}: ${individualAQI} (${
+      aqiCategory.label
+    })
           </div>
         </div>
       </div>
@@ -717,7 +731,7 @@ function generateForecast(data) {
   const forecastTime = document.getElementById("forecastTime");
   const forecastGrid = document.getElementById("forecastGrid");
   console.log("Generating forecast with data:", data);
-  const pollution = data.weather.list[0];
+  const pollution = data.current.weather.list[0];
   const aqi = pollution.main.aqi || 0;
   const forecasts = [];
   for (let i = 1; i <= 3; i++) {
@@ -824,14 +838,10 @@ function updateHealthRecommendations(aqi, components, weather) {
     recommendations.push(getTranslation("rec_wear_mask"));
     recommendations.push(getTranslation("rec_air_purifier"));
   } else if (components.pm2_5 > 35.5) {
-    recommendations.push(
-      getTranslation("rec_limit_outdoor")
-    );
+    recommendations.push(getTranslation("rec_limit_outdoor"));
     recommendations.push(getTranslation("rec_wear_mask"));
   } else if (components.pm2_5 > 12.1) {
-    recommendations.push(
-      getTranslation("rec_limit_outdoor")
-    );
+    recommendations.push(getTranslation("rec_limit_outdoor"));
   }
 
   if (components.no2 / 1.88 > 361) {
@@ -843,9 +853,7 @@ function updateHealthRecommendations(aqi, components, weather) {
 
   const o3_ppb = components.o3 / 1.96;
   if (o3_ppb > 125) {
-    recommendations.push(
-      getTranslation("rec_avoid_peak_sun")
-    );
+    recommendations.push(getTranslation("rec_avoid_peak_sun"));
   }
 
   // Weather-based recommendations
@@ -927,57 +935,57 @@ function updateHistoricalTrends(cityName) {
 function showPollutantInfo(pollutant) {
   const modal = document.getElementById("pollutantModal");
   const body = document.getElementById("pollutantModalBody");
-  
+
   // For simplicity, we'll handle the main ones. This can be expanded.
   let info = {};
-  if (pollutant === 'pm2_5') {
+  if (pollutant === "pm2_5") {
     info = {
-      title: getTranslation('pollutant_modal_pm25_title'),
-      description: getTranslation('pollutant_modal_pm25_desc'),
-      sources: getTranslation('pollutant_modal_pm25_sources'),
-      health: getTranslation('pollutant_modal_pm25_health'),
-      protection: getTranslation('pollutant_modal_pm25_protection'),
-    }
-  } else if (pollutant === 'no2') {
-     info = {
-      title: getTranslation('pollutant_modal_no2_title'),
-      description: getTranslation('pollutant_modal_no2_desc'),
-      sources: getTranslation('pollutant_modal_no2_sources'),
-      health: getTranslation('pollutant_modal_no2_health'),
-      protection: getTranslation('pollutant_modal_no2_protection'),
-    }
-  } else if (pollutant === 'o3') {
+      title: getTranslation("pollutant_modal_pm25_title"),
+      description: getTranslation("pollutant_modal_pm25_desc"),
+      sources: getTranslation("pollutant_modal_pm25_sources"),
+      health: getTranslation("pollutant_modal_pm25_health"),
+      protection: getTranslation("pollutant_modal_pm25_protection"),
+    };
+  } else if (pollutant === "no2") {
     info = {
-      title: getTranslation('pollutant_modal_o3_title'),
-      description: getTranslation('pollutant_modal_o3_desc'),
-      sources: getTranslation('pollutant_modal_o3_sources'),
-      health: getTranslation('pollutant_modal_o3_health'),
-      protection: getTranslation('pollutant_modal_o3_protection'),
-    }
-  } else if (pollutant === 'pm10') {
+      title: getTranslation("pollutant_modal_no2_title"),
+      description: getTranslation("pollutant_modal_no2_desc"),
+      sources: getTranslation("pollutant_modal_no2_sources"),
+      health: getTranslation("pollutant_modal_no2_health"),
+      protection: getTranslation("pollutant_modal_no2_protection"),
+    };
+  } else if (pollutant === "o3") {
     info = {
-      title: getTranslation('pollutant_modal_pm10_title'),
-      description: getTranslation('pollutant_modal_pm10_desc'),
-      sources: getTranslation('pollutant_modal_pm10_sources'),
-      health: getTranslation('pollutant_modal_pm10_health'),
-      protection: getTranslation('pollutant_modal_pm10_protection'),
-    }
-  } else if (pollutant === 'so2') {
+      title: getTranslation("pollutant_modal_o3_title"),
+      description: getTranslation("pollutant_modal_o3_desc"),
+      sources: getTranslation("pollutant_modal_o3_sources"),
+      health: getTranslation("pollutant_modal_o3_health"),
+      protection: getTranslation("pollutant_modal_o3_protection"),
+    };
+  } else if (pollutant === "pm10") {
     info = {
-      title: getTranslation('pollutant_modal_so2_title'),
-      description: getTranslation('pollutant_modal_so2_desc'),
-      sources: getTranslation('pollutant_modal_so2_sources'),
-      health: getTranslation('pollutant_modal_so2_health'),
-      protection: getTranslation('pollutant_modal_so2_protection'),
-    }
-  } else if (pollutant === 'co') {
+      title: getTranslation("pollutant_modal_pm10_title"),
+      description: getTranslation("pollutant_modal_pm10_desc"),
+      sources: getTranslation("pollutant_modal_pm10_sources"),
+      health: getTranslation("pollutant_modal_pm10_health"),
+      protection: getTranslation("pollutant_modal_pm10_protection"),
+    };
+  } else if (pollutant === "so2") {
     info = {
-      title: getTranslation('pollutant_modal_co_title'),
-      description: getTranslation('pollutant_modal_co_desc'),
-      sources: getTranslation('pollutant_modal_co_sources'),
-      health: getTranslation('pollutant_modal_co_health'),
-      protection: getTranslation('pollutant_modal_co_protection'),
-    }
+      title: getTranslation("pollutant_modal_so2_title"),
+      description: getTranslation("pollutant_modal_so2_desc"),
+      sources: getTranslation("pollutant_modal_so2_sources"),
+      health: getTranslation("pollutant_modal_so2_health"),
+      protection: getTranslation("pollutant_modal_so2_protection"),
+    };
+  } else if (pollutant === "co") {
+    info = {
+      title: getTranslation("pollutant_modal_co_title"),
+      description: getTranslation("pollutant_modal_co_desc"),
+      sources: getTranslation("pollutant_modal_co_sources"),
+      health: getTranslation("pollutant_modal_co_health"),
+      protection: getTranslation("pollutant_modal_co_protection"),
+    };
   }
 
   if (info.title) {
@@ -1015,11 +1023,15 @@ function toggleSatelliteView() {
   if (tempoLayersVisible) {
     map.addLayer(tempoLayerGroup);
     tempoControl.addTo(map);
-    document.querySelector(".map-control-btn[onclick='toggleSatelliteView()']").classList.add('active');
+    document
+      .querySelector(".map-control-btn[onclick='toggleSatelliteView()']")
+      .classList.add("active");
   } else {
     map.removeLayer(tempoLayerGroup);
     map.removeControl(tempoControl);
-    document.querySelector(".map-control-btn[onclick='toggleSatelliteView()']").classList.remove('active');
+    document
+      .querySelector(".map-control-btn[onclick='toggleSatelliteView()']")
+      .classList.remove("active");
   }
 }
 
