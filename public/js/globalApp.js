@@ -1270,12 +1270,14 @@ if ("serviceWorker" in navigator) {
 }
 
 // Enhanced forecast generation with real OpenWeatherMap data
-function generateEnhancedForecast(forecastData, currentData) {
+function generateEnhancedForecast(Data, currentData) {
   const forecastSection = document.getElementById("forecastSection");
   const forecastTime = document.getElementById("forecastTime");
   const forecastGrid = document.getElementById("forecastGrid");
 
-  console.log("Generating enhanced forecast with data:", forecastData);
+  console.log("Generating enhanced forecast with data:", Data);
+
+  const forecastData = Data.forecast;
 
   if (!forecastData || !forecastData.list || forecastData.list.length === 0) {
     forecastSection.style.display = "none";
