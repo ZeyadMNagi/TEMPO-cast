@@ -11,9 +11,12 @@ async function fetchCitySuggestions(query) {
     const suggestionsList = document.getElementById("searchResults");
     suggestionsList.innerHTML = "";
     suggestionsList.style.display = "flex";
-    data.forEach((city) => {
+    data.forEach((city, index) => {
       const li = document.createElement("li");
       li.classList.add("searchItem");
+      // Add a staggered animation delay for a smoother appearance
+      li.style.animationDelay = `${index * 50}ms`;
+
       li.innerText = `${city.name}, ${city.state || ""}, ${city.country}`;
       li.onclick = () => {
         const searchInput = document.getElementById("Search");
@@ -177,9 +180,15 @@ function showResourceModal(resource) {
   }
   body.innerHTML = html;
   modal.style.display = "flex";
+  setTimeout(() => modal.classList.add("modal-open"), 10); // Add class to trigger animation
 }
 function closeResourceModal() {
-  document.getElementById("resourceModal").style.display = "none";
+  const modal = document.getElementById("resourceModal");
+  modal.classList.remove("modal-open");
+  // Wait for animation to finish before hiding
+  setTimeout(() => {
+    modal.style.display = "none";
+  }, 300);
 }
 
 document.addEventListener("DOMContentLoaded", function () {

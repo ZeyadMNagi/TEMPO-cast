@@ -1,7 +1,5 @@
-/* Responsive Global TEMPO CSS - Mobile First Approach */
 @import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Readex+Pro:wght@160..700&display=swap");
 
-/* Base styles - Mobile First */
 * {
   margin: 0;
   padding: 0;
@@ -18,7 +16,6 @@ body {
   overflow-x: hidden;
 }
 
-/* Navigation - Mobile First */
 header {
   background-color: #274375;
   color: white;
@@ -29,9 +26,6 @@ header {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* ...existing code... */
-
-/* Hamburger styles */
 .nav-toggle {
   display: inline-flex;
   background: none;
@@ -69,7 +63,6 @@ header {
   top: 9px;
 }
 
-/* Hamburger active (open) */
 .nav-toggle.active .hamburger {
   background: transparent;
 }
@@ -90,7 +83,7 @@ header {
   top: 100%;
   left: 0;
   z-index: 100;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
   transition: all 0.3s;
 }
 .nav-links.open {

@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Readex+Pro:wght@160..700&display=swap");
 
 * {
   margin: 0;
@@ -7,7 +8,9 @@
 }
 
 body {
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: "DM Sans", "Readex Pro", "Inter", ui-sans-serif, system-ui,
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, "Noto Sans", sans-serif;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   overflow-x: hidden;
 }
@@ -15,7 +18,6 @@ body {
 /* Header Styles */
 header {
   background: rgb(39 67 117);
-  backdrop-filter: blur(20px);
   color: #2c3e50;
   position: fixed;
   top: 0;
@@ -47,18 +49,66 @@ nav {
   display: flex;
   gap: 20px;
   align-items: center;
+  gap: 20px;
+  width: 100vw;
+  list-style: none;
+  background: rgb(39 67 117);
+  position: absolute;
+  top: 100%;
+  left: 0;
+  padding: 15px 0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+
+  /* Animation properties */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+}
+
+.nav-links.open {
+  display: flex; /* Show when open */
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.nav-links li {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+}
+
+.nav-links a,
+.nav-links .nav-btn,
+.nav-links .nav-action-btn {
+  display: block;
+  width: 90%;
+  text-align: center;
+  color: white;
+  text-decoration: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+.nav-links .nav-action-btn {
+  background: none;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  border: none;
+}
+
+.nav-links a:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .nav-btn {
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: white;
-  padding: 10px 20px;
-  border-radius: 25px;
-  text-decoration: none;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  border: none;
-  cursor: pointer;
+  background: transparent;
 }
 
 .nav-btn:hover {
@@ -66,10 +116,47 @@ nav {
   box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
 }
 
+.nav-toggle {
+  display: inline-flex;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  margin-left: auto;
+  z-index: 101;
+}
+
+.hamburger {
+  width: 28px;
+  height: 3px;
+  background: #fff;
+  border-radius: 2px;
+  position: relative;
+  display: block;
+  transition: all 0.3s;
+}
+.hamburger::before,
+.hamburger::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 28px;
+  height: 3px;
+  background: #fff;
+  border-radius: 2px;
+  transition: all 0.3s;
+}
+.hamburger::before {
+  top: -9px;
+}
+.hamburger::after {
+  top: 9px;
+}
+
 /* Main Container */
 .main-container {
   display: grid;
-  grid-template-columns: 40% 1fr;
+  grid-template-columns: 45% 1fr;
   min-height: 100vh;
   padding-top: 65px;
 }
@@ -78,9 +165,9 @@ nav {
 .sidebar {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
-  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
-  max-height: calc(100vh - 80px);
+  max-height: calc(100vh - 65px);
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .sidebar-content {
@@ -384,31 +471,6 @@ nav {
   font-size: 0.9em;
 }
 
-.aqi-good {
-  background: #dcfce7;
-  color: #166534;
-}
-.aqi-moderate {
-  background: #fef3c7;
-  color: #92400e;
-}
-.aqi-unhealthy-sensitive {
-  background: #fed7aa;
-  color: #9a3412;
-}
-.aqi-unhealthy {
-  background: #fecaca;
-  color: #991b1b;
-}
-.aqi-very-unhealthy {
-  background: #e9d5ff;
-  color: #6b21a8;
-}
-.aqi-hazardous {
-  background: #fecdd3;
-  color: #881337;
-}
-
 /* Pollutant Display */
 .pollutant {
   display: flex;
@@ -417,7 +479,7 @@ nav {
   padding: 12px;
   background: #f9fafb;
   border-radius: 10px;
-  border-left: 4px solid transparent;
+  border-left: 4px solid; /* Color set by utility class */
 }
 
 .pollutant-info {
@@ -439,7 +501,7 @@ nav {
 }
 
 .pollutant-bar {
-  height: 24px;
+  height: 6px;
   flex: 1;
   margin: 0 12px;
   border-radius: 12px;
@@ -450,7 +512,7 @@ nav {
 
 .pollutant-bar-fill {
   height: 100%;
-  border-radius: 12px;
+  border-radius: 3px;
   transition: width 0.8s ease-out;
   position: relative;
 }
@@ -482,12 +544,14 @@ nav {
 
 .pollutant-value {
   font-weight: 500;
-  color: #374151;
   min-width: 90px;
   text-align: right;
   font-size: 0.9em;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
 }
-
 .info-icon {
   cursor: pointer;
   margin-left: 10px;
@@ -519,14 +583,14 @@ nav {
 
 .health-alert {
   background: linear-gradient(135deg, #fef2f2, #fee2e2);
-  color: #991b1b;
   padding: 16px;
   border-radius: 12px;
   margin-bottom: 15px;
-  border-left: 4px solid #dc2626;
   display: flex;
   align-items: flex-start;
   gap: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .alert-icon {
@@ -535,18 +599,24 @@ nav {
 }
 
 .alert-content h4 {
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 8px;
+  font-size: 1.1em;
+}
+
+.alert-content p {
+  font-size: 0.95em;
+  line-height: 1.4;
 }
 
 .alert-actions {
   margin-top: 12px;
+  display: flex;
+  gap: 8px;
 }
 
 .alert-btn {
-  background: #dc2626;
-  color: white;
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.3);
   padding: 8px 16px;
   border-radius: 8px;
   cursor: pointer;
@@ -556,7 +626,7 @@ nav {
 }
 
 .alert-btn:hover {
-  background: #b91c1c;
+  background: rgba(255, 255, 255, 0.3);
   transform: translateY(-1px);
 }
 
@@ -601,6 +671,11 @@ nav {
   padding: 10px 0;
   border-bottom: 1px solid #f3f4f6;
 }
+.trend-item {
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
 
 .trend-item:last-child {
   border-bottom: none;
@@ -615,19 +690,6 @@ nav {
   font-weight: 600;
   padding: 4px 8px;
   border-radius: 6px;
-}
-
-.trend-improving {
-  background: #dcfce7;
-  color: #166534;
-}
-.trend-worsening {
-  background: #fee2e2;
-  color: #991b1b;
-}
-.trend-stable {
-  background: #f3f4f6;
-  color: #4b5563;
 }
 
 /* Map Container */
@@ -770,12 +832,18 @@ footer a:hover {
 
 /* Mobile Responsive */
 @media (max-width: 1024px) {
+  .nav-toggle {
+    display: inline-flex;
+  }
+
   .main-container {
     grid-template-columns: 1fr;
     grid-template-rows: auto 1fr;
+    padding-top: 60px;
   }
 
   .sidebar {
+    box-shadow: none;
     max-height: 50vh;
     order: 2;
   }
@@ -788,6 +856,36 @@ footer a:hover {
   #map {
     height: 50vh;
   }
+
+  footer {
+    position: static;
+    order: 3;
+  }
+}
+
+@media (min-width: 1024px) {
+  .nav-toggle {
+    display: none;
+  }
+  .nav-links {
+    /* On desktop, make it a static row */
+    position: static;
+    flex-direction: row;
+    width: auto;
+    background: none;
+    box-shadow: none;
+    /* Ensure it's always visible on desktop */
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    padding: 0;
+    gap: 10px;
+  }
+  .nav-links li,
+  .nav-links a,
+  .nav-links .nav-btn {
+    width: auto;
+  }
 }
 
 @media (max-width: 768px) {
@@ -797,6 +895,10 @@ footer a:hover {
 
   .logo {
     font-size: 1.2em;
+  }
+
+  .nav-links {
+    gap: 0;
   }
 
   .nav-btn {
@@ -818,11 +920,6 @@ footer a:hover {
 
   .pollutant {
     flex-wrap: wrap;
-  }
-
-  .pollutant-info {
-    width: 100%;
-    margin-bottom: 8px;
   }
 
   .pollutant-value {
@@ -848,21 +945,12 @@ footer a:hover {
 
 @media (max-width: 480px) {
   .main-container {
-    padding-top: 70px;
-  }
-
-  .app-title {
-    margin: -20px -20px 20px -20px;
+    padding-top: 60px;
     padding: 15px;
   }
 
   .section-title {
     font-size: 1.1em;
-  }
-
-  footer {
-    position: static;
-    order: 3;
   }
 }
 
@@ -872,6 +960,17 @@ footer a:hover {
 }
 .show {
   display: block !important;
+}
+
+/* Hamburger active (open) */
+.nav-toggle.active .hamburger {
+  background: transparent;
+}
+.nav-toggle.active .hamburger::before {
+  transform: rotate(45deg) translate(6px, 6px);
+}
+.nav-toggle.active .hamburger::after {
+  transform: rotate(-45deg) translate(6px, -6px);
 }
 
 /* Loading animations */
@@ -908,184 +1007,10 @@ footer a:hover {
   }
 }
 
-.aqi-category {
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-size: 0.9em;
-}
-
-.aqi-good {
-  background: linear-gradient(135deg, #00e400, #44ff44);
-  color: #004d00;
-}
-
-.aqi-moderate {
-  background: linear-gradient(135deg, #ffff00, #ffff77);
-  color: #666600;
-}
-
-.aqi-unhealthy-sensitive {
-  background: linear-gradient(135deg, #ff7e00, #ffaa44);
-  color: white;
-}
-
-.aqi-unhealthy {
-  background: linear-gradient(135deg, #ff0000, #ff4444);
-  color: white;
-}
-
-.aqi-very-unhealthy {
-  background: linear-gradient(135deg, #8f3f97, #aa66bb);
-  color: white;
-}
-
-.aqi-hazardous {
-  background: linear-gradient(135deg, #7e0023, #aa1144);
-  color: white;
-}
-
-.aqi-very-hazardous {
-  background: linear-gradient(135deg, #4a0000, #7e0023);
-  color: white;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-/* Enhanced pollutant display */
-.pollutant-value {
-  text-align: right;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  justify-content: center;
-  gap: 2px;
-}
-
 .pollutant-source {
   font-size: 0.75em;
   color: #6b7280;
   font-weight: normal;
-}
-
-/* Health alert enhancements */
-.health-alert {
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  border: 2px solid rgba(255, 255, 255, 0.2);
-}
-
-.alert-icon {
-  font-size: 2em;
-  flex-shrink: 0;
-}
-
-.alert-content {
-  flex: 1;
-}
-
-.alert-content h4 {
-  margin: 0 0 8px 0;
-  font-size: 1.1em;
-  font-weight: 700;
-}
-
-.alert-content p {
-  margin: 0 0 12px 0;
-  font-size: 0.95em;
-  line-height: 1.4;
-}
-
-.alert-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.alert-btn {
-  background: rgba(255, 255, 255, 0.2);
-  color: inherit;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 0.85em;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.alert-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: translateY(-1px);
-}
-
-/* AQI value display enhancement */
-#aqiValue {
-  font-size: 3em;
-  font-weight: 800;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Pollutant bar enhancements */
-.pollutant-bar {
-  height: 6px;
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 3px;
-  overflow: hidden;
-  margin: 8px 0;
-  position: relative;
-}
-
-.pollutant-bar-fill {
-  height: 100%;
-  border-radius: 3px;
-  transition: width 0.8s ease;
-  position: relative;
-}
-
-.pollutant-bar-fill::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.3),
-    transparent
-  );
-  animation: shimmer 2s infinite;
-}
-
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
 }
 
 /* Enhanced trend indicators */
@@ -1099,26 +1024,6 @@ footer a:hover {
 
 .trend-worsening {
   color: #ef4444;
-}
-
-.trend-item {
-  padding: 12px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  margin-bottom: 8px;
-}
-
-.trend-period {
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-
-.trend-change {
-  font-size: 0.9em;
-  display: flex;
-  align-items: center;
-  gap: 4px;
 }
 
 /* Forecast enhancements */
@@ -1146,31 +1051,6 @@ footer a:hover {
   font-size: 1.2em;
   font-weight: 700;
   margin-bottom: 4px;
-}
-
-/* Responsive design for mobile */
-@media (max-width: 768px) {
-  .pollutant-value {
-    text-align: center;
-  }
-
-  .pollutant-info {
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  #aqiValue {
-    font-size: 2.5em;
-  }
-
-  .health-alert {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .alert-icon {
-    font-size: 1.5em;
-  }
 }
 
 .enhanced-forecast {
@@ -1250,4 +1130,55 @@ footer a:hover {
 .chart-bar:hover {
   opacity: 0.8;
   transform: scaleY(1.1);
+}
+
+/* --- AQI Color Utility Classes --- */
+/* Used for .aqi-category, .pollutant border-color, .pollutant-bar-fill background, etc. */
+
+.aqi-category.aqi-good,
+.pollutant.aqi-good {
+  border-left-color: #22c55e;
+}
+.pollutant-bar-fill.aqi-good {
+  background-color: #22c55e;
+}
+
+.aqi-category.aqi-moderate,
+.pollutant.aqi-moderate {
+  border-left-color: #f59e0b;
+}
+.pollutant-bar-fill.aqi-moderate {
+  background-color: #f59e0b;
+}
+
+.aqi-category.aqi-unhealthy-sensitive,
+.pollutant.aqi-unhealthy-sensitive {
+  border-left-color: #ef4444;
+}
+.pollutant-bar-fill.aqi-unhealthy-sensitive {
+  background-color: #ef4444;
+}
+
+.aqi-category.aqi-unhealthy,
+.pollutant.aqi-unhealthy {
+  border-left-color: #dc2626;
+}
+.pollutant-bar-fill.aqi-unhealthy {
+  background-color: #dc2626;
+}
+
+.aqi-category.aqi-very-unhealthy,
+.pollutant.aqi-very-unhealthy {
+  border-left-color: #991b1b;
+}
+.pollutant-bar-fill.aqi-very-unhealthy {
+  background-color: #991b1b;
+}
+
+.aqi-category.aqi-hazardous,
+.pollutant.aqi-hazardous {
+  border-left-color: #7f1d1d;
+}
+.pollutant-bar-fill.aqi-hazardous {
+  background-color: #7f1d1d;
 }

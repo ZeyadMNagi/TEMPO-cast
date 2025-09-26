@@ -1178,6 +1178,26 @@ function hideError() {
   document.getElementById("errorMessage").classList.add("hidden");
 }
 
+function setupNavigation() {
+  const navToggle = document.getElementById("navToggle");
+  const navLinks = document.getElementById("navLinks");
+
+  if (navToggle && navLinks) {
+    navToggle.addEventListener("click", () => {
+      navLinks.classList.toggle("open");
+      navToggle.classList.toggle("active");
+    });
+
+    // Close menu when a link or button is clicked
+    navLinks.querySelectorAll("a, button").forEach((link) => {
+      link.addEventListener("click", () => {
+        navLinks.classList.remove("open");
+        navToggle.classList.remove("active");
+      });
+    });
+  }
+}
+
 function initApp() {
   initMap();
   // The i18n.js script handles its own initialization on DOMContentLoaded
@@ -1200,6 +1220,8 @@ function initApp() {
   } else {
     map.setView([40.0, -100.0], 4);
   }
+
+  setupNavigation();
 }
 
 document.addEventListener("keydown", (e) => {
@@ -1558,9 +1580,7 @@ function calculateHistoricalTrends(historical) {
   return trends;
 }
 
-// Add simple historical chart
 function addHistoricalChart(historical) {
-  // Create a simple chart container if it doesn't exist
   let chartContainer = document.getElementById("historicalChart");
   if (!chartContainer) {
     chartContainer = document.createElement("div");

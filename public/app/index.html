@@ -17,7 +17,6 @@
     />
     <link id="rtl-stylesheet" rel="stylesheet" href="../css/rtl.css" disabled />
     <link rel="stylesheet" href="../css/app.css" />
-    <link rel="stylesheet" href="../css/nav.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -31,42 +30,29 @@
         <a href="../index.html" class="logo" data-i18n="logo_text"
           >Global TEMPO</a
         >
-        <ul class="nav-links">
-          <li><a id="lang-toggle-btn" class="nav-btn">English</a></li>
-
+        <button class="nav-toggle" id="navToggle" aria-label="Open menu">
+          <span class="hamburger"></span>
+        </button>
+        <ul class="nav-links" id="navLinks">
           <li>
-            <a class="nav-item" onclick="showAbout()" data-i18n="nav_about">
+            <button class="nav-action-btn" onclick="showAbout()" data-i18n="nav_about">
               About
-            </a>
+            </button>
           </li>
           <li>
-            <a
-              href="./TEMPOData.html"
-              class="nav-item"
-              style="
-                text-decoration: none;
-                align-items: center;
-                display: inline-flex;
-              "
-              data-i18n="nav_tempo_data"
-            >
+            <a href="./TEMPOData.html" data-i18n="nav_tempo_data">
               TEMPO Data
             </a>
           </li>
           <li>
-            <a href="./WHO.html" class="nav-item" data-i18n="nav_who"
-              >WHO Instructions</a
-            >
+            <a href="../WHO.html" data-i18n="nav_who">WHO Instructions</a>
           </li>
           <li>
-            <a
-              class="nav-item"
-              onclick="toggleDataSources()"
-              data-i18n="nav_data_sources"
-            >
+            <button class="nav-action-btn" onclick="toggleDataSources()" data-i18n="nav_data_sources">
               Data Sources
-            </a>
+            </button>
           </li>
+          <li><button id="lang-toggle-btn" class="nav-btn">English</button></li>
         </ul>
       </nav>
     </header>
@@ -412,6 +398,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/esri-leaflet@3.0.11/dist/esri-leaflet.js"></script>
     <script src="../js/i18n.js"></script>
+    
     <script src="../js/globalApp.js"></script>
   </body>
 </html>
