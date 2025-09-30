@@ -1,11 +1,6 @@
 gsap.registerPlugin(ScrollTrigger, TextPlugin);
 
-let masterTimeline = gsap.timeline();
-let isAnimationComplete = false;
-
-function elementExists(selector) {
-  return document.querySelector(selector) !== null;
-}
+const masterTimeline = gsap.timeline();
 
 function createParticles() {
   const particlesContainer = document.getElementById("particles");
@@ -27,38 +22,41 @@ function createParticles() {
 
     particlesContainer.appendChild(particle);
 
-    gsap.to(particle, {
-      y: -window.innerHeight - 100,
-      rotation: 360,
-      duration: Math.random() * 20 + 15,
-      repeat: -1,
-      ease: "none",
-      delay: Math.random() * 10,
-    });
-
-    gsap.to(particle, {
-      x: (Math.random() - 0.5) * 100,
-      duration: Math.random() * 10 + 5,
-      repeat: -1,
-      yoyo: true,
-      ease: "sine.inOut",
-    });
+    // Use a timeline for each particle to avoid conflicts
+    const particleTl = gsap.timeline({ repeat: -1 });
+    particleTl
+      .to(particle, {
+        y: -window.innerHeight - 100,
+        rotation: 360,
+        duration: Math.random() * 20 + 15,
+        ease: "none",
+        delay: Math.random() * 10,
+      })
+      .to(
+        particle,
+        {
+          x: (Math.random() - 0.5) * 100,
+          duration: Math.random() * 10 + 5,
+          yoyo: true,
+          repeat: -1,
+          ease: "sine.inOut",
+        },
+        0
+      );
   }
 }
 
 function initMainAnimations() {
-  masterTimeline = gsap.timeline();
-
   // Navigation entrance
   masterTimeline
-    .from(".slide-in-left", {
+    .from("header .slide-in-left", {
       x: -100,
       opacity: 0,
       duration: 0.8,
       ease: "power2.out",
     })
     .from(
-      ".slide-in-right",
+      "header .slide-in-right, #hero .slide-in-right",
       {
         x: 100,
         opacity: 0,
@@ -92,34 +90,20 @@ function initMainAnimations() {
       "-=0.4"
     );
 
-  // Typewriter effect - Fixed
+  // Typewriter effect - Replaced with GSAP TextPlugin for better sync
   const typewriterElement = document.getElementById("typewriter-text");
   if (typewriterElement) {
     const typewriterText =
       "From Space to Your Screen — The World's Air, Visualized.";
-    let typewriterIndex = 0;
-
-    function typeWriter() {
-      if (typewriterIndex < typewriterText.length && typewriterElement) {
-        typewriterElement.textContent += typewriterText.charAt(typewriterIndex);
-        typewriterIndex++;
-        setTimeout(typeWriter, 50);
-      } else {
-        // Start cursor blinking after typing is complete
-        const cursor = document.querySelector(".typewriter-cursor");
-        if (cursor) {
-          gsap.to(cursor, {
-            opacity: 0,
-            duration: 0.5,
-            repeat: -1,
-            yoyo: true,
-          });
-        }
-      }
-    }
-
-    // Start typewriter after initial animations
-    masterTimeline.call(typeWriter, null, null, 0.5);
+    masterTimeline.to(
+      typewriterElement,
+      {
+        duration: 2.5,
+        text: typewriterText,
+        ease: "none",
+      },
+      "-=0.2"
+    );
   }
 
   // Globe animations - Fixed to use actual elements
@@ -165,14 +149,11 @@ function initMainAnimations() {
 
   // Interactive hover effects
   setupHoverEffects();
-
-  // Mark animations as complete
-  isAnimationComplete = true;
 }
 
 // Scroll-triggered animations
 function setupScrollAnimations() {
-  // Fade in elements
+  // Fade in elements on scroll
   gsap.utils.toArray(".fade-in").forEach((element) => {
     if (element.closest("#hero")) return; // Skip hero elements as they're already animated
 
@@ -181,7 +162,11 @@ function setupScrollAnimations() {
         trigger: element,
         start: "top 85%",
         end: "bottom 20%",
-        toggleActions: "play none none reverse",
+        toggleActions: "play none none reverse", // play, pause, resume, reverse
+        onToggle: (self) =>
+          gsap.set(self.trigger, {
+            willChange: self.isActive ? "transform, opacity" : "auto",
+          }),
         markers: false,
       },
       y: 50,
@@ -191,7 +176,7 @@ function setupScrollAnimations() {
     });
   });
 
-  // Scale in elements
+  // Scale in elements on scroll
   gsap.utils.toArray(".scale-in").forEach((element, index) => {
     if (element.closest("#hero")) return; // Skip hero elements
 
@@ -200,6 +185,10 @@ function setupScrollAnimations() {
         trigger: element,
         start: "top 85%",
         end: "bottom 15%",
+        onToggle: (self) =>
+          gsap.set(self.trigger, {
+            willChange: self.isActive ? "transform, opacity" : "auto",
+          }),
         toggleActions: "play none none reverse",
       },
       scale: 0.8,
@@ -210,44 +199,32 @@ function setupScrollAnimations() {
     });
   });
 
-  // Slide in from left
-  gsap.utils
-    .toArray("#keyFeatures .slide-in-left")
-    .forEach((element, index) => {
-      gsap.from(element, {
-        scrollTrigger: {
-          trigger: element,
-          start: "top 80%",
-          toggleActions: "play none none reverse",
-        },
-        x: -100,
-        opacity: 0,
-        duration: 0.8,
-        delay: index * 0.15,
-        ease: "power2.out",
-      });
+  // Slide in elements on scroll
+  const slideInElements = gsap.utils.toArray(
+    "#keyFeatures .slide-in-left, #keyFeatures .slide-in-right"
+  );
+  slideInElements.forEach((element, index) => {
+    const isLeft = element.classList.contains("slide-in-left");
+    gsap.from(element, {
+      scrollTrigger: {
+        trigger: element,
+        start: "top 80%",
+        toggleActions: "play none none reverse",
+        onToggle: (self) =>
+          gsap.set(self.trigger, {
+            willChange: self.isActive ? "transform, opacity" : "auto",
+          }),
+      },
+      x: isLeft ? -100 : 100,
+      opacity: 0,
+      duration: 0.8,
+      delay: index * 0.15,
+      ease: "power2.out",
     });
-
-  // Slide in from right
-  gsap.utils
-    .toArray("#keyFeatures .slide-in-right")
-    .forEach((element, index) => {
-      gsap.from(element, {
-        scrollTrigger: {
-          trigger: element,
-          start: "top 80%",
-          toggleActions: "play none none reverse",
-        },
-        x: 100,
-        opacity: 0,
-        duration: 0.8,
-        delay: index * 0.15,
-        ease: "power2.out",
-      });
-    });
+  });
 
   // Progress bar scroll indicator
-  if (elementExists("#progressBar")) {
+  if (document.querySelector("#progressBar")) {
     gsap.to("#progressBar", {
       scrollTrigger: {
         trigger: "body",
@@ -261,7 +238,7 @@ function setupScrollAnimations() {
   }
 
   // Parallax effect for hero
-  if (elementExists("#hero")) {
+  if (document.querySelector("#hero")) {
     gsap.to("#hero", {
       scrollTrigger: {
         trigger: "#hero",
@@ -422,7 +399,7 @@ window.addEventListener("load", () => {
     }, 250);
   });
 
-  window.previousWidth = window.innerWidth;
+  window.previousWidth = window.innerWidth; // Set initial width
 });
 
 // Performance optimization: Pause animations when page is hidden
@@ -462,37 +439,6 @@ if (logoElement) {
     }
   });
 }
-
-// Intersection Observer for performance optimization
-const observerOptions = {
-  root: null,
-  rootMargin: "50px",
-  threshold: 0.1,
-};
-
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach((entry) => {
-    if (entry.isIntersecting) {
-      // Element is visible, ensure animations are active
-      gsap.set(entry.target, { willChange: "transform, opacity" });
-    } else {
-      // Element is not visible, optimize performance
-      gsap.set(entry.target, { willChange: "auto" });
-    }
-  });
-}, observerOptions);
-
-// Observe all animated elements
-document.addEventListener("DOMContentLoaded", () => {
-  // Wait a bit for elements to be ready
-  setTimeout(() => {
-    document
-      .querySelectorAll(".fade-in, .slide-in-left, .slide-in-right, .scale-in")
-      .forEach((el) => {
-        observer.observe(el);
-      });
-  }, 100);
-});
 
 // Error handling for missing elements
 window.addEventListener("error", (e) => {
