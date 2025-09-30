@@ -28,7 +28,7 @@
         height: 95%;
       }
       footer {
-        flex-grow: 0
+        flex-grow: 0;
       }
     </style>
   </head>
@@ -40,13 +40,43 @@
           <span class="hamburger"></span>
         </button>
         <ul class="nav-links" id="navLinks">
-          <li><a href="../index.html#about" class="nav-item" data-i18n="nav_about">About</a></li>
-          <li><a href="../index.html#resources" class="nav-item" data-i18n="nav_resources">Resources</a></li>
-          <li><a href="../WHO.html" class="nav-item" data-i18n="nav_who">WHO Instructions</a></li>
-          <li><a href="./index.html" class="nav-item" data-i18n="nav_app">App</a></li>
-          <li><a href="./TEMPOData.html" class="nav-item active" data-i18n="nav_tempo_data">TEMPO Data</a></li>
           <li>
-            <button id="lang-toggle-btn" class="nav-btn" style="cursor: pointer;">English</button>
+            <a href="../index.html#about" class="nav-item" data-i18n="nav_about"
+              >About</a
+            >
+          </li>
+          <li>
+            <a
+              href="../index.html#resources"
+              class="nav-item"
+              data-i18n="nav_resources"
+              >Resources</a
+            >
+          </li>
+          <li>
+            <a href="../WHO.html" class="nav-item" data-i18n="nav_who"
+              >WHO Instructions</a
+            >
+          </li>
+          <li>
+            <a href="./index.html" class="nav-item" data-i18n="nav_app">App</a>
+          </li>
+          <li>
+            <a
+              href="./TEMPOData.html"
+              class="nav-item active"
+              data-i18n="nav_tempo_data"
+              >TEMPO Data</a
+            >
+          </li>
+          <li>
+            <button
+              id="lang-toggle-btn"
+              class="nav-btn"
+              style="cursor: pointer"
+            >
+              English
+            </button>
           </li>
         </ul>
       </nav>
@@ -83,6 +113,31 @@
         attribution: "NASA TEMPO HCHO",
       });
 
+      let gemsO3Layer = L.imageOverlay(
+        "",
+        [
+          [0, 0],
+          [0, 0],
+        ],
+        { opacity: 0.5, attribution: "GEMS O₃" }
+      );
+      let gemsHchoLayer = L.imageOverlay(
+        "",
+        [
+          [0, 0],
+          [0, 0],
+        ],
+        { opacity: 0.5, attribution: "GEMS HCHO" }
+      );
+      let gemsNo2Layer = L.imageOverlay(
+        "",
+        [
+          [0, 0],
+          [0, 0],
+        ],
+        { opacity: 0.5, attribution: "GEMS NO₂" }
+      );
+
       no2Layer.addTo(map);
 
       let layerControl;
@@ -95,8 +150,13 @@
           [getTranslation("tempo_layer_no2")]: no2Layer,
           [getTranslation("tempo_layer_o3")]: o3Layer,
           [getTranslation("tempo_layer_hcho")]: hchoLayer,
+          "GEMS O₃ (Forecast)": gemsO3Layer,
+          "GEMS HCHO (Forecast)": gemsHchoLayer,
+          "GEMS NO₂ (Forecast)": gemsNo2Layer,
         };
-        layerControl = L.control.layers(null, overlayMaps, { collapsed: false }).addTo(map);
+        layerControl = L.control
+          .layers(null, overlayMaps, { collapsed: false })
+          .addTo(map);
       }
 
       const info = L.control({ position: "bottomleft" });
@@ -105,10 +165,90 @@
         this.update();
         return this._div;
       };
-      info.update = function() {
+      info.update = function () {
         this._div.innerHTML = getTranslation("tempo_select_layer");
-      }
+      };
       info.addTo(map);
+
+      // --- GEMS Opacity Slider Control ---
+      const opacityControl = L.control({ position: "bottomright" });
+      opacityControl.onAdd = function (map) {
+        const div = L.DomUtil.create("div", "info-box leaflet-control-layers");
+        div.id = "gemsOpacityControl";
+        div.style.display = "none";
+        div.innerHTML =
+          '<strong>GEMS Layer Opacity</strong><br><input type="range" min="0" max="1" step="0.05" value="0.5" id="gemsOpacitySlider" style="width: 120px;">';
+
+        L.DomEvent.disableClickPropagation(div);
+
+        div.oninput = function (e) {
+          if (
+            map.hasLayer(gemsO3Layer) ||
+            map.hasLayer(gemsHchoLayer) ||
+            map.hasLayer(gemsNo2Layer)
+          ) {
+            [gemsO3Layer, gemsHchoLayer, gemsNo2Layer].forEach((layer) =>
+              layer.setOpacity(e.target.value)
+            );
+          }
+        };
+
+        return div;
+      };
+      opacityControl.addTo(map);
+
+      // Show/hide the opacity slider when any GEMS layer is toggled
+      const gemsLayers = [gemsO3Layer, gemsHchoLayer, gemsNo2Layer];
+      map.on("overlayadd", (e) => {
+        if (gemsLayers.includes(e.layer)) {
+          document.getElementById("gemsOpacityControl").style.display = "block";
+        }
+      });
+      map.on("overlayremove", (e) => {
+        if (gemsLayers.includes(e.layer)) {
+          const anyGemsVisible = gemsLayers.some((layer) =>
+            map.hasLayer(layer)
+          );
+          if (!anyGemsVisible) {
+            document.getElementById("gemsOpacityControl").style.display =
+              "none";
+          }
+        }
+      });
+
+      async function loadGemsLayer(layerName, layerObject) {
+        console.log(
+          `Attempting to load GEMS ${layerName.toUpperCase()} layer...`
+        );
+        const maxRetries = 10;
+        const retryDelay = 3000;
+
+        for (let i = 0; i < maxRetries; i++) {
+          try {
+            const boundsResponse = await fetch(`/api/gems/${layerName}/bounds`);
+            const data = await boundsResponse.json();
+
+            if (data.bounds) {
+              console.log(
+                `GEMS ${layerName.toUpperCase()} bounds found. Setting image layer.`
+              );
+              layerObject.setUrl(`/api/gems/${layerName}/image`);
+              layerObject.setBounds(data.bounds);
+              return;
+            } else {
+              console.log(
+                `GEMS ${layerName.toUpperCase()} data not ready. Retrying... (Attempt ${
+                  i + 1
+                })`
+              );
+            }
+          } catch (error) {
+            console.error("Error fetching GEMS bounds:", error);
+          }
+          await new Promise((resolve) => setTimeout(resolve, retryDelay));
+        }
+        console.error("Failed to load GEMS layer after multiple retries.");
+      }
 
       // Nav toggle script
       const navToggle = document.getElementById("navToggle");
@@ -128,11 +268,16 @@
 
       // Override setLanguage to update map layers
       const originalSetLanguage = window.setLanguage;
-      window.setLanguage = async function(lang) {
+      window.setLanguage = async function (lang) {
         await originalSetLanguage(lang);
         updateLayerControl();
         info.update();
-      }
+      };
+
+      // Initial load
+      loadGemsLayer("o3", gemsO3Layer);
+      loadGemsLayer("hcho", gemsHchoLayer);
+      loadGemsLayer("no2", gemsNo2Layer);
     </script>
   </body>
 </html>

@@ -110,17 +110,40 @@ function initMap() {
     attribution: "NASA TEMPO HCHO",
   });
 
+  // --- GEMS Layer (initially empty) ---
+  const gemsLayer = L.imageOverlay('', [[0,0], [0,0]], { opacity: 0.7, attribution: 'GEMS NO₂' });
+
   const tempoOverlays = {
     "NO₂ (Tropospheric Column)": no2Layer,
     "O₃ (Total Column)": o3Layer,
     "HCHO (Formaldehyde)": hchoLayer,
+    "GEMS NO₂ (Daily)": gemsLayer,
   };
-  tempoLayerGroup = L.layerGroup([no2Layer]); // Add NO2 by default
+
+  // Add NO2 by default, but don't add the empty GEMS layer yet
+  const defaultLayers = [no2Layer];
+  tempoLayerGroup = L.layerGroup(defaultLayers);
+
   tempoControl = L.control.layers(null, tempoOverlays, { collapsed: false });
 
   map.on("click", onMapClick);
   groundStationLayer = L.layerGroup().addTo(map);
   addSimulatedGroundStations();
+}
+
+async function loadGemsLayer() {
+  try {
+    const boundsResponse = await fetch('/api/gems/bounds');
+    const { bounds } = await boundsResponse.json();
+    const gemsLayer = tempoControl.getContainer().querySelector('input[type="checkbox"]:last-child').nextSibling._layer;
+    if (bounds && gemsLayer) {
+      gemsLayer.setUrl('/api/gems/image');
+      gemsLayer.setBounds(bounds);
+      console.log("GEMS layer updated with new data.");
+    }
+  } catch (error) {
+    console.error("Could not load GEMS layer:", error);
+  }
 }
 
 function addSimulatedGroundStations() {
@@ -1200,6 +1223,7 @@ function setupNavigation() {
 
 function initApp() {
   initMap();
+  loadGemsLayer();
   // The i18n.js script handles its own initialization on DOMContentLoaded
   document.querySelectorAll(".modal").forEach((modal) => {
     modal.addEventListener("click", (e) => {

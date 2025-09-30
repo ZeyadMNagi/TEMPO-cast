@@ -1,19 +1,21 @@
 const express = require("express");
 const axios = require("axios");
+const { pipeline } = require("node:stream/promises");
+const fs = require("node:fs/promises");
+const fsSync = require("node:fs");
+const path = require("node:path");
 const NodeCache = require("node-cache");
 require("dotenv").config();
-
 const app = express();
 
 const compression = require("compression");
 app.use(compression());
 
-// Create cache instance - 5 minutes TTL for air quality data
 const cache = new NodeCache({ stdTTL: 300, checkperiod: 60 });
 
 app.use(
   express.static("public", {
-    maxAge: "1h", // Cache static files for 1 hour
+    maxAge: "1h",
     etag: true,
   })
 );
@@ -21,14 +23,110 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
 
-// Rate limiting to prevent API abuse
 const rateLimit = require("express-rate-limit");
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000,
   max: 100,
   message: "Too many requests from this IP, please try again later.",
 });
 app.use("/api/", limiter);
+
+// --- GEMS Image Service Integration ---
+const GEMS_API_KEY =
+  process.env.GEMS_API_KEY || "api-c455c74c0a854d36868021840d32e01f";
+const GEMS_DATA_DIR = path.join(__dirname, "microservices", "data");
+const GEMS_IMAGE_BOUNDS = [
+  [-34, 48],
+  [58, 168],
+];
+
+const GEMS_LAYERS = {
+  o3: {
+    baseUrl: "https://nesc.nier.go.kr:38032/api/GK2/L2/O3T/FOR/image",
+    latestImageFile: null,
+    isReady: false,
+  },
+  hcho: {
+    baseUrl: "https://nesc.nier.go.kr:38032/api/GK2/L2/HCHO/FOR/image",
+    latestImageFile: null,
+    isReady: false,
+  },
+  no2: {
+    baseUrl: "https://nesc.nier.go.kr:38032/api/GK2/L2/NO2_Trop/FOR/image",
+    latestImageFile: null,
+    isReady: false,
+  },
+};
+
+async function fetchLatestGemsTimestamp(baseUrl) {
+  const now = new Date();
+  const end = now.toISOString().slice(0, 16).replace(/[-T:]/g, "");
+  now.setHours(now.getHours() - 24);
+  const start = now.toISOString().slice(0, 16).replace(/[-T:]/g, "");
+
+  const url = `${baseUrl}/getFileDateList.do?sDate=${start}&eDate=${end}&format=json&key=${GEMS_API_KEY}`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`GEMS API returned status: ${response.status}`);
+  }
+  const data = await response.json();
+
+  if (!data || !Array.isArray(data.list) || data.list.length === 0) {
+    throw new Error(`GEMS API for ${baseUrl} returned no data.`);
+  }
+
+  return data.list
+    .map((item) => item.item)
+    .sort()
+    .pop();
+}
+
+async function refreshGemsLayer(layerName) {
+  const layer = GEMS_LAYERS[layerName];
+  if (!layer) return;
+
+  console.log(`\n[GEMS-${layerName.toUpperCase()}] Starting image refresh...`);
+  try {
+    const timestamp = await fetchLatestGemsTimestamp(layer.baseUrl);
+    console.log(
+      `[GEMS-${layerName.toUpperCase()}] Latest timestamp: ${timestamp}`
+    );
+
+    const imagePath = path.join(GEMS_DATA_DIR, `${layerName}-${timestamp}.png`);
+
+    try {
+      await fs.access(imagePath);
+      console.log(
+        `[GEMS-${layerName.toUpperCase()}] Using existing image: ${imagePath}`
+      );
+    } catch {
+      console.log(`[GEMS-${layerName.toUpperCase()}] Downloading image...`);
+      const imageUrl = `${layer.baseUrl}/getFileItem.do?date=${timestamp}&key=${GEMS_API_KEY}`;
+      const response = await fetch(imageUrl);
+      if (!response.ok)
+        throw new Error(`Download failed with status ${response.status}`);
+
+      const imageBuffer = Buffer.from(await response.arrayBuffer());
+      await fs.writeFile(imagePath, imageBuffer);
+      console.log(
+        `[GEMS-${layerName.toUpperCase()}] Image saved to ${imagePath}`
+      );
+    }
+
+    layer.latestImageFile = imagePath;
+    layer.isReady = true;
+    console.log(
+      `[GEMS-${layerName.toUpperCase()}] Refresh successful. Layer is ready.`
+    );
+  } catch (error) {
+    layer.isReady = false;
+    console.error(
+      `[GEMS-${layerName.toUpperCase()}] Refresh failed:`,
+      error.message
+    );
+  }
+}
+// --- End GEMS Integration ---
 
 // Cache middleware
 const getCacheKey = (lat, lon, endpoint) => `${endpoint}_${lat}_${lon}`;
@@ -306,18 +404,41 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// Cache statistics endpoint (for debugging)
+app.get("/api/gems/:layer/image", async (req, res) => {
+  const layerName = req.params.layer;
+  const layer = GEMS_LAYERS[layerName];
+
+  if (!layer || !layer.isReady || !layer.latestImageFile) {
+    return res
+      .status(503)
+      .json({
+        status: "initializing",
+        message: "GEMS image is not ready yet.",
+      });
+  }
+  res.sendFile(layer.latestImageFile);
+});
+
+app.get("/api/gems/:layer/bounds", async (req, res) => {
+  res.json({ bounds: GEMS_IMAGE_BOUNDS });
+});
+
 app.get("/api/cache-stats", (req, res) => {
   res.json(cache.getStats());
 });
 
-// Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: "Something went wrong!" });
 });
 
 app.listen(PORT, () => {
+  // Ensure the GEMS data directory exists
+  fsSync.mkdirSync(GEMS_DATA_DIR, { recursive: true });
+  // Run the initial GEMS image refresh for all layers in the background
+  for (const layerName in GEMS_LAYERS) {
+    refreshGemsLayer(layerName);
+  }
   console.log(`Optimized server running on port ${PORT}`);
   console.log("Available endpoints:");
   console.log("- GET /api/data - Current air quality");
