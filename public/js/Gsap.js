@@ -106,7 +106,6 @@ function initMainAnimations() {
     );
   }
 
-  // Globe animations - Fixed to use actual elements
   const globeImg = document.querySelector("#globe-container img");
   if (globeImg) {
     gsap.to(globeImg, {
@@ -117,7 +116,6 @@ function initMainAnimations() {
     });
   }
 
-  // Globe rings glow effect - Fixed
   const globeRings = document.querySelectorAll(".globe-ring");
   if (globeRings.length > 0) {
     gsap.to(globeRings, {
@@ -151,18 +149,16 @@ function initMainAnimations() {
   setupHoverEffects();
 }
 
-// Scroll-triggered animations
 function setupScrollAnimations() {
-  // Fade in elements on scroll
   gsap.utils.toArray(".fade-in").forEach((element) => {
-    if (element.closest("#hero")) return; // Skip hero elements as they're already animated
+    if (element.closest("#hero")) return; 
 
     gsap.from(element, {
       scrollTrigger: {
         trigger: element,
         start: "top 85%",
         end: "bottom 20%",
-        toggleActions: "play none none reverse", // play, pause, resume, reverse
+        toggleActions: "play none none reverse", 
         onToggle: (self) =>
           gsap.set(self.trigger, {
             willChange: self.isActive ? "transform, opacity" : "auto",
@@ -178,7 +174,7 @@ function setupScrollAnimations() {
 
   // Scale in elements on scroll
   gsap.utils.toArray(".scale-in").forEach((element, index) => {
-    if (element.closest("#hero")) return; // Skip hero elements
+    if (element.closest("#hero")) return; 
 
     gsap.from(element, {
       scrollTrigger: {
@@ -199,7 +195,6 @@ function setupScrollAnimations() {
     });
   });
 
-  // Slide in elements on scroll
   const slideInElements = gsap.utils.toArray(
     "#keyFeatures .slide-in-left, #keyFeatures .slide-in-right"
   );
@@ -223,7 +218,6 @@ function setupScrollAnimations() {
     });
   });
 
-  // Progress bar scroll indicator
   if (document.querySelector("#progressBar")) {
     gsap.to("#progressBar", {
       scrollTrigger: {
@@ -237,24 +231,35 @@ function setupScrollAnimations() {
     });
   }
 
-  // Parallax effect for hero
-  if (document.querySelector("#hero")) {
-    gsap.to("#hero", {
-      scrollTrigger: {
-        trigger: "#hero",
-        start: "top top",
-        end: "bottom top",
-        scrub: 1,
-      },
-      yPercent: -30,
-      ease: "none",
+  ScrollTrigger.matchMedia({
+    "(min-width: 768px)": function () {
+      gsap.to("#hero", {
+        scrollTrigger: {
+          trigger: "#hero",
+          start: "top top",
+          end: "bottom top",
+          scrub: 1,
+        },
+        yPercent: -30,
+        ease: "none",
+      });
+    },
+  });
+
+  // Header scroll effect
+  const header = document.querySelector("header");
+  if (header) {
+    ScrollTrigger.create({
+      trigger: "body",
+      start: "50px top", 
+      end: "bottom bottom",
+      onToggle: (self) => header.classList.toggle("scrolled", self.isActive),
     });
   }
 }
 
 // Interactive hover effects
 function setupHoverEffects() {
-  // Resource cards
   document.querySelectorAll(".resource-card").forEach((card) => {
     const hoverTl = gsap.timeline({ paused: true });
     const img = card.querySelector("img");
@@ -359,7 +364,6 @@ function setupSmoothScrolling() {
 // Responsive particle adjustment
 function adjustParticlesForDevice() {
   if (window.innerWidth < 768) {
-    // Reduce particle effects on mobile for better performance
     const particles = document.querySelectorAll(".particle");
     gsap.to(particles, {
       duration: 0.5,
@@ -399,10 +403,9 @@ window.addEventListener("load", () => {
     }, 250);
   });
 
-  window.previousWidth = window.innerWidth; // Set initial width
+  window.previousWidth = window.innerWidth; 
 });
 
-// Performance optimization: Pause animations when page is hidden
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) {
     gsap.globalTimeline.pause();
@@ -411,7 +414,6 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
-// Easter egg: Double-click logo for special animation
 const logoElement = document.querySelector(".logo");
 if (logoElement) {
   logoElement.addEventListener("dblclick", () => {
@@ -424,7 +426,6 @@ if (logoElement) {
       repeat: 1,
     });
 
-    // Trigger particle burst
     const particles = document.querySelectorAll(".particle");
     if (particles.length > 0) {
       gsap.to(particles, {
