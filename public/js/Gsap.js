@@ -151,14 +151,14 @@ function initMainAnimations() {
 
 function setupScrollAnimations() {
   gsap.utils.toArray(".fade-in").forEach((element) => {
-    if (element.closest("#hero")) return; 
+    if (element.closest("#hero")) return;
 
     gsap.from(element, {
       scrollTrigger: {
         trigger: element,
         start: "top 85%",
         end: "bottom 20%",
-        toggleActions: "play none none reverse", 
+        toggleActions: "play none none reverse",
         onToggle: (self) =>
           gsap.set(self.trigger, {
             willChange: self.isActive ? "transform, opacity" : "auto",
@@ -172,51 +172,54 @@ function setupScrollAnimations() {
     });
   });
 
-  // Scale in elements on scroll
-  gsap.utils.toArray(".scale-in").forEach((element, index) => {
-    if (element.closest("#hero")) return; 
+  // // Scale in elements on scroll
+  // gsap.utils.toArray(".scale-in").forEach((element, index) => {
+  //   if (element.closest("#hero")) return;
+  //   if (element.closest("header")) return;
 
-    gsap.from(element, {
-      scrollTrigger: {
-        trigger: element,
-        start: "top 85%",
-        end: "bottom 15%",
-        onToggle: (self) =>
-          gsap.set(self.trigger, {
-            willChange: self.isActive ? "transform, opacity" : "auto",
-          }),
-        toggleActions: "play none none reverse",
-      },
-      scale: 0.8,
-      opacity: 0,
-      duration: 0.6,
-      delay: index * 0.1,
-      ease: "back.out(1.7)",
-    });
-  });
+  //   gsap.from(element, {
+  //     scrollTrigger: {
+  //       trigger: element,
+  //       start: "top 85%",
+  //       end: "bottom 15%",
+  //       onToggle: (self) =>
+  //         gsap.set(self.trigger, {
+  //           willChange: self.isActive ? "transform, opacity" : "auto",
+  //         }),
+  //       toggleActions: "play none none reverse",
+  //     },
+  //     scale: 0.8,
+  //     opacity: 0,
+  //     duration: 0.6,
+  //     delay: index * 0.1,
+  //     ease: "back.out(1.7)",
+  //   });
+  // });
 
-  const slideInElements = gsap.utils.toArray(
-    "#keyFeatures .slide-in-left, #keyFeatures .slide-in-right"
-  );
-  slideInElements.forEach((element, index) => {
-    const isLeft = element.classList.contains("slide-in-left");
-    gsap.from(element, {
-      scrollTrigger: {
-        trigger: element,
-        start: "top 80%",
-        toggleActions: "play none none reverse",
-        onToggle: (self) =>
-          gsap.set(self.trigger, {
-            willChange: self.isActive ? "transform, opacity" : "auto",
-          }),
-      },
-      x: isLeft ? -100 : 100,
-      opacity: 0,
-      duration: 0.8,
-      delay: index * 0.15,
-      ease: "power2.out",
-    });
-  });
+  // const slideInElements = gsap.utils.toArray(
+  //   "#keyFeatures .slide-in-left, #keyFeatures .slide-in-right"
+  // );
+  // slideInElements.forEach((element, index) => {
+  //   if (element.closest("header")) return;
+
+  //   const isLeft = element.classList.contains("slide-in-left");
+  //   gsap.from(element, {
+  //     scrollTrigger: {
+  //       trigger: element,
+  //       start: "top 80%",
+  //       toggleActions: "play none none reverse",
+  //       onToggle: (self) =>
+  //         gsap.set(self.trigger, {
+  //           willChange: self.isActive ? "transform, opacity" : "auto",
+  //         }),
+  //     },
+  //     x: isLeft ? -100 : 100,
+  //     opacity: 0,
+  //     duration: 0.8,
+  //     delay: index * 0.15,
+  //     ease: "power2.out",
+  //   });
+  // });
 
   if (document.querySelector("#progressBar")) {
     gsap.to("#progressBar", {
@@ -251,7 +254,7 @@ function setupScrollAnimations() {
   if (header) {
     ScrollTrigger.create({
       trigger: "body",
-      start: "50px top", 
+      start: "50px top",
       end: "bottom bottom",
       onToggle: (self) => header.classList.toggle("scrolled", self.isActive),
     });
@@ -375,27 +378,20 @@ function adjustParticlesForDevice() {
   }
 }
 
-// Initialize everything when page loads
 window.addEventListener("load", () => {
-  // Create particles first
   createParticles();
 
-  // Start main animations directly
   initMainAnimations();
 
-  // Setup responsive adjustments
   adjustParticlesForDevice();
 
-  // Setup smooth scrolling
   setupSmoothScrolling();
 
-  // Handle window resize
   let resizeTimeout;
   window.addEventListener("resize", () => {
     clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(() => {
       adjustParticlesForDevice();
-      // Recreate particles on significant size changes
       if (Math.abs(window.innerWidth - (window.previousWidth || 0)) > 100) {
         createParticles();
         window.previousWidth = window.innerWidth;
@@ -403,7 +399,7 @@ window.addEventListener("load", () => {
     }, 250);
   });
 
-  window.previousWidth = window.innerWidth; 
+  window.previousWidth = window.innerWidth;
 });
 
 document.addEventListener("visibilitychange", () => {
