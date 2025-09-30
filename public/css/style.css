@@ -291,43 +291,6 @@ section {
   border-bottom: none;
 }
 
-.searchItem:hover {
-  background: rgba(227, 242, 253, 0.8);
-}
-
-/* Button - Mobile Optimized */
-.button {
-  width: 100%;
-  max-width: 200px;
-  height: 45px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  cursor: pointer;
-  border: 2px solid #274375;
-  background-color: #274375;
-  box-shadow: 0 4px 15px rgba(39, 67, 117, 0.3);
-  border-radius: 25px;
-  transition: all 0.3s ease;
-}
-
-.button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(39, 67, 117, 0.4);
-}
-
-.button:active {
-  transform: scale(0.98);
-}
-
-.text {
-  padding: 8px 12px;
-  color: white;
-  font-weight: 500;
-  font-size: 0.95em;
-}
-
 .arrow {
   width: 20px;
   height: 20px;
