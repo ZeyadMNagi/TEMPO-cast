@@ -5,6 +5,7 @@ const fs = require("node:fs/promises");
 const fsSync = require("node:fs");
 const path = require("node:path");
 const NodeCache = require("node-cache");
+const serverless = require("serverless-http");
 require("dotenv").config();
 const app = express();
 
@@ -20,7 +21,7 @@ app.use(
   })
 );
 app.use(express.json());
-
+const router = express.Router();
 const PORT = process.env.PORT || 3000;
 
 const rateLimit = require("express-rate-limit");
@@ -29,7 +30,7 @@ const limiter = rateLimit({
   max: 100,
   message: "Too many requests from this IP, please try again later.",
 });
-app.use("/api/", limiter);
+router.use(limiter);
 
 // --- GEMS Image Service Integration ---
 const GEMS_API_KEY =
@@ -159,7 +160,7 @@ const cacheMiddleware = (endpoint) => {
 };
 
 // Optimized API endpoints with caching and parallel requests
-app.get("/api/data", cacheMiddleware("data"), async (req, res) => {
+router.get("/data", cacheMiddleware("data"), async (req, res) => {
   const { lat, lon } = req.query;
 
   if (!lat || !lon) {
@@ -222,7 +223,7 @@ app.get("/api/data", cacheMiddleware("data"), async (req, res) => {
 });
 
 // Optimized forecast endpoint with caching
-app.get("/api/forecast", cacheMiddleware("forecast"), async (req, res) => {
+router.get("/forecast", cacheMiddleware("forecast"), async (req, res) => {
   const { lat, lon } = req.query;
 
   if (!lat || !lon) {
@@ -250,7 +251,7 @@ app.get("/api/forecast", cacheMiddleware("forecast"), async (req, res) => {
 });
 
 // Optimized historical endpoint with caching
-app.get("/api/historical", cacheMiddleware("historical"), async (req, res) => {
+router.get("/historical", cacheMiddleware("historical"), async (req, res) => {
   const { lat, lon, days } = req.query;
 
   if (!lat || !lon) {
@@ -288,7 +289,7 @@ app.get("/api/historical", cacheMiddleware("historical"), async (req, res) => {
 });
 
 // Optimized complete endpoint with intelligent caching and parallel processing
-app.get("/api/complete", cacheMiddleware("complete"), async (req, res) => {
+router.get("/complete", cacheMiddleware("complete"), async (req, res) => {
   const { lat, lon, days } = req.query;
 
   if (!lat || !lon) {
@@ -393,7 +394,7 @@ app.get("/api/complete", cacheMiddleware("complete"), async (req, res) => {
 });
 
 // Health check endpoint
-app.get("/api/health", (req, res) => {
+router.get("/health", (req, res) => {
   res.json({
     status: "ok",
     timestamp: new Date().toISOString(),
@@ -404,7 +405,7 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-app.get("/api/gems/:layer/image", async (req, res) => {
+router.get("/gems/:layer/image", async (req, res) => {
   const layerName = req.params.layer;
   const layer = GEMS_LAYERS[layerName];
 
@@ -419,18 +420,22 @@ app.get("/api/gems/:layer/image", async (req, res) => {
   res.sendFile(layer.latestImageFile);
 });
 
-app.get("/api/gems/:layer/bounds", async (req, res) => {
+router.get("/gems/:layer/bounds", async (req, res) => {
   res.json({ bounds: GEMS_IMAGE_BOUNDS });
 });
 
-app.get("/api/cache-stats", (req, res) => {
+router.get("/cache-stats", (req, res) => {
   res.json(cache.getStats());
 });
 
-app.use((err, req, res, next) => {
+app.use("/api/", router);
+
+app.use((err, req, res, _next) => {
   console.error(err.stack);
   res.status(500).json({ error: "Something went wrong!" });
 });
+
+module.exports.handler = serverless(app);
 
 app.listen(PORT, () => {
   // Ensure the GEMS data directory exists

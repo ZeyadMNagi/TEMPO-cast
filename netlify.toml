@@ -1,8 +1,10 @@
 [build]
+  # This is the directory Netlify will serve your static files from.
   publish = "public"
+  # This is the directory where your serverless function is located.
   functions = "functions"
 
 [[redirects]]
   from = "/api/*"
-  to = "/.netlify/functions/:splat"
+  to = "/.netlify/functions/api/:splat"
   status = 200
