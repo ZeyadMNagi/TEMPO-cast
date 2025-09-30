@@ -35,7 +35,7 @@ router.use(limiter);
 // --- GEMS Image Service Integration ---
 const GEMS_API_KEY =
   process.env.GEMS_API_KEY || "api-c455c74c0a854d36868021840d32e01f";
-const GEMS_DATA_DIR = path.join(__dirname, "microservices", "data");
+const GEMS_DATA_DIR = path.join(require("os").tmpdir(), "gems_data");
 const GEMS_IMAGE_BOUNDS = [
   [-34, 48],
   [58, 168],
@@ -421,7 +421,16 @@ router.get("/gems/:layer/image", async (req, res) => {
 });
 
 router.get("/gems/:layer/bounds", async (req, res) => {
-  res.json({ bounds: GEMS_IMAGE_BOUNDS });
+  const layerName = req.params.layer;
+  const layer = GEMS_LAYERS[layerName];
+
+  if (layer && layer.isReady) {
+    res.json({ bounds: GEMS_IMAGE_BOUNDS });
+  } else {
+    res
+      .status(503)
+      .json({ status: "initializing", message: "GEMS layer not ready yet." });
+  }
 });
 
 router.get("/cache-stats", (req, res) => {
@@ -437,26 +446,21 @@ app.use((err, req, res, _next) => {
 
 module.exports.handler = serverless(app);
 
-app.listen(PORT, () => {
-  // Ensure the GEMS data directory exists
+// --- Serverless Initialization ---
+// This code runs once per serverless function instance
+try {
   fsSync.mkdirSync(GEMS_DATA_DIR, { recursive: true });
-  // Run the initial GEMS image refresh for all layers in the background
+  console.log(`GEMS data directory created at: ${GEMS_DATA_DIR}`);
+
+  // Start the initial GEMS image refresh for all layers
   for (const layerName in GEMS_LAYERS) {
     refreshGemsLayer(layerName);
   }
-  console.log(`Optimized server running on port ${PORT}`);
-  console.log("Available endpoints:");
-  console.log("- GET /api/data - Current air quality");
-  console.log("- GET /api/forecast - Air quality forecast");
-  console.log("- GET /api/historical?days=7 - Historical data");
-  console.log("- GET /api/complete - All data combined");
-  console.log("- GET /api/health - Server health check");
-  console.log("- GET /api/cache-stats - Cache statistics");
-  console.log("\nOptimizations enabled:");
-  console.log("- Response compression");
-  console.log("- 5-minute data caching");
-  console.log("- Rate limiting (100 req/15min)");
-  console.log("- Parallel API requests");
-  console.log("- Static file caching");
-  console.log("- Error resilience with Promise.allSettled");
-});
+} catch (error) {
+  console.error("Error during serverless initialization:", error);
+}
+
+// This part is for local development only
+if (process.env.NODE_ENV !== "production") {
+  app.listen(PORT, () => console.log(`Local server running on port ${PORT}`));
+}
