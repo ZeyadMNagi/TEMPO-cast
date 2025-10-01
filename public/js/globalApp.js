@@ -1174,7 +1174,7 @@ function initApp() {
   const lon = params.get("lon");
   const name = params.get("name");
   if (lat && lon) {
-    if (typeof fetchLocationData === 'function') {
+    if (typeof fetchLocationData === "function") {
       fetchLocationData(parseFloat(lat), parseFloat(lon), name || "");
       zoomToLocation(parseFloat(lat), parseFloat(lon));
     }

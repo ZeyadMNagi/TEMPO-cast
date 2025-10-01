@@ -415,21 +415,19 @@ router.get("/gems/:layer/image", async (req, res) => {
   const layer = GEMS_LAYERS[layerName];
 
   if (!layer || !layer.isReady || !layer.latestImageFile) {
-    return res
-      .status(503)
-      .json({
-        status: "initializing",
-        message: "GEMS image is not ready yet.",
-      });
+    return res.status(503).json({
+      status: "initializing",
+      message: "GEMS image is not ready yet.",
+    });
   }
 
-  // Use res.send(buffer) instead of res.sendFile() to avoid issues with netlify dev proxy
-  const imageBuffer = await fs.readFile(layer.latestImageFile);
-  res.writeHead(200, {
-    "Content-Type": "image/png",
-    "Content-Length": imageBuffer.length,
-  });
-  res.end(imageBuffer);
+  try {
+    const imageBuffer = await fs.readFile(layer.latestImageFile);
+    res.set("Content-Type", "image/png").send(imageBuffer);
+  } catch (error) {
+    console.error(`Error reading image file ${layer.latestImageFile}:`, error);
+    res.status(404).json({ error: "Image file not found on server." });
+  }
 });
 
 router.get("/gems/:layer/bounds", async (req, res) => {
