@@ -1,323 +1,610 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GEMS API Test</title>
-  <style>
-    body {
-      font-family: system-ui, -apple-system, sans-serif;
-      max-width: 900px;
-      margin: 2rem auto;
-      padding: 0 1rem;
-      background: #f5f5f5;
-    }
-    h1 { color: #1976D2; }
-    .test-section {
-      margin: 1.5rem 0;
-      padding: 1.5rem;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    .test-section h2 {
-      margin-top: 0;
-      color: #333;
-      border-bottom: 2px solid #e0e0e0;
-      padding-bottom: 0.5rem;
-    }
-    button {
-      background: #2196F3;
-      color: white;
-      border: none;
-      padding: 0.6rem 1.2rem;
-      border-radius: 4px;
-      cursor: pointer;
-      margin: 0.25rem;
-      font-size: 14px;
-      font-weight: 500;
-      transition: background 0.2s;
-    }
-    button:hover { background: #1976D2; }
-    button:active { background: #0D47A1; }
-    .success { 
-      color: #4CAF50;
-      font-weight: bold;
-    }
-    .error { 
-      color: #f44336;
-      font-weight: bold;
-    }
-    .loading { 
-      color: #FF9800;
-      font-weight: bold;
-    }
-    pre {
-      background: #263238;
-      color: #aed581;
-      padding: 1rem;
-      border-radius: 4px;
-      overflow-x: auto;
-      font-size: 12px;
-      max-height: 400px;
-      overflow-y: auto;
-    }
-    img {
-      max-width: 100%;
-      border: 2px solid #ddd;
-      margin-top: 1rem;
-      border-radius: 4px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    }
-    .result-container {
-      margin-top: 1rem;
-    }
-  </style>
-</head>
-<body>
-  <h1>🧪 GEMS API Test Suite</h1>
-  <p>Test your GEMS endpoints to verify they're working correctly on Netlify.</p>
+const express = require("express");
+const axios = require("axios");
+const fs = require("node:fs/promises");
+const fsSync = require("node:fs");
+const path = require("node:path");
+const NodeCache = require("node-cache");
+const serverless = require("serverless-http");
+require("dotenv").config();
+const app = express();
 
-  <div class="test-section">
-    <h2>1. Health Check</h2>
-    <button onclick="testHealth()">Test Health Endpoint</button>
-    <div id="health-result" class="result-container"></div>
-  </div>
+app.set("trust proxy", 1);
 
-  <div class="test-section">
-    <h2>2. GEMS Bounds</h2>
-    <button onclick="testBounds('o3')">Test O₃ Bounds</button>
-    <button onclick="testBounds('hcho')">Test HCHO Bounds</button>
-    <button onclick="testBounds('no2')">Test NO₂ Bounds</button>
-    <div id="bounds-result" class="result-container"></div>
-  </div>
+const compression = require("compression");
+app.use(compression());
 
-  <div class="test-section">
-    <h2>3. GEMS Debug (Check API Connectivity)</h2>
-    <p><small>This will test if Netlify can connect to the GEMS API and fetch data</small></p>
-    <button onclick="testDebug('o3')">Debug O₃</button>
-    <button onclick="testDebug('hcho')">Debug HCHO</button>
-    <button onclick="testDebug('no2')">Debug NO₂</button>
-    <div id="debug-result" class="result-container"></div>
-  </div>
+const cache = new NodeCache({ stdTTL: 300, checkperiod: 60 });
 
-  <div class="test-section">
-    <h2>4. GEMS Images</h2>
-    <p><small>This will attempt to load the actual image through Netlify's server</small></p>
-    <button onclick="testImage('o3')">Load O₃ Image</button>
-    <button onclick="testImage('hcho')">Load HCHO Image</button>
-    <button onclick="testImage('no2')">Load NO₂ Image</button>
-    <div id="image-result" class="result-container"></div>
-  </div>
+app.use(
+  express.static("public", {
+    maxAge: "1h",
+    etag: true,
+  })
+);
+app.use(express.json());
+const router = express.Router();
+const PORT = process.env.PORT || 3000;
 
-  <div class="test-section">
-    <h2>5. Direct GEMS API Test (Client-Side)</h2>
-    <p><small>This bypasses Netlify and tests if GEMS API works directly from your browser</small></p>
-    <button onclick="testDirectGems('o3')">Test Direct O₃</button>
-    <button onclick="testDirectGems('hcho')">Test Direct HCHO</button>
-    <button onclick="testDirectGems('no2')">Test Direct NO₂</button>
-    <div id="direct-result" class="result-container"></div>
-  </div>
+const rateLimit = require("express-rate-limit");
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: "Too many requests from this IP, please try again later.",
+});
 
-  <script>
-    const GEMS_API_KEY = "api-c455c74c0a854d36868021840d32e01f";
-    const GEMS_URLS = {
-      o3: "https://nesc.nier.go.kr:38032/api/GK2/L2/O3T/FOR/image",
-      hcho: "https://nesc.nier.go.kr:38032/api/GK2/L2/HCHO/FOR/image",
-      no2: "https://nesc.nier.go.kr:38032/api/GK2/L2/NO2_Trop/FOR/image",
+if (process.env.NODE_ENV === "production") {
+  router.use(limiter);
+}
+
+// --- GEMS Image Service Integration ---
+const GEMS_API_KEY =
+  process.env.GEMS_API_KEY || "api-c455c74c0a854d36868021840d32e01f";
+const GEMS_DATA_DIR = path.join(require("os").tmpdir(), "gems_data");
+const GEMS_IMAGE_BOUNDS = [
+  [-34, 48],
+  [58, 168],
+];
+
+// Cache GEMS images in memory for serverless environment
+const gemsImageCache = new NodeCache({ stdTTL: 3600, checkperiod: 120 }); // 1 hour cache
+
+const GEMS_LAYERS = {
+  o3: {
+    baseUrl: "https://nesc.nier.go.kr:38032/api/GK2/L2/O3T/FOR/image",
+  },
+  hcho: {
+    baseUrl: "https://nesc.nier.go.kr:38032/api/GK2/L2/HCHO/FOR/image",
+  },
+  no2: {
+    baseUrl: "https://nesc.nier.go.kr:38032/api/GK2/L2/NO2_Trop/FOR/image",
+  },
+};
+
+async function fetchLatestGemsTimestamp(baseUrl) {
+  const now = new Date();
+  const end = now.toISOString().slice(0, 16).replace(/[-T:]/g, "");
+  now.setHours(now.getHours() - 24);
+  const start = now.toISOString().slice(0, 16).replace(/[-T:]/g, "");
+
+  const url = `${baseUrl}/getFileDateList.do?sDate=${start}&eDate=${end}&format=json&key=${GEMS_API_KEY}`;
+  
+  console.log(`[GEMS] Fetching timestamp from: ${url}`);
+  
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': 'application/json',
+      }
+    });
+    
+    console.log(`[GEMS] Timestamp API response status: ${response.status}`);
+    
+    if (!response.ok) {
+      const text = await response.text();
+      console.error(`[GEMS] Timestamp API error response:`, text.substring(0, 200));
+      throw new Error(`GEMS API returned status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+
+    if (!data || !Array.isArray(data.list) || data.list.length === 0) {
+      console.error(`[GEMS] Invalid data structure:`, JSON.stringify(data).substring(0, 200));
+      throw new Error(`GEMS API returned no data.`);
+    }
+
+    const timestamps = data.list.map((item) => item.item);
+    console.log(`[GEMS] Found ${timestamps.length} timestamps, latest: ${timestamps[timestamps.length - 1]}`);
+    
+    return timestamps.sort().pop();
+  } catch (error) {
+    console.error(`[GEMS] fetchLatestGemsTimestamp failed:`, error);
+    throw error;
+  }
+}
+
+async function fetchGemsImage(layerName) {
+  const layer = GEMS_LAYERS[layerName];
+  if (!layer) {
+    throw new Error(`Unknown GEMS layer: ${layerName}`);
+  }
+
+  // Check cache first
+  const cachedImage = gemsImageCache.get(layerName);
+  if (cachedImage) {
+    console.log(`[GEMS-${layerName.toUpperCase()}] Using cached image`);
+    return cachedImage;
+  }
+
+  console.log(`[GEMS-${layerName.toUpperCase()}] Fetching fresh image...`);
+
+  try {
+    // Get latest timestamp
+    const timestamp = await fetchLatestGemsTimestamp(layer.baseUrl);
+    console.log(`[GEMS-${layerName.toUpperCase()}] Latest timestamp: ${timestamp}`);
+
+    // Download image with timeout
+    const imageUrl = `${layer.baseUrl}/getFileItem.do?date=${timestamp}&key=${GEMS_API_KEY}`;
+    console.log(`[GEMS-${layerName.toUpperCase()}] Fetching from: ${imageUrl}`);
+    
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 25000); // 25 second timeout
+    
+    const response = await fetch(imageUrl, { signal: controller.signal });
+    clearTimeout(timeout);
+    
+    console.log(`[GEMS-${layerName.toUpperCase()}] Response status: ${response.status}`);
+    console.log(`[GEMS-${layerName.toUpperCase()}] Content-Type: ${response.headers.get('content-type')}`);
+    
+    if (!response.ok) {
+      throw new Error(`Download failed with status ${response.status}`);
+    }
+
+    const imageBuffer = Buffer.from(await response.arrayBuffer());
+    console.log(`[GEMS-${layerName.toUpperCase()}] Image downloaded (${imageBuffer.length} bytes, ${(imageBuffer.length / 1024 / 1024).toFixed(2)} MB)`);
+
+    // Verify it's actually an image
+    if (imageBuffer.length < 100) {
+      throw new Error(`Image too small (${imageBuffer.length} bytes) - likely not a valid image`);
+    }
+
+    // Check PNG magic bytes
+    const isPNG = imageBuffer[0] === 0x89 && imageBuffer[1] === 0x50 && imageBuffer[2] === 0x4E && imageBuffer[3] === 0x47;
+    if (!isPNG) {
+      console.warn(`[GEMS-${layerName.toUpperCase()}] Warning: Does not appear to be a PNG file`);
+      console.log(`[GEMS-${layerName.toUpperCase()}] First bytes:`, imageBuffer.slice(0, 10));
+    }
+
+    // Cache the image buffer in memory
+    gemsImageCache.set(layerName, imageBuffer);
+    console.log(`[GEMS-${layerName.toUpperCase()}] Image cached successfully`);
+
+    return imageBuffer;
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      console.error(`[GEMS-${layerName.toUpperCase()}] Fetch timeout after 25s`);
+      throw new Error('GEMS API request timed out');
+    }
+    console.error(`[GEMS-${layerName.toUpperCase()}] Fetch failed:`, error.message);
+    throw error;
+  }
+}
+
+// --- End GEMS Integration ---
+
+// Cache middleware
+const getCacheKey = (lat, lon, endpoint) => `${endpoint}_${lat}_${lon}`;
+
+const cacheMiddleware = (endpoint) => {
+  return (req, res, next) => {
+    const { lat, lon } = req.query;
+    if (!lat || !lon) return next();
+
+    const cacheKey = getCacheKey(lat, lon, endpoint);
+    const cachedData = cache.get(cacheKey);
+
+    if (cachedData) {
+      console.log(`Cache hit for ${endpoint}: ${cacheKey}`);
+      return res.json(cachedData);
+    }
+
+    // Store original json method
+    const originalJson = res.json;
+
+    // Override json method to cache the response
+    res.json = function (data) {
+      cache.set(cacheKey, data);
+      console.log(`Cached data for ${endpoint}: ${cacheKey}`);
+      originalJson.call(this, data);
     };
 
-    async function testHealth() {
-      const resultDiv = document.getElementById('health-result');
-      resultDiv.innerHTML = '<p class="loading">Testing...</p>';
-      
-      try {
-        const response = await fetch('/api/health');
-        const data = await response.json();
-        
-        resultDiv.innerHTML = `
-          <p class="success">✓ Health check passed!</p>
-          <pre>${JSON.stringify(data, null, 2)}</pre>
-        `;
-      } catch (error) {
-        resultDiv.innerHTML = `<p class="error">✗ Error: ${error.message}</p>`;
-      }
+    next();
+  };
+};
+
+// Optimized API endpoints with caching and parallel requests
+router.get("/data", cacheMiddleware("data"), async (req, res) => {
+  const { lat, lon } = req.query;
+
+  if (!lat || !lon) {
+    return res.status(400).json({ error: "Missing lat/lon" });
+  }
+
+  try {
+    // Use Promise.allSettled for better error handling
+    const [currentPollutionResult, weatherResult, airQualityResult] =
+      await Promise.allSettled([
+        axios.get(`http://api.openweathermap.org/data/2.5/air_pollution`, {
+          params: { lat, lon, appid: process.env.OPENWEATHER_API_KEY },
+          timeout: 5000,
+        }),
+        axios.get(`http://api.openweathermap.org/data/2.5/weather`, {
+          params: {
+            lat,
+            lon,
+            appid: process.env.OPENWEATHER_API_KEY,
+            units: "metric",
+          },
+          timeout: 5000,
+        }),
+        axios
+          .get(`https://api.openaq.org/v3/locations`, {
+            headers: { "X-API-Key": process.env.OPENAQ_API_KEY },
+            params: { coordinates: `${lat},${lon}`, radius: 25000, limit: 1 },
+            timeout: 8000,
+          })
+          .catch(() => null), // Non-blocking failure
+      ]);
+
+    // Handle results
+    if (
+      currentPollutionResult.status === "rejected" ||
+      weatherResult.status === "rejected"
+    ) {
+      throw new Error("Failed to fetch essential data");
     }
 
-    async function testBounds(layer) {
-      const resultDiv = document.getElementById('bounds-result');
-      resultDiv.innerHTML = '<p class="loading">Testing bounds...</p>';
-      
-      try {
-        const response = await fetch(`/api/gems/${layer}/bounds`);
-        const data = await response.json();
-        
-        if (response.ok) {
-          resultDiv.innerHTML = `
-            <p class="success">✓ Bounds retrieved for ${layer.toUpperCase()}!</p>
-            <pre>${JSON.stringify(data, null, 2)}</pre>
-          `;
-        } else {
-          resultDiv.innerHTML = `
-            <p class="error">✗ Failed: ${response.status}</p>
-            <pre>${JSON.stringify(data, null, 2)}</pre>
-          `;
-        }
-      } catch (error) {
-        resultDiv.innerHTML = `<p class="error">✗ Error: ${error.message}</p>`;
-      }
-    }
+    const combinedData = {
+      ...currentPollutionResult.value.data,
+      weather: weatherResult.value.data,
+    };
 
-    async function testDebug(layer) {
-      const resultDiv = document.getElementById('debug-result');
-      resultDiv.innerHTML = `<p class="loading">⏳ Running debug for ${layer.toUpperCase()}... (may take 10-30 seconds)</p>`;
-      
-      const startTime = Date.now();
-      
-      try {
-        const response = await fetch(`/api/gems/${layer}/debug`);
-        const data = await response.json();
-        const loadTime = ((Date.now() - startTime) / 1000).toFixed(1);
-        
-        if (data.success) {
-          resultDiv.innerHTML = `
-            <p class="success">✓ Debug successful for ${layer.toUpperCase()} (${loadTime}s)</p>
-            <p><strong>Image Size:</strong> ${data.steps.find(s => s.imageSizeMB)?.imageSizeMB || 'N/A'} MB</p>
-            <details>
-              <summary>View Full Debug Info</summary>
-              <pre>${JSON.stringify(data, null, 2)}</pre>
-            </details>
-          `;
-        } else {
-          resultDiv.innerHTML = `
-            <p class="error">✗ Debug failed for ${layer.toUpperCase()} (${loadTime}s)</p>
-            <p><strong>Error:</strong> ${data.error}</p>
-            <details open>
-              <summary>View Full Debug Info</summary>
-              <pre>${JSON.stringify(data, null, 2)}</pre>
-            </details>
-          `;
-        }
-      } catch (error) {
-        const loadTime = ((Date.now() - startTime) / 1000).toFixed(1);
-        resultDiv.innerHTML = `
-          <p class="error">✗ Error after ${loadTime}s: ${error.message}</p>
-          <p>This usually means the function timed out or crashed.</p>
-        `;
-      }
-    }
+    const airQualityData =
+      airQualityResult.status === "fulfilled" && airQualityResult.value
+        ? airQualityResult.value.data.results?.[0] || null
+        : null;
 
-    async function testImage(layer) {
-      const resultDiv = document.getElementById('image-result');
-      resultDiv.innerHTML = `<p class="loading">⏳ Loading ${layer.toUpperCase()} image... (this may take 10-30 seconds)</p>`;
-      
-      const startTime = Date.now();
-      
-      try {
-        const imageUrl = `/api/gems/${layer}/image?t=${Date.now()}`;
-        const response = await fetch(imageUrl);
-        
-        console.log('Image response:', response);
-        const loadTime = ((Date.now() - startTime) / 1000).toFixed(1);
-        
-        if (response.ok) {
-          const blob = await response.blob();
-          const objectUrl = URL.createObjectURL(blob);
-          const size = (blob.size / 1024 / 1024).toFixed(2);
-          
-          resultDiv.innerHTML = `
-            <p class="success">✓ ${layer.toUpperCase()} image loaded! (${size} MB in ${loadTime}s)</p>
-            <img src="${objectUrl}" alt="${layer} image">
-          `;
-          console.log('Image loaded successfully:', objectUrl);
-        } else {
-          const errorText = await response.text();
-          let errorData;
-          try {
-            errorData = JSON.parse(errorText);
-          } catch {
-            errorData = { error: errorText };
-          }
-          
-          resultDiv.innerHTML = `
-            <p class="error">✗ Failed after ${loadTime}s: ${response.status}</p>
-            <pre>${JSON.stringify(errorData, null, 2)}</pre>
-          `;
-        }
-      } catch (error) {
-        const loadTime = ((Date.now() - startTime) / 1000).toFixed(1);
-        resultDiv.innerHTML = `
-          <p class="error">✗ Error after ${loadTime}s: ${error.message}</p>
-          <p>This could mean:</p>
-          <ul>
-            <li>The GEMS API is slow or down</li>
-            <li>Network timeout (function took too long)</li>
-            <li>CORS or connectivity issue</li>
-          </ul>
-        `;
-      }
-    }
-
-    async function testDirectGems(layer) {
-      const resultDiv = document.getElementById('direct-result');
-      resultDiv.innerHTML = `<p class="loading">⏳ Testing direct GEMS API for ${layer.toUpperCase()}...</p>`;
-      
-      const startTime = Date.now();
-      
-      try {
-        const baseUrl = GEMS_URLS[layer];
-        
-        // Get timestamp
-        const now = new Date();
-        const end = now.toISOString().slice(0, 16).replace(/[-T:]/g, "");
-        now.setHours(now.getHours() - 24);
-        const start = now.toISOString().slice(0, 16).replace(/[-T:]/g, "");
-        
-        const listUrl = `${baseUrl}/getFileDateList.do?sDate=${start}&eDate=${end}&format=json&key=${GEMS_API_KEY}`;
-        
-        const listResponse = await fetch(listUrl);
-        if (!listResponse.ok) {
-          throw new Error(`List API returned ${listResponse.status}`);
-        }
-        
-        const listData = await listResponse.json();
-        if (!listData.list || listData.list.length === 0) {
-          throw new Error("No data available from GEMS");
-        }
-        
-        const timestamp = listData.list.map(item => item.item).sort().pop();
-        const imageUrl = `${baseUrl}/getFileItem.do?date=${timestamp}&key=${GEMS_API_KEY}`;
-        
-        const loadTime = ((Date.now() - startTime) / 1000).toFixed(1);
-        
-        resultDiv.innerHTML = `
-          <p class="success">✓ Direct GEMS API test successful! (${loadTime}s)</p>
-          <p><strong>Latest timestamp:</strong> ${timestamp}</p>
-          <p><strong>Image URL:</strong></p>
-          <pre>${imageUrl}</pre>
-          <p>Attempting to load image...</p>
-          <img src="${imageUrl}" alt="${layer} direct" onload="this.nextElementSibling.innerHTML='<p class=success>✓ Image loaded successfully from GEMS!</p>'" onerror="this.nextElementSibling.innerHTML='<p class=error>✗ Image failed to load - likely CORS blocked</p>'">
-          <div></div>
-        `;
-      } catch (error) {
-        const loadTime = ((Date.now() - startTime) / 1000).toFixed(1);
-        resultDiv.innerHTML = `
-          <p class="error">✗ Direct test failed after ${loadTime}s</p>
-          <p><strong>Error:</strong> ${error.message}</p>
-          <p>This means the GEMS API is either:</p>
-          <ul>
-            <li>Down or slow</li>
-            <li>Blocking requests from this browser</li>
-            <li>CORS protected</li>
-          </ul>
-        `;
-      }
-    }
-
-    // Auto-run health check on load
-    window.addEventListener('load', () => {
-      testHealth();
+    res.json({
+      location: weatherResult.value.data.name,
+      weather: combinedData,
+      airQuality: airQualityData,
     });
-  </script>
-</body>
-</html>
+  } catch (err) {
+    console.error("API Error:", err.message);
+    res.status(500).json({ error: "Failed to fetch current data" });
+  }
+});
+
+// Optimized forecast endpoint with caching
+router.get("/forecast", cacheMiddleware("forecast"), async (req, res) => {
+  const { lat, lon } = req.query;
+
+  if (!lat || !lon) {
+    return res.status(400).json({ error: "Missing lat/lon" });
+  }
+
+  try {
+    const forecastResponse = await axios.get(
+      `http://api.openweathermap.org/data/2.5/air_pollution/forecast`,
+      {
+        params: { lat, lon, appid: process.env.OPENWEATHER_API_KEY },
+        timeout: 8000,
+      }
+    );
+
+    res.json({
+      coord: forecastResponse.data.coord,
+      forecast: forecastResponse.data.list,
+      totalHours: forecastResponse.data.list.length,
+    });
+  } catch (err) {
+    console.error("Forecast API Error:", err.message);
+    res.status(500).json({ error: "Failed to fetch forecast data" });
+  }
+});
+
+// Optimized historical endpoint with caching
+router.get("/historical", cacheMiddleware("historical"), async (req, res) => {
+  const { lat, lon, days } = req.query;
+
+  if (!lat || !lon) {
+    return res.status(400).json({ error: "Missing lat/lon" });
+  }
+
+  try {
+    const daysBack = Math.min(parseInt(days) || 7, 30); // Limit to 30 days max
+    const endTime = Math.floor(Date.now() / 1000);
+    const startTime = endTime - daysBack * 24 * 60 * 60;
+
+    const historicalResponse = await axios.get(
+      `http://api.openweathermap.org/data/2.5/air_pollution/history`,
+      {
+        params: {
+          lat,
+          lon,
+          start: startTime,
+          end: endTime,
+          appid: process.env.OPENWEATHER_API_KEY,
+        },
+        timeout: 10000,
+      }
+    );
+
+    res.json({
+      coord: historicalResponse.data.coord,
+      historical: historicalResponse.data.list,
+      period: { start: startTime, end: endTime, days: daysBack },
+    });
+  } catch (err) {
+    console.error("Historical API Error:", err.message);
+    res.status(500).json({ error: "Failed to fetch historical data" });
+  }
+});
+
+// Optimized complete endpoint with intelligent caching and parallel processing
+router.get("/complete", cacheMiddleware("complete"), async (req, res) => {
+  const { lat, lon, days } = req.query;
+
+  if (!lat || !lon) {
+    return res.status(400).json({ error: "Missing lat/lon" });
+  }
+
+  try {
+    const daysBack = Math.min(parseInt(days) || 7, 30);
+    const endTime = Math.floor(Date.now() / 1000);
+    const startTime = endTime - daysBack * 24 * 60 * 60;
+
+    // Use Promise.allSettled for better error handling
+    const [currentRes, forecastRes, weatherRes, historicalRes, airQualityRes] =
+      await Promise.allSettled([
+        axios.get(`http://api.openweathermap.org/data/2.5/air_pollution`, {
+          params: { lat, lon, appid: process.env.OPENWEATHER_API_KEY },
+          timeout: 5000,
+        }),
+        axios.get(
+          `http://api.openweathermap.org/data/2.5/air_pollution/forecast`,
+          {
+            params: { lat, lon, appid: process.env.OPENWEATHER_API_KEY },
+            timeout: 8000,
+          }
+        ),
+        axios.get(`http://api.openweathermap.org/data/2.5/weather`, {
+          params: {
+            lat,
+            lon,
+            appid: process.env.OPENWEATHER_API_KEY,
+            units: "metric",
+          },
+          timeout: 5000,
+        }),
+        axios.get(
+          `http://api.openweathermap.org/data/2.5/air_pollution/history`,
+          {
+            params: {
+              lat,
+              lon,
+              start: startTime,
+              end: endTime,
+              appid: process.env.OPENWEATHER_API_KEY,
+            },
+            timeout: 10000,
+          }
+        ),
+        axios
+          .get(`https://api.openaq.org/v3/locations`, {
+            headers: { "X-API-Key": process.env.OPENAQ_API_KEY },
+            params: { coordinates: `${lat},${lon}`, radius: 25000, limit: 1 },
+            timeout: 8000,
+          })
+          .catch(() => null), // Non-blocking failure
+      ]);
+
+    // Check essential requests
+    const essentialFailed = [currentRes, weatherRes].some(
+      (result) => result.status === "rejected"
+    );
+    if (essentialFailed) {
+      throw new Error("Failed to fetch essential data");
+    }
+
+    // Get air quality data (non-blocking)
+    let airQualityData = null;
+    if (airQualityRes.status === "fulfilled" && airQualityRes.value) {
+      airQualityData = airQualityRes.value.data.results?.[0] || null;
+    }
+
+    // Combine current pollution with weather
+    const combinedCurrent = {
+      ...currentRes.value.data,
+      weather: weatherRes.value.data,
+    };
+
+    res.json({
+      location: weatherRes.value.data.name,
+      current: combinedCurrent,
+      forecast:
+        forecastRes.status === "fulfilled"
+          ? {
+              coord: forecastRes.value.data.coord,
+              list: forecastRes.value.data.list,
+            }
+          : null,
+      historical:
+        historicalRes.status === "fulfilled"
+          ? {
+              coord: historicalRes.value.data.coord,
+              list: historicalRes.value.data.list,
+              period: { start: startTime, end: endTime, days: daysBack },
+            }
+          : null,
+      airQuality: airQualityData,
+      timestamp: Date.now(),
+    });
+  } catch (err) {
+    console.error("Complete API Error:", err.message);
+    res.status(500).json({ error: "Failed to fetch complete data" });
+  }
+});
+
+// Health check endpoint
+router.get("/health", (req, res) => {
+  res.json({
+    status: "ok",
+    timestamp: new Date().toISOString(),
+    cache: {
+      keys: cache.keys().length,
+      stats: cache.getStats(),
+    },
+    gems: {
+      cachedLayers: gemsImageCache.keys(),
+      cacheStats: gemsImageCache.getStats(),
+    },
+  });
+});
+
+// GEMS image endpoint - fetch on demand
+router.get("/gems/:layer/image", async (req, res) => {
+  const layerName = req.params.layer;
+
+  if (!GEMS_LAYERS[layerName]) {
+    return res.status(404).json({ error: "Unknown GEMS layer" });
+  }
+
+  try {
+    console.log(`[GEMS-${layerName}] Image request received`);
+    const imageBuffer = await fetchGemsImage(layerName);
+    console.log(`[GEMS-${layerName}] Sending image (${imageBuffer.length} bytes)`);
+    
+    res.set("Content-Type", "image/png");
+    res.set("Cache-Control", "public, max-age=3600"); // Cache for 1 hour
+    res.set("Content-Length", imageBuffer.length);
+    res.send(imageBuffer);
+  } catch (error) {
+    console.error(`[GEMS-${layerName}] Error:`, error);
+    res.status(503).json({
+      error: "Failed to fetch GEMS image",
+      message: error.message,
+      layer: layerName,
+      stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
+    });
+  }
+});
+
+// Debug endpoint to test GEMS API connectivity
+router.get("/gems/:layer/debug", async (req, res) => {
+  const layerName = req.params.layer;
+  const layer = GEMS_LAYERS[layerName];
+
+  if (!layer) {
+    return res.status(404).json({ error: "Unknown GEMS layer" });
+  }
+
+  const debugInfo = {
+    layer: layerName,
+    baseUrl: layer.baseUrl,
+    apiKey: GEMS_API_KEY ? `${GEMS_API_KEY.substring(0, 10)}...` : "NOT SET",
+    cached: gemsImageCache.has(layerName),
+    cacheStats: gemsImageCache.getStats(),
+    steps: [],
+  };
+
+  try {
+    // Step 1: Get timestamp
+    debugInfo.steps.push({ step: 1, action: "Fetching timestamp list..." });
+    const now = new Date();
+    const end = now.toISOString().slice(0, 16).replace(/[-T:]/g, "");
+    now.setHours(now.getHours() - 24);
+    const start = now.toISOString().slice(0, 16).replace(/[-T:]/g, "");
+
+    const listUrl = `${layer.baseUrl}/getFileDateList.do?sDate=${start}&eDate=${end}&format=json&key=${GEMS_API_KEY}`;
+    debugInfo.listUrl = listUrl;
+
+    const listResponse = await fetch(listUrl);
+    debugInfo.steps.push({
+      step: 1,
+      status: listResponse.status,
+      ok: listResponse.ok,
+    });
+
+    if (!listResponse.ok) {
+      throw new Error(`Timestamp API returned ${listResponse.status}`);
+    }
+
+    const listData = await listResponse.json();
+    debugInfo.steps.push({
+      step: 1,
+      result: "success",
+      dataReceived: listData.list?.length || 0,
+    });
+
+    if (!listData.list || listData.list.length === 0) {
+      throw new Error("No timestamps available");
+    }
+
+    const timestamp = listData.list.map((item) => item.item).sort().pop();
+    debugInfo.timestamp = timestamp;
+    debugInfo.steps.push({ step: 2, action: "Latest timestamp", value: timestamp });
+
+    // Step 2: Try to fetch image
+    const imageUrl = `${layer.baseUrl}/getFileItem.do?date=${timestamp}&key=${GEMS_API_KEY}`;
+    debugInfo.imageUrl = imageUrl;
+    debugInfo.steps.push({ step: 3, action: "Fetching image..." });
+
+    const imageResponse = await fetch(imageUrl);
+    debugInfo.steps.push({
+      step: 3,
+      status: imageResponse.status,
+      ok: imageResponse.ok,
+      contentType: imageResponse.headers.get("content-type"),
+      contentLength: imageResponse.headers.get("content-length"),
+    });
+
+    if (imageResponse.ok) {
+      const imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
+      debugInfo.steps.push({
+        step: 3,
+        result: "success",
+        imageSize: imageBuffer.length,
+        imageSizeMB: (imageBuffer.length / 1024 / 1024).toFixed(2),
+      });
+      debugInfo.success = true;
+    } else {
+      debugInfo.success = false;
+      debugInfo.error = `Image fetch returned ${imageResponse.status}`;
+    }
+
+    res.json(debugInfo);
+  } catch (error) {
+    debugInfo.success = false;
+    debugInfo.error = error.message;
+    debugInfo.errorStack = process.env.NODE_ENV === "development" ? error.stack : undefined;
+    res.status(500).json(debugInfo);
+  }
+});
+
+// GEMS bounds endpoint - always returns bounds immediately
+router.get("/gems/:layer/bounds", async (req, res) => {
+  const layerName = req.params.layer;
+
+  if (!GEMS_LAYERS[layerName]) {
+    return res.status(404).json({ error: "Unknown GEMS layer" });
+  }
+
+  // Always return bounds immediately - no "ready" check needed
+  res.json({
+    bounds: GEMS_IMAGE_BOUNDS,
+    layer: layerName,
+    cached: gemsImageCache.has(layerName),
+  });
+});
+
+router.get("/cache-stats", (req, res) => {
+  res.json({
+    weather: cache.getStats(),
+    gems: gemsImageCache.getStats(),
+  });
+});
+
+app.use("/api/", router);
+
+app.use((err, req, res, _next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: "Something went wrong!" });
+});
+
+module.exports.handler = serverless(app);
+
+// This part is for local development only
+if (process.env.NODE_ENV !== "production") {
+  app.listen(PORT, () => console.log(`Local server running on port ${PORT}`));
+}

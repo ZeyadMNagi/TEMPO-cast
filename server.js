@@ -70,20 +70,48 @@ async function fetchLatestGemsTimestamp(baseUrl) {
 
   console.log(`[GEMS] Fetching timestamp from: ${url}`);
 
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`GEMS API returned status: ${response.status}`);
-  }
-  const data = await response.json();
+  try {
+    const response = await fetch(url, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        Accept: "application/json",
+      },
+    });
 
-  if (!data || !Array.isArray(data.list) || data.list.length === 0) {
-    throw new Error(`GEMS API for ${baseUrl} returned no data.`);
-  }
+    console.log(`[GEMS] Timestamp API response status: ${response.status}`);
 
-  return data.list
-    .map((item) => item.item)
-    .sort()
-    .pop();
+    if (!response.ok) {
+      const text = await response.text();
+      console.error(
+        `[GEMS] Timestamp API error response:`,
+        text.substring(0, 200)
+      );
+      throw new Error(`GEMS API returned status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (!data || !Array.isArray(data.list) || data.list.length === 0) {
+      console.error(
+        `[GEMS] Invalid data structure:`,
+        JSON.stringify(data).substring(0, 200)
+      );
+      throw new Error(`GEMS API returned no data.`);
+    }
+
+    const timestamps = data.list.map((item) => item.item);
+    console.log(
+      `[GEMS] Found ${timestamps.length} timestamps, latest: ${
+        timestamps[timestamps.length - 1]
+      }`
+    );
+
+    return timestamps.sort().pop();
+  } catch (error) {
+    console.error(`[GEMS] fetchLatestGemsTimestamp failed:`, error);
+    throw error;
+  }
 }
 
 async function fetchGemsImage(layerName) {
