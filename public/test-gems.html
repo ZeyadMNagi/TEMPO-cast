@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GEMS API Test</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+    .test-section {
+      margin: 2rem 0;
+      padding: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+    button {
+      background: #2196F3;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 0.25rem;
+    }
+    button:hover { background: #1976D2; }
+    .success { color: #4CAF50; }
+    .error { color: #f44336; }
+    .loading { color: #FF9800; }
+    pre {
+      background: #f5f5f5;
+      padding: 1rem;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+    img {
+      max-width: 100%;
+      border: 1px solid #ddd;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧪 GEMS API Test Suite</h1>
+  <p>Test your GEMS endpoints to verify they're working correctly.</p>
+
+  <div class="test-section">
+    <h2>1. Health Check</h2>
+    <button onclick="testHealth()">Test Health Endpoint</button>
+    <div id="health-result"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>2. GEMS Bounds</h2>
+    <button onclick="testBounds('o3')">Test O₃ Bounds</button>
+    <button onclick="testBounds('hcho')">Test HCHO Bounds</button>
+    <button onclick="testBounds('no2')">Test NO₂ Bounds</button>
+    <div id="bounds-result"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>3. GEMS Debug (Check API Connectivity)</h2>
+    <button onclick="testDebug('o3')">Debug O₃</button>
+    <button onclick="testDebug('hcho')">Debug HCHO</button>
+    <button onclick="testDebug('no2')">Debug NO₂</button>
+    <div id="debug-result"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>4. GEMS Images</h2>
+    <button onclick="testImage('o3')">Load O₃ Image</button>
+    <button onclick="testImage('hcho')">Load HCHO Image</button>
+    <button onclick="testImage('no2')">Load NO₂ Image</button>
+    <div id="image-result"></div>
+  </div>
+
+  <script>
+    async function testHealth() {
+      const resultDiv = document.getElementById('health-result');
+      resultDiv.innerHTML = '<p class="loading">Testing...</p>';
+      
+      try {
+        const response = await fetch('/api/health');
+        const data = await response.json();
+        
+        resultDiv.innerHTML = `
+          <p class="success">✓ Health check passed!</p>
+          <pre>${JSON.stringify(data, null, 2)}</pre>
+        `;
+      } catch (error) {
+        resultDiv.innerHTML = `<p class="error">✗ Error: ${error.message}</p>`;
+      }
+    }
+
+    async function testBounds(layer) {
+      const resultDiv = document.getElementById('bounds-result');
+      resultDiv.innerHTML = '<p class="loading">Testing bounds...</p>';
+      
+      try {
+        const response = await fetch(`/api/gems/${layer}/bounds`);
+        const data = await response.json();
+        
+        if (response.ok) {
+          resultDiv.innerHTML = `
+            <p class="success">✓ Bounds retrieved for ${layer.toUpperCase()}!</p>
+            <pre>${JSON.stringify(data, null, 2)}</pre>
+          `;
+        } else {
+          resultDiv.innerHTML = `
+            <p class="error">✗ Failed: ${response.status}</p>
+            <pre>${JSON.stringify(data, null, 2)}</pre>
+          `;
+        }
+      } catch (error) {
+        resultDiv.innerHTML = `<p class="error">✗ Error: ${error.message}</p>`;
+      }
+    }
+
+    async function testImage(layer) {
+      const resultDiv = document.getElementById('image-result');
+      resultDiv.innerHTML = `<p class="loading">⏳ Loading ${layer.toUpperCase()} image... (this may take 10-30 seconds)</p>`;
+      
+      const startTime = Date.now();
+      
+      try {
+        const imageUrl = `/api/gems/${layer}/image?t=${Date.now()}`;
+        const response = await fetch(imageUrl);
+        
+        const loadTime = ((Date.now() - startTime) / 1000).toFixed(1);
+        
+        if (response.ok) {
+          const blob = await response.blob();
+          const objectUrl = URL.createObjectURL(blob);
+          const size = (blob.size / 1024 / 1024).toFixed(2);
+          
+          resultDiv.innerHTML = `
+            <p class="success">✓ ${layer.toUpperCase()} image loaded! (${size} MB in ${loadTime}s)</p>
+            <img src="${objectUrl}" alt="${layer} image">
+          `;
+        } else {
+          const errorData = await response.json();
+          resultDiv.innerHTML = `
+            <p class="error">✗ Failed after ${loadTime}s: ${response.status}</p>
+            <pre>${JSON.stringify(errorData, null, 2)}</pre>
+          `;
+        }
+      } catch (error) {
+        const loadTime = ((Date.now() - startTime) / 1000).toFixed(1);
+        resultDiv.innerHTML = `
+          <p class="error">✗ Error after ${loadTime}s: ${error.message}</p>
+          <p>This could mean:</p>
+          <ul>
+            <li>The GEMS API is slow or down</li>
+            <li>Network timeout (function took too long)</li>
+            <li>CORS or connectivity issue</li>
+          </ul>
+        `;
+      }
+    }
+
+    // Auto-run health check on load
+    window.addEventListener('load', () => {
+      testHealth();
+    });
+  </script>
+</body>
+</html>

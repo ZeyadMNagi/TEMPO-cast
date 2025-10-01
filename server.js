@@ -108,9 +108,24 @@ async function fetchGemsImage(layerName) {
       `[GEMS-${layerName.toUpperCase()}] Latest timestamp: ${timestamp}`
     );
 
-    // Download image
+    // Download image with timeout
     const imageUrl = `${layer.baseUrl}/getFileItem.do?date=${timestamp}&key=${GEMS_API_KEY}`;
-    const response = await fetch(imageUrl);
+    console.log(`[GEMS-${layerName.toUpperCase()}] Fetching from: ${imageUrl}`);
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 25000); // 25 second timeout
+
+    const response = await fetch(imageUrl, { signal: controller.signal });
+    clearTimeout(timeout);
+
+    console.log(
+      `[GEMS-${layerName.toUpperCase()}] Response status: ${response.status}`
+    );
+    console.log(
+      `[GEMS-${layerName.toUpperCase()}] Content-Type: ${response.headers.get(
+        "content-type"
+      )}`
+    );
 
     if (!response.ok) {
       throw new Error(`Download failed with status ${response.status}`);
@@ -120,14 +135,44 @@ async function fetchGemsImage(layerName) {
     console.log(
       `[GEMS-${layerName.toUpperCase()}] Image downloaded (${
         imageBuffer.length
-      } bytes)`
+      } bytes, ${(imageBuffer.length / 1024 / 1024).toFixed(2)} MB)`
     );
+
+    // Verify it's actually an image
+    if (imageBuffer.length < 100) {
+      throw new Error(
+        `Image too small (${imageBuffer.length} bytes) - likely not a valid image`
+      );
+    }
+
+    // Check PNG magic bytes
+    const isPNG =
+      imageBuffer[0] === 0x89 &&
+      imageBuffer[1] === 0x50 &&
+      imageBuffer[2] === 0x4e &&
+      imageBuffer[3] === 0x47;
+    if (!isPNG) {
+      console.warn(
+        `[GEMS-${layerName.toUpperCase()}] Warning: Does not appear to be a PNG file`
+      );
+      console.log(
+        `[GEMS-${layerName.toUpperCase()}] First bytes:`,
+        imageBuffer.slice(0, 10)
+      );
+    }
 
     // Cache the image buffer in memory
     gemsImageCache.set(layerName, imageBuffer);
+    console.log(`[GEMS-${layerName.toUpperCase()}] Image cached successfully`);
 
     return imageBuffer;
   } catch (error) {
+    if (error.name === "AbortError") {
+      console.error(
+        `[GEMS-${layerName.toUpperCase()}] Fetch timeout after 25s`
+      );
+      throw new Error("GEMS API request timed out");
+    }
     console.error(
       `[GEMS-${layerName.toUpperCase()}] Fetch failed:`,
       error.message
@@ -427,17 +472,124 @@ router.get("/gems/:layer/image", async (req, res) => {
   }
 
   try {
+    console.log(`[GEMS-${layerName}] Image request received`);
     const imageBuffer = await fetchGemsImage(layerName);
+    console.log(
+      `[GEMS-${layerName}] Sending image (${imageBuffer.length} bytes)`
+    );
+
     res.set("Content-Type", "image/png");
     res.set("Cache-Control", "public, max-age=3600"); // Cache for 1 hour
+    res.set("Content-Length", imageBuffer.length);
     res.send(imageBuffer);
   } catch (error) {
-    console.error(`Error fetching GEMS ${layerName} image:`, error);
+    console.error(`[GEMS-${layerName}] Error:`, error);
     res.status(503).json({
       error: "Failed to fetch GEMS image",
       message: error.message,
       layer: layerName,
+      stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
     });
+  }
+});
+
+// Debug endpoint to test GEMS API connectivity
+router.get("/gems/:layer/debug", async (req, res) => {
+  const layerName = req.params.layer;
+  const layer = GEMS_LAYERS[layerName];
+
+  if (!layer) {
+    return res.status(404).json({ error: "Unknown GEMS layer" });
+  }
+
+  const debugInfo = {
+    layer: layerName,
+    baseUrl: layer.baseUrl,
+    apiKey: GEMS_API_KEY ? `${GEMS_API_KEY.substring(0, 10)}...` : "NOT SET",
+    cached: gemsImageCache.has(layerName),
+    cacheStats: gemsImageCache.getStats(),
+    steps: [],
+  };
+
+  try {
+    // Step 1: Get timestamp
+    debugInfo.steps.push({ step: 1, action: "Fetching timestamp list..." });
+    const now = new Date();
+    const end = now.toISOString().slice(0, 16).replace(/[-T:]/g, "");
+    now.setHours(now.getHours() - 24);
+    const start = now.toISOString().slice(0, 16).replace(/[-T:]/g, "");
+
+    const listUrl = `${layer.baseUrl}/getFileDateList.do?sDate=${start}&eDate=${end}&format=json&key=${GEMS_API_KEY}`;
+    debugInfo.listUrl = listUrl;
+
+    const listResponse = await fetch(listUrl);
+    debugInfo.steps.push({
+      step: 1,
+      status: listResponse.status,
+      ok: listResponse.ok,
+    });
+
+    if (!listResponse.ok) {
+      throw new Error(`Timestamp API returned ${listResponse.status}`);
+    }
+
+    const listData = await listResponse.json();
+    debugInfo.steps.push({
+      step: 1,
+      result: "success",
+      dataReceived: listData.list?.length || 0,
+    });
+
+    if (!listData.list || listData.list.length === 0) {
+      throw new Error("No timestamps available");
+    }
+
+    const timestamp = listData.list
+      .map((item) => item.item)
+      .sort()
+      .pop();
+    debugInfo.timestamp = timestamp;
+    debugInfo.steps.push({
+      step: 2,
+      action: "Latest timestamp",
+      value: timestamp,
+    });
+
+    // Step 2: Try to fetch image
+    const imageUrl = `${layer.baseUrl}/getFileItem.do?date=${timestamp}&key=${GEMS_API_KEY}`;
+    debugInfo.imageUrl = imageUrl;
+    debugInfo.steps.push({ step: 3, action: "Fetching image..." });
+
+    const imageResponse = await fetch(imageUrl);
+    debugInfo.steps.push({
+      step: 3,
+      status: imageResponse.status,
+      ok: imageResponse.ok,
+      contentType: imageResponse.headers.get("content-type"),
+      contentLength: imageResponse.headers.get("content-length"),
+    });
+
+    if (imageResponse.ok) {
+      const imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
+      debugInfo.steps.push({
+        step: 3,
+        result: "success",
+        imageSize: imageBuffer.length,
+        imageSizeMB: (imageBuffer.length / 1024 / 1024).toFixed(2),
+      });
+      debugInfo.success = true;
+    } else {
+      debugInfo.success = false;
+      debugInfo.error = `Image fetch returned ${imageResponse.status}`;
+    }
+
+    res.json(debugInfo);
+  } catch (error) {
+    debugInfo.success = false;
+    debugInfo.error = error.message;
+    debugInfo.errorStack =
+      process.env.NODE_ENV === "development" ? error.stack : undefined;
+    res.status(500).json(debugInfo);
   }
 });
 
