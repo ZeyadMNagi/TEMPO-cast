@@ -217,6 +217,7 @@
         const imageUrl = `/api/gems/${layer}/image?t=${Date.now()}`;
         const response = await fetch(imageUrl);
         
+        console.log('Image response:', response);
         const loadTime = ((Date.now() - startTime) / 1000).toFixed(1);
         
         if (response.ok) {
@@ -228,6 +229,7 @@
             <p class="success">✓ ${layer.toUpperCase()} image loaded! (${size} MB in ${loadTime}s)</p>
             <img src="${objectUrl}" alt="${layer} image">
           `;
+          console.log('Image loaded successfully:', objectUrl);
         } else {
           const errorText = await response.text();
           let errorData;
