@@ -1,6 +1,5 @@
 const express = require("express");
 const axios = require("axios");
-const { pipeline } = require("node:stream/promises");
 const fs = require("node:fs/promises");
 const fsSync = require("node:fs");
 const path = require("node:path");
@@ -46,21 +45,18 @@ const GEMS_IMAGE_BOUNDS = [
   [58, 168],
 ];
 
+// Cache GEMS images in memory for serverless environment
+const gemsImageCache = new NodeCache({ stdTTL: 3600, checkperiod: 120 }); // 1 hour cache
+
 const GEMS_LAYERS = {
   o3: {
     baseUrl: "https://nesc.nier.go.kr:38032/api/GK2/L2/O3T/FOR/image",
-    latestImageFile: null,
-    isReady: false,
   },
   hcho: {
     baseUrl: "https://nesc.nier.go.kr:38032/api/GK2/L2/HCHO/FOR/image",
-    latestImageFile: null,
-    isReady: false,
   },
   no2: {
     baseUrl: "https://nesc.nier.go.kr:38032/api/GK2/L2/NO2_Trop/FOR/image",
-    latestImageFile: null,
-    isReady: false,
   },
 };
 
@@ -71,6 +67,9 @@ async function fetchLatestGemsTimestamp(baseUrl) {
   const start = now.toISOString().slice(0, 16).replace(/[-T:]/g, "");
 
   const url = `${baseUrl}/getFileDateList.do?sDate=${start}&eDate=${end}&format=json&key=${GEMS_API_KEY}`;
+
+  console.log(`[GEMS] Fetching timestamp from: ${url}`);
+
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`GEMS API returned status: ${response.status}`);
@@ -87,51 +86,56 @@ async function fetchLatestGemsTimestamp(baseUrl) {
     .pop();
 }
 
-async function refreshGemsLayer(layerName) {
+async function fetchGemsImage(layerName) {
   const layer = GEMS_LAYERS[layerName];
-  if (!layer) return;
+  if (!layer) {
+    throw new Error(`Unknown GEMS layer: ${layerName}`);
+  }
 
-  console.log(`\n[GEMS-${layerName.toUpperCase()}] Starting image refresh...`);
+  // Check cache first
+  const cachedImage = gemsImageCache.get(layerName);
+  if (cachedImage) {
+    console.log(`[GEMS-${layerName.toUpperCase()}] Using cached image`);
+    return cachedImage;
+  }
+
+  console.log(`[GEMS-${layerName.toUpperCase()}] Fetching fresh image...`);
+
   try {
+    // Get latest timestamp
     const timestamp = await fetchLatestGemsTimestamp(layer.baseUrl);
     console.log(
       `[GEMS-${layerName.toUpperCase()}] Latest timestamp: ${timestamp}`
     );
 
-    const imagePath = path.join(GEMS_DATA_DIR, `${layerName}-${timestamp}.png`);
+    // Download image
+    const imageUrl = `${layer.baseUrl}/getFileItem.do?date=${timestamp}&key=${GEMS_API_KEY}`;
+    const response = await fetch(imageUrl);
 
-    try {
-      await fs.access(imagePath);
-      console.log(
-        `[GEMS-${layerName.toUpperCase()}] Using existing image: ${imagePath}`
-      );
-    } catch {
-      console.log(`[GEMS-${layerName.toUpperCase()}] Downloading image...`);
-      const imageUrl = `${layer.baseUrl}/getFileItem.do?date=${timestamp}&key=${GEMS_API_KEY}`;
-      const response = await fetch(imageUrl);
-      if (!response.ok)
-        throw new Error(`Download failed with status ${response.status}`);
-
-      const imageBuffer = Buffer.from(await response.arrayBuffer());
-      await fs.writeFile(imagePath, imageBuffer);
-      console.log(
-        `[GEMS-${layerName.toUpperCase()}] Image saved to ${imagePath}`
-      );
+    if (!response.ok) {
+      throw new Error(`Download failed with status ${response.status}`);
     }
 
-    layer.latestImageFile = imagePath;
-    layer.isReady = true;
+    const imageBuffer = Buffer.from(await response.arrayBuffer());
     console.log(
-      `[GEMS-${layerName.toUpperCase()}] Refresh successful. Layer is ready.`
+      `[GEMS-${layerName.toUpperCase()}] Image downloaded (${
+        imageBuffer.length
+      } bytes)`
     );
+
+    // Cache the image buffer in memory
+    gemsImageCache.set(layerName, imageBuffer);
+
+    return imageBuffer;
   } catch (error) {
-    layer.isReady = false;
     console.error(
-      `[GEMS-${layerName.toUpperCase()}] Refresh failed:`,
+      `[GEMS-${layerName.toUpperCase()}] Fetch failed:`,
       error.message
     );
+    throw error;
   }
 }
+
 // --- End GEMS Integration ---
 
 // Cache middleware
@@ -407,44 +411,56 @@ router.get("/health", (req, res) => {
       keys: cache.keys().length,
       stats: cache.getStats(),
     },
+    gems: {
+      cachedLayers: gemsImageCache.keys(),
+      cacheStats: gemsImageCache.getStats(),
+    },
   });
 });
 
+// GEMS image endpoint - fetch on demand
 router.get("/gems/:layer/image", async (req, res) => {
   const layerName = req.params.layer;
-  const layer = GEMS_LAYERS[layerName];
 
-  if (!layer || !layer.isReady || !layer.latestImageFile) {
-    return res.status(503).json({
-      status: "initializing",
-      message: "GEMS image is not ready yet.",
-    });
+  if (!GEMS_LAYERS[layerName]) {
+    return res.status(404).json({ error: "Unknown GEMS layer" });
   }
 
   try {
-    const imageBuffer = await fs.readFile(layer.latestImageFile);
-    res.set("Content-Type", "image/png").send(imageBuffer);
+    const imageBuffer = await fetchGemsImage(layerName);
+    res.set("Content-Type", "image/png");
+    res.set("Cache-Control", "public, max-age=3600"); // Cache for 1 hour
+    res.send(imageBuffer);
   } catch (error) {
-    console.error(`Error reading image file ${layer.latestImageFile}:`, error);
-    res.status(404).json({ error: "Image file not found on server." });
+    console.error(`Error fetching GEMS ${layerName} image:`, error);
+    res.status(503).json({
+      error: "Failed to fetch GEMS image",
+      message: error.message,
+      layer: layerName,
+    });
   }
 });
 
+// GEMS bounds endpoint - always ready
 router.get("/gems/:layer/bounds", async (req, res) => {
   const layerName = req.params.layer;
-  const layer = GEMS_LAYERS[layerName];
 
-  if (layer && layer.isReady) {
-    res.json({ bounds: GEMS_IMAGE_BOUNDS });
-  } else {
-    res
-      .status(503)
-      .json({ status: "initializing", message: "GEMS layer not ready yet." });
+  if (!GEMS_LAYERS[layerName]) {
+    return res.status(404).json({ error: "Unknown GEMS layer" });
   }
+
+  res.json({
+    bounds: GEMS_IMAGE_BOUNDS,
+    layer: layerName,
+    cached: gemsImageCache.has(layerName),
+  });
 });
 
 router.get("/cache-stats", (req, res) => {
-  res.json(cache.getStats());
+  res.json({
+    weather: cache.getStats(),
+    gems: gemsImageCache.getStats(),
+  });
 });
 
 app.use("/api/", router);
@@ -455,20 +471,6 @@ app.use((err, req, res, _next) => {
 });
 
 module.exports.handler = serverless(app);
-
-// --- Serverless Initialization ---
-// This code runs once per serverless function instance
-try {
-  fsSync.mkdirSync(GEMS_DATA_DIR, { recursive: true });
-  console.log(`GEMS data directory created at: ${GEMS_DATA_DIR}`);
-
-  // Start the initial GEMS image refresh for all layers
-  for (const layerName in GEMS_LAYERS) {
-    refreshGemsLayer(layerName);
-  }
-} catch (error) {
-  console.error("Error during serverless initialization:", error);
-}
 
 // This part is for local development only
 if (process.env.NODE_ENV !== "production") {

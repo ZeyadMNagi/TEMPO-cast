@@ -4,7 +4,30 @@
   # This is the directory where your serverless function is located.
   functions = "functions"
 
+# Increase function timeout for GEMS API calls
+[functions]
+  timeout = 30
+  # Enable background functions for better performance
+  node_bundler = "esbuild"
+
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/api/:splat"
   status = 200
+
+# Cache GEMS images at CDN level
+[[headers]]
+  for = "/api/gems/*/image"
+  [headers.values]
+    Cache-Control = "public, max-age=3600, s-maxage=3600"
+    
+# Cache other API responses briefly
+[[headers]]
+  for = "/api/data"
+  [headers.values]
+    Cache-Control = "public, max-age=300, s-maxage=300"
+
+[[headers]]
+  for = "/api/complete"
+  [headers.values]
+    Cache-Control = "public, max-age=300, s-maxage=300"
