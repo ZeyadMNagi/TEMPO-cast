@@ -9,6 +9,8 @@ const serverless = require("serverless-http");
 require("dotenv").config();
 const app = express();
 
+app.set("trust proxy", 1);
+
 const compression = require("compression");
 app.use(compression());
 
@@ -30,7 +32,10 @@ const limiter = rateLimit({
   max: 100,
   message: "Too many requests from this IP, please try again later.",
 });
-router.use(limiter);
+
+if (process.env.NODE_ENV === "production") {
+  router.use(limiter);
+}
 
 // --- GEMS Image Service Integration ---
 const GEMS_API_KEY =
@@ -417,7 +422,14 @@ router.get("/gems/:layer/image", async (req, res) => {
         message: "GEMS image is not ready yet.",
       });
   }
-  res.sendFile(layer.latestImageFile);
+
+  // Use res.send(buffer) instead of res.sendFile() to avoid issues with netlify dev proxy
+  const imageBuffer = await fs.readFile(layer.latestImageFile);
+  res.writeHead(200, {
+    "Content-Type": "image/png",
+    "Content-Length": imageBuffer.length,
+  });
+  res.end(imageBuffer);
 });
 
 router.get("/gems/:layer/bounds", async (req, res) => {
