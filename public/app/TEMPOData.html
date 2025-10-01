@@ -32,15 +32,24 @@
       }
       .gems-loading {
         padding: 10px;
-        background: rgba(255, 255, 255, 0.9);
+        background: rgba(255, 200, 0, 0.9);
+        border-radius: 5px;
+        font-size: 12px;
+        font-weight: bold;
+      }
+      .gems-error {
+        padding: 10px;
+        background: rgba(244, 67, 54, 0.9);
+        color: white;
         border-radius: 5px;
         font-size: 12px;
       }
-      .gems-error {
-        color: #d32f2f;
-      }
       .gems-success {
-        color: #388e3c;
+        padding: 10px;
+        background: rgba(76, 175, 80, 0.9);
+        color: white;
+        border-radius: 5px;
+        font-size: 12px;
       }
     </style>
   </head>
@@ -125,25 +134,33 @@
         attribution: "NASA TEMPO HCHO",
       });
 
-      // GEMS layers - loaded on demand
-      const gemsLayers = {};
-      const gemsConfig = {
-        o3: { name: "GEMS O₃ (Forecast)", bounds: null, loaded: false },
-        hcho: { name: "GEMS HCHO (Forecast)", bounds: null, loaded: false },
-        no2: { name: "GEMS NO₂ (Forecast)", bounds: null, loaded: false },
+      // GEMS layers - using fixed bounds, loaded on demand
+      const GEMS_BOUNDS = [
+        [-34, 48],
+        [58, 168],
+      ];
+
+      const gemsLayers = {
+        o3: L.imageOverlay("", GEMS_BOUNDS, {
+          opacity: 0.5,
+          attribution: "GEMS O₃ (Forecast)",
+        }),
+        hcho: L.imageOverlay("", GEMS_BOUNDS, {
+          opacity: 0.5,
+          attribution: "GEMS HCHO (Forecast)",
+        }),
+        no2: L.imageOverlay("", GEMS_BOUNDS, {
+          opacity: 0.5,
+          attribution: "GEMS NO₂ (Forecast)",
+        }),
       };
 
-      // Create placeholder layers
-      for (const [key, config] of Object.entries(gemsConfig)) {
-        gemsLayers[key] = L.imageOverlay(
-          "",
-          [
-            [0, 0],
-            [0, 0],
-          ],
-          { opacity: 0.5, attribution: config.name }
-        );
-      }
+      // Track which layers have been loaded
+      const gemsLoadStatus = {
+        o3: { loaded: false, loading: false },
+        hcho: { loaded: false, loading: false },
+        no2: { loaded: false, loading: false },
+      };
 
       no2Layer.addTo(map);
 
@@ -157,9 +174,9 @@
           [getTranslation("tempo_layer_no2")]: no2Layer,
           [getTranslation("tempo_layer_o3")]: o3Layer,
           [getTranslation("tempo_layer_hcho")]: hchoLayer,
-          [gemsConfig.o3.name]: gemsLayers.o3,
-          [gemsConfig.hcho.name]: gemsLayers.hcho,
-          [gemsConfig.no2.name]: gemsLayers.no2,
+          "GEMS O₃ (Forecast)": gemsLayers.o3,
+          "GEMS HCHO (Forecast)": gemsLayers.hcho,
+          "GEMS NO₂ (Forecast)": gemsLayers.no2,
         };
         layerControl = L.control
           .layers(null, overlayMaps, { collapsed: false })
@@ -173,7 +190,8 @@
         return this._div;
       };
       info.update = function (message) {
-        const defaultMsg = getTranslation("tempo_select_layer");
+        const defaultMsg =
+          getTranslation("tempo_select_layer") || "Select layers to display";
         this._div.innerHTML = message || defaultMsg;
       };
       info.addTo(map);
@@ -204,64 +222,77 @@
       // Load GEMS layer on demand
       async function loadGemsLayer(layerName) {
         const layer = gemsLayers[layerName];
-        const config = gemsConfig[layerName];
+        const status = gemsLoadStatus[layerName];
 
-        if (config.loaded) {
+        // Already loaded
+        if (status.loaded) {
           console.log(`GEMS ${layerName} already loaded`);
           return;
         }
 
+        // Already loading
+        if (status.loading) {
+          console.log(`GEMS ${layerName} is already loading...`);
+          return;
+        }
+
+        status.loading = true;
+        console.log(`Loading GEMS ${layerName.toUpperCase()}...`);
         info.update(
-          `<div class="gems-loading">Loading GEMS ${layerName.toUpperCase()}...</div>`
+          `<div class="gems-loading">⏳ Loading GEMS ${layerName.toUpperCase()}... (may take 10-30s)</div>`
         );
 
         try {
-          // Fetch bounds first
-          const boundsRes = await fetch(`/api/gems/${layerName}/bounds`);
-          if (!boundsRes.ok) {
-            throw new Error(`Failed to get bounds: ${boundsRes.status}`);
+          // Just set the image URL - bounds are already set
+          const imageUrl = `/api/gems/${layerName}/image?t=${Date.now()}`;
+
+          // Test if the endpoint responds
+          const testResponse = await fetch(imageUrl, { method: "HEAD" });
+
+          if (testResponse.ok) {
+            layer.setUrl(imageUrl);
+            status.loaded = true;
+            status.loading = false;
+
+            console.log(
+              `✓ GEMS ${layerName.toUpperCase()} loaded successfully`
+            );
+            info.update(
+              `<div class="gems-success">✓ GEMS ${layerName.toUpperCase()} loaded!</div>`
+            );
+
+            setTimeout(() => info.update(), 3000);
+          } else {
+            throw new Error(`Server returned ${testResponse.status}`);
           }
-          const boundsData = await boundsRes.json();
-          config.bounds = boundsData.bounds;
-
-          // Set image URL and bounds
-          layer.setUrl(`/api/gems/${layerName}/image?t=${Date.now()}`);
-          layer.setBounds(config.bounds);
-          config.loaded = true;
-
-          console.log(`GEMS ${layerName} loaded successfully`);
-          info.update(
-            `<div class="gems-success">GEMS ${layerName.toUpperCase()} loaded ✓</div>`
-          );
-
-          // Clear success message after 3 seconds
-          setTimeout(() => {
-            info.update();
-          }, 3000);
         } catch (error) {
-          console.error(`Error loading GEMS ${layerName}:`, error);
+          status.loading = false;
+          console.error(`✗ Failed to load GEMS ${layerName}:`, error);
+
           info.update(
-            `<div class="gems-error">Failed to load GEMS ${layerName.toUpperCase()}: ${
-              error.message
-            }</div>`
+            `<div class="gems-error">✗ Failed to load GEMS ${layerName.toUpperCase()}<br>` +
+              `The GEMS API may be slow or unavailable.<br>` +
+              `<small>Error: ${error.message}</small></div>`
           );
 
-          // Clear error message after 5 seconds
-          setTimeout(() => {
-            info.update();
-          }, 5000);
+          setTimeout(() => info.update(), 8000);
+
+          // Remove the layer if it failed to load
+          if (map.hasLayer(layer)) {
+            map.removeLayer(layer);
+          }
         }
       }
 
       // Show/hide opacity control and load data on demand
       map.on("overlayadd", (e) => {
-        const gemsLayerEntries = Object.entries(gemsLayers);
-        const addedGems = gemsLayerEntries.find(
+        // Check if it's a GEMS layer
+        const gemsLayerEntry = Object.entries(gemsLayers).find(
           ([key, layer]) => layer === e.layer
         );
 
-        if (addedGems) {
-          const [layerName] = addedGems;
+        if (gemsLayerEntry) {
+          const [layerName] = gemsLayerEntry;
           document.getElementById("gemsOpacityControl").style.display = "block";
           loadGemsLayer(layerName); // Load on demand
         }
@@ -294,14 +325,20 @@
 
       // Override setLanguage to update map layers
       const originalSetLanguage = window.setLanguage;
-      window.setLanguage = async function (lang) {
-        await originalSetLanguage(lang);
-        updateLayerControl();
-        info.update();
-      };
+      if (originalSetLanguage) {
+        window.setLanguage = async function (lang) {
+          await originalSetLanguage(lang);
+          updateLayerControl();
+          info.update();
+        };
+      }
 
       // Initial setup
       updateLayerControl();
+
+      console.log(
+        "TEMPO Data Viewer initialized. GEMS layers will load on demand when enabled."
+      );
     </script>
   </body>
 </html>

@@ -4,11 +4,11 @@
   # This is the directory where your serverless function is located.
   functions = "functions"
 
-# Increase function timeout for GEMS API calls
 [functions]
-  timeout = 30
   # Enable background functions for better performance
   node_bundler = "esbuild"
+  # Increase function timeout for GEMS API calls
+  "*" = { timeout = 30 }
 
 [[redirects]]
   from = "/api/*"

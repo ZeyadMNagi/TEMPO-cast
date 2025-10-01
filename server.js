@@ -441,7 +441,7 @@ router.get("/gems/:layer/image", async (req, res) => {
   }
 });
 
-// GEMS bounds endpoint - always ready
+// GEMS bounds endpoint - always returns bounds immediately
 router.get("/gems/:layer/bounds", async (req, res) => {
   const layerName = req.params.layer;
 
@@ -449,6 +449,7 @@ router.get("/gems/:layer/bounds", async (req, res) => {
     return res.status(404).json({ error: "Unknown GEMS layer" });
   }
 
+  // Always return bounds immediately - no "ready" check needed
   res.json({
     bounds: GEMS_IMAGE_BOUNDS,
     layer: layerName,
