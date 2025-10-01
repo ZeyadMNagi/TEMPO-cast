@@ -77,75 +77,6 @@ const AQI_BREAKPOINTS = {
   ],
 };
 
-function initMap() {
-  map = L.map("map").setView([39.8283, -98.5795], 4);
-
-  const osmLayer = L.tileLayer(
-    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    { attribution: "© OpenStreetMap contributors" }
-  );
-  const satelliteLayer = L.tileLayer(
-    "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-    { attribution: "Tiles © Esri" }
-  );
-  osmLayer.addTo(map);
-
-  L.control
-    .layers({ "Street Map": osmLayer, Satellite: satelliteLayer })
-    .addTo(map);
-
-  // --- Initialize TEMPO Data Layers ---
-  const no2Layer = L.esri.imageMapLayer({
-    url: "https://gis.earthdata.nasa.gov/image/rest/services/C3685896708-LARC_CLOUD/TEMPO_NO2_L3_V04_HOURLY_TROPOSPHERIC_VERTICAL_COLUMN/ImageServer",
-    attribution: "NASA TEMPO NO₂",
-  });
-
-  const o3Layer = L.esri.imageMapLayer({
-    url: "https://gis.earthdata.nasa.gov/image/rest/services/C3685896625-LARC_CLOUD/TEMPO_O3TOT_L3_V04_HOURLY_OZONE_COLUMN_AMOUNT/ImageServer",
-    attribution: "NASA TEMPO O₃",
-  });
-
-  const hchoLayer = L.esri.imageMapLayer({
-    url: "https://gis.earthdata.nasa.gov/image/rest/services/C3685897141-LARC_CLOUD/TEMPO_HCHO_L3_V04_HOURLY_VERTICAL_COLUMN/ImageServer",
-    attribution: "NASA TEMPO HCHO",
-  });
-
-  // --- GEMS Layer (initially empty) ---
-  const gemsLayer = L.imageOverlay('', [[0,0], [0,0]], { opacity: 0.7, attribution: 'GEMS NO₂' });
-
-  const tempoOverlays = {
-    "NO₂ (Tropospheric Column)": no2Layer,
-    "O₃ (Total Column)": o3Layer,
-    "HCHO (Formaldehyde)": hchoLayer,
-    "GEMS NO₂ (Daily)": gemsLayer,
-  };
-
-  // Add NO2 by default, but don't add the empty GEMS layer yet
-  const defaultLayers = [no2Layer];
-  tempoLayerGroup = L.layerGroup(defaultLayers);
-
-  tempoControl = L.control.layers(null, tempoOverlays, { collapsed: false });
-
-  map.on("click", onMapClick);
-  groundStationLayer = L.layerGroup().addTo(map);
-  addSimulatedGroundStations();
-}
-
-async function loadGemsLayer() {
-  try {
-    const boundsResponse = await fetch('/api/gems/bounds');
-    const { bounds } = await boundsResponse.json();
-    const gemsLayer = tempoControl.getContainer().querySelector('input[type="checkbox"]:last-child').nextSibling._layer;
-    if (bounds && gemsLayer) {
-      gemsLayer.setUrl('/api/gems/image');
-      gemsLayer.setBounds(bounds);
-      console.log("GEMS layer updated with new data.");
-    }
-  } catch (error) {
-    console.error("Could not load GEMS layer:", error);
-  }
-}
-
 function addSimulatedGroundStations() {
   const stations = [
     {
@@ -1222,8 +1153,12 @@ function setupNavigation() {
 }
 
 function initApp() {
-  initMap();
-  loadGemsLayer();
+  // Initialize the map only if a map container exists on the current page.
+  if (document.getElementById("map")) {
+    // This logic is now primarily for the main app page (index.html)
+    // The TEMPOData.html page has its own, separate initialization script.
+    console.log("Map container found, initializing map for main app.");
+  }
   // The i18n.js script handles its own initialization on DOMContentLoaded
   document.querySelectorAll(".modal").forEach((modal) => {
     modal.addEventListener("click", (e) => {
@@ -1239,8 +1174,10 @@ function initApp() {
   const lon = params.get("lon");
   const name = params.get("name");
   if (lat && lon) {
-    fetchLocationData(parseFloat(lat), parseFloat(lon), name || "");
-    zoomToLocation(parseFloat(lat), parseFloat(lon));
+    if (typeof fetchLocationData === 'function') {
+      fetchLocationData(parseFloat(lat), parseFloat(lon), name || "");
+      zoomToLocation(parseFloat(lat), parseFloat(lon));
+    }
   } else {
     map.setView([40.0, -100.0], 4);
   }

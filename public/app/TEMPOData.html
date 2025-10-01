@@ -216,38 +216,38 @@
         }
       });
 
-      async function loadGemsLayer(layerName, layerObject) {
+      function loadGemsLayer(layerName, layerObject) {
         console.log(
           `Attempting to load GEMS ${layerName.toUpperCase()} layer...`
         );
-        const maxRetries = 10;
-        const retryDelay = 3000;
+        const retryDelay = 5000; // 5 seconds
+        let attempt = 0;
 
-        for (let i = 0; i < maxRetries; i++) {
+        const poll = async () => {
+          attempt++;
           try {
-            const boundsResponse = await fetch(`/api/gems/${layerName}/bounds`);
-            const data = await boundsResponse.json();
+            const response = await fetch(`/api/gems/${layerName}/bounds`);
 
-            if (data.bounds) {
-              console.log(
-                `GEMS ${layerName.toUpperCase()} bounds found. Setting image layer.`
-              );
+            if (response.ok) {
+              const data = await response.json();
+              console.log(`GEMS ${layerName.toUpperCase()} is ready. Setting image layer.`);
               layerObject.setUrl(`/api/gems/${layerName}/image`);
               layerObject.setBounds(data.bounds);
-              return;
-            } else {
-              console.log(
-                `GEMS ${layerName.toUpperCase()} data not ready. Retrying... (Attempt ${
-                  i + 1
-                })`
-              );
+              // The layer is now ready and will be displayed by Leaflet.
+              return; 
             }
-          } catch (error) {
-            console.error("Error fetching GEMS bounds:", error);
+            
+            if (response.status === 503) {
+              console.log(`GEMS ${layerName.toUpperCase()} not ready. Will retry... (Attempt ${attempt})`);
+            } else {
+              console.error(`Unexpected status ${response.status} for GEMS ${layerName.toUpperCase()} bounds.`);
+            }
+          } catch (e) {
+            console.error(`Error fetching GEMS ${layerName.toUpperCase()} bounds:`, e);
           }
-          await new Promise((resolve) => setTimeout(resolve, retryDelay));
-        }
-        console.error("Failed to load GEMS layer after multiple retries.");
+          setTimeout(poll, retryDelay);
+        };
+        poll();
       }
 
       // Nav toggle script
