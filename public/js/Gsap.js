@@ -48,23 +48,22 @@ function createParticles() {
 
 function initMainAnimations() {
   // Navigation entrance
-  masterTimeline
-    .from("header .slide-in-left", {
-      x: -100,
-      opacity: 0,
-      duration: 0.8,
-      ease: "power2.out",
-    })
-    .from(
-      "header .slide-in-right, #hero .slide-in-right",
-      {
-        x: 100,
-        opacity: 0,
-        duration: 0.8,
-        ease: "power2.out",
-      },
-      "-=0.6"
-    );
+  masterTimeline.from("header", {
+    y: -100,
+    opacity: 0,
+    duration: 0.8,
+    ease: "power2.out",
+  });
+  // .from(
+  //   "header .slide-in-right, #hero .slide-in-right",
+  //   {
+  //     x: 100,
+  //     opacity: 0,
+  //     duration: 0.8,
+  //     ease: "power2.out",
+  //   },
+  //   "-=0.6"
+  // );
 
   // Hero section entrance
   masterTimeline
@@ -76,16 +75,6 @@ function initMainAnimations() {
         duration: 0.8,
         stagger: 0.2,
         ease: "power2.out",
-      },
-      "-=0.4"
-    )
-    .from(
-      "#hero .scale-in",
-      {
-        scale: 0.8,
-        opacity: 0,
-        duration: 0.8,
-        ease: "back.out(1.7)",
       },
       "-=0.4"
     );

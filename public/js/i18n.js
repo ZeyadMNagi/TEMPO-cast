@@ -1,3 +1,24 @@
+const notificationTranslations = {
+  en: {
+    nav_notifications: "Get Alerts",
+    notification_subscribed: "You're subscribed to alerts!",
+    notification_manage: "Manage preferences",
+    notification_prompt_title: "Stay Protected",
+    notification_prompt_desc:
+      "Get personalized air quality alerts based on your health profile and location.",
+    notification_subscribe_now: "Subscribe Now",
+  },
+  ar: {
+    nav_notifications: "احصل على التنبيهات",
+    notification_subscribed: "أنت مشترك في التنبيهات!",
+    notification_manage: "إدارة التفضيلات",
+    notification_prompt_title: "ابق محميًا",
+    notification_prompt_desc:
+      "احصل على تنبيهات مخصصة لجودة الهواء بناءً على ملفك الصحي وموقعك.",
+    notification_subscribe_now: "اشترك الآن",
+  },
+};
+
 let translations = {};
 let currentLang = "en";
 
