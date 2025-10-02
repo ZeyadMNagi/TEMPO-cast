@@ -688,55 +688,42 @@ router.post("/notifications/subscribe", async (req, res) => {
       return res.status(400).json({ error: "Valid email is required" });
     }
 
-    // Check if subscriber already exists
-    const isNewSubscriber = !(await Subscriber.findOne({ email }));
+    const isNewSubscriber = !subscriber;
     let subscriber = await Subscriber.findOne({ email });
-    if (subscriber) {
-      // Update existing subscriber
+
+    if (subscriber)
+       {
+      console.log(`[Notifications] Updating existing subscriber: ${email}`);
       subscriber.set({
-        email,
-        phone: phone || null,
-        notificationMethods: notificationMethods || { email: true },
-        frequency: frequency || "daily",
-        healthProfile: {
-          conditions: healthProfile?.conditions || [],
-          ageGroup: healthProfile?.ageGroup || null,
-          pregnant: healthProfile?.pregnant || false,
-          outdoorWorker: healthProfile?.outdoorWorker || false,
-          athlete: healthProfile?.athlete || false,
-        },
-        threshold: threshold || "standard",
-        locations: {
-          home: locations?.home || null,
-          work: locations?.work || null,
-        },
-        active: true, // Re-activate if they unsubscribed
+        phone: phone,
+        notificationMethods: notificationMethods,
+        frequency: frequency,
+        healthProfile: healthProfile,
+        threshold: threshold,
+        locations: locations,
+        active: true, 
       });
     } else {
       // Create new subscriber
+      console.log(`[Notifications] Creating new subscriber: ${email}`);
       subscriber = new Subscriber({
         email,
-        phone: phone || null,
-        notificationMethods: notificationMethods || { email: true },
-        frequency: frequency || "daily",
-        healthProfile: {
-          conditions: healthProfile?.conditions || [],
-          ageGroup: healthProfile?.ageGroup || null,
-          pregnant: healthProfile?.pregnant || false,
-          outdoorWorker: healthProfile?.outdoorWorker || false,
-          athlete: healthProfile?.athlete || false,
-        },
-        threshold: threshold || "standard",
-        locations: {
-          home: locations?.home || null,
-          work: locations?.work || null,
-        },
+        phone: phone,
+        notificationMethods: notificationMethods,
+        frequency: frequency,
+        healthProfile: healthProfile,
+        threshold: threshold,
+        locations: locations,
       });
     }
 
-    subscriber.sensitivityLevel = calculateSensitivityLevel(
-      subscriber.healthProfile
-    );
+    // Ensure healthProfile exists before calculating sensitivity
+    if (subscriber.healthProfile) {
+      subscriber.sensitivityLevel = calculateSensitivityLevel(
+        subscriber.healthProfile
+      );
+    }
+
     await subscriber.save();
 
     console.log(
