@@ -5,15 +5,14 @@
   functions = "functions"
 
 # Increase function timeout for GEMS API calls (GEMS can be very slow)
-# and set the bundler.
 [functions]
-  timeout = 120
+  timeout = 60
+  # Enable background functions for better performance
   node_bundler = "esbuild"
 
-# Rule for the unsubscribe page to handle dynamic IDs
 [[redirects]]
-  from = "/unsubscribe/*"
-  to = "/unsubscribe.html"
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
   status = 200
 
 # Cache GEMS images at CDN level
