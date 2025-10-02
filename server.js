@@ -1231,7 +1231,6 @@ function getPersonalizedHealthAdvice(healthProfile, aqi, components) {
   return advice;
 }
 
-// Send email notification (integrate with your email service)
 async function sendEmailNotification(
   subscriber,
   aqi,
@@ -1285,7 +1284,7 @@ async function sendEmailNotification(
       : ""
   }), current air quality conditions may affect your health.</p>
           
-          <a href="https://your-app-url.com?lat=${
+          <a href="https://globaltempo.netlify.app/app?lat=${
             subscriber.locations.home
           }" class="button">
             View Detailed Forecast →
@@ -1302,9 +1301,9 @@ async function sendEmailNotification(
         <div class="footer">
           <p>Global TEMPO Air Quality Monitoring</p>
           <p>Powered by NASA TEMPO Satellite Data</p>
-          <p><a href="https://your-app-url.com/unsubscribe/${
+          <p><a href="https://globaltempo.netlify.app/unsubscribe/${
             subscriber.id
-          }" style="color: #6b7280;">Unsubscribe</a> | <a href="https://your-app-url.com/preferences/${
+          }" style="color: #6b7280;">Unsubscribe</a> | <a href="https://globaltempo.netlify.app/preferences/${
     subscriber.id
   }" style="color: #6b7280;">Update Preferences</a></p>
         </div>
@@ -1316,7 +1315,9 @@ async function sendEmailNotification(
   try {
     // Ensure email credentials are set
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
-      console.error("[Email] Error: EMAIL_USER and EMAIL_PASSWORD must be set in .env file.");
+      console.error(
+        "[Email] Error: EMAIL_USER and EMAIL_PASSWORD must be set in .env file."
+      );
       return false;
     }
 
@@ -1335,10 +1336,15 @@ async function sendEmailNotification(
       html: emailHTML,
     });
 
-    console.log(`[Email] Notification sent successfully to ${subscriber.email}`);
+    console.log(
+      `[Email] Notification sent successfully to ${subscriber.email}`
+    );
     return true;
   } catch (error) {
-    console.error(`[Email] Failed to send notification to ${subscriber.email}:`, error);
+    console.error(
+      `[Email] Failed to send notification to ${subscriber.email}:`,
+      error
+    );
     return false;
   }
 }
@@ -1391,15 +1397,25 @@ cron.schedule('15 * * * *', async () => {
 */
 
 // Manual trigger endpoint for testing
-router.post("/notifications/test/:subscriberId", async (req, res) => {
+router.post("/notifications/test", async (req, res) => {
   try {
-    const { subscriberId } = req.params;
-    const subscriber = await Subscriber.findById(subscriberId);
-
-    if (!subscriber || !subscriber.active) {
-      return res.status(404).json({ error: "Subscriber not found" });
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: "Email is required in the request body" });
     }
 
+    // Create a mock subscriber object for the test
+    const subscriber = {
+      email: email,
+      locations: { home: "Test Location" },
+      healthProfile: {
+        conditions: ["asthma"],
+        ageGroup: "adult",
+        pregnant: false,
+        outdoorWorker: true,
+        athlete: false,
+      },
+    };
     // Send test notification
     const testAQI = 125;
     const testComponents = {
@@ -1418,7 +1434,13 @@ router.post("/notifications/test/:subscriberId", async (req, res) => {
       testComponents
     );
 
-    await sendNotification(subscriber, testAQI, testComponents);
+    const emailSent = await sendEmailNotification(
+      subscriber,
+      testAQI,
+      aqiCategory,
+      healthAdvice
+    );
+    if (!emailSent) throw new Error("sendEmailNotification returned false.");
 
     res.json({
       success: true,

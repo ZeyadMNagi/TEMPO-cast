@@ -269,13 +269,13 @@ function setupNotificationFormSubmission() {
         subscriberId = null; // Force a new subscription
       }
 
-      const endpoint = subscriberId 
+      let endpoint = subscriberId 
         ? `/api/notifications/update/${subscriberId}`
         : '/api/notifications/subscribe';
-      const method = subscriberId ? 'PUT' : 'POST';
+      let method = subscriberId ? 'PUT' : 'POST';
       
       // Send to backend
-      const response = await fetch(endpoint, {
+      let response = await fetch(endpoint, {
         method: method,
         headers: {
           'Content-Type': 'application/json'
@@ -283,8 +283,23 @@ function setupNotificationFormSubmission() {
         body: JSON.stringify(preferences)
       });
       
+      if (!response.ok && (response.status === 404 || response.status === 400)) {
+        console.log('Subscriber ID not found on server. Clearing local ID and creating a new subscription.');
+        localStorage.removeItem('aq_notification_subscriber_id');
+        
+        // Switch to POST and try again
+        endpoint = '/api/notifications/subscribe';
+        method = 'POST';
+        // Re-fetch with the correct method
+        response = await fetch(endpoint, { 
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(preferences)
+        });
+      }
+
       const data = await response.json();
-      
+
       if (data.success) {
         // Store subscriber ID
         if (data.subscriberId) {
@@ -301,6 +316,9 @@ function setupNotificationFormSubmission() {
         setTimeout(() => {
           addNotificationPromptToHealthSection();
         }, 3000);
+
+        console.log('📬 Notification preferences:', preferences);
+        console.log(data)
         
         console.log('✅ Notification preferences saved successfully');
       } else {

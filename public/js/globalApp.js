@@ -1155,10 +1155,41 @@ function setupNavigation() {
 function initApp() {
   // Initialize the map only if a map container exists on the current page.
   if (document.getElementById("map")) {
-    // This logic is now primarily for the main app page (index.html)
-    // The TEMPOData.html page has its own, separate initialization script.
     console.log("Map container found, initializing map for main app.");
+    map = L.map("map").setView([40.0, -100.0], 4);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(map);
+
+    map.on("click", onMapClick);
+
+    // Initialize layer groups
+    groundStationLayer = L.layerGroup();
+    tempoLayerGroup = L.layerGroup();
+
+    // Add simulated ground stations
+    addSimulatedGroundStations();
+
+    // TEMPO Satellite Layers (example)
+    const tempoNO2 = L.esri.imageMapLayer({
+      url: "https://gis.earthdata.nasa.gov/image/rest/services/C3685896708-LARC_CLOUD/TEMPO_NO2_L3_V04_HOURLY_TROPOSPHERIC_VERTICAL_COLUMN/ImageServer",
+      attribution: "NASA TEMPO NO₂",
+    });
+
+    const tempoO3 = L.esri.imageMapLayer({
+      url: "https://gis.earthdata.nasa.gov/image/rest/services/C3685896625-LARC_CLOUD/TEMPO_O3TOT_L3_V04_HOURLY_OZONE_COLUMN_AMOUNT/ImageServer",
+      attribution: "NASA TEMPO O₃",
+    });
+
+    tempoLayerGroup.addLayer(tempoNO2);
+    tempoControl = L.control.layers(
+      { "TEMPO NO₂": tempoNO2, "TEMPO O₃": tempoO3 },
+      { "Ground Stations": groundStationLayer }
+    );
   }
+
   // The i18n.js script handles its own initialization on DOMContentLoaded
   document.querySelectorAll(".modal").forEach((modal) => {
     modal.addEventListener("click", (e) => {
@@ -1174,12 +1205,12 @@ function initApp() {
   const lon = params.get("lon");
   const name = params.get("name");
   if (lat && lon) {
-    if (typeof fetchLocationData === "function") {
+    if (map && typeof fetchLocationData === "function") {
       fetchLocationData(parseFloat(lat), parseFloat(lon), name || "");
       zoomToLocation(parseFloat(lat), parseFloat(lon));
     }
-  } else {
-    map.setView([40.0, -100.0], 4);
+  } else if (map) {
+    // Default view if no location params and map exists
   }
 
   setupNavigation();
