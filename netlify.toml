@@ -5,11 +5,10 @@
   functions = "functions"
 
 # Increase function timeout for GEMS API calls (GEMS can be very slow)
-[functions]
-  timeout = 60
-  # Enable background functions for better performance
-  node_bundler = "esbuild"
-
+  [functions."*"]
+    timeout = 60
+    # Enable background functions for better performance
+    node_bundler = "esbuild"
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/api/:splat"
