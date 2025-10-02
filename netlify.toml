@@ -15,6 +15,12 @@
   to = "/.netlify/functions/api/:splat"
   status = 200
 
+# Rule for the unsubscribe page to handle dynamic IDs
+[[redirects]]
+  from = "/unsubscribe/*"
+  to = "/unsubscribe.html"
+  status = 200
+
 # Cache GEMS images at CDN level
 [[headers]]
   for = "/api/gems/*/image"

@@ -17,6 +17,7 @@
     />
     <link id="rtl-stylesheet" rel="stylesheet" href="../css/rtl.css" disabled />
     <link rel="stylesheet" href="../css/app.css" />
+    <link rel="stylesheet" href="../css/modal.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -373,6 +374,141 @@
       </div>
     </div>
 
+    <div id="notificationModal" class="modal">
+      <div class="modal-content notification-modal">
+        <span class="modal-close" onclick="closeModal('notificationModal')"
+          >&times;</span
+        >
+        <div class="notification-modal-header">
+          <h2>🔔 Get Personalized Air Quality Alerts</h2>
+          <p>
+            Stay informed about air quality changes in your area with
+            customized notifications
+          </p>
+        </div>
+
+        <form id="notificationForm" class="notification-form">
+          <div class="form-section">
+            <h3>📧 Contact Information</h3>
+            <div class="form-group">
+              <label for="userEmail">Email Address *</label>
+              <input
+                type="email"
+                id="userEmail"
+                name="email"
+                placeholder="your.email@example.com"
+                required
+              />
+            </div>
+
+            <p class="section-description">
+              We only send notifications via email.
+            </p>
+          </div>
+
+          <!-- Notification Preferences -->
+          <div class="form-section">
+            <h3>✅ Notification Method</h3>
+            <div class="checkbox-group">
+              <label class="checkbox-label">
+                <input type="checkbox" name="notifyEmail" checked />
+                <span>Email notifications</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Alert Frequency -->
+          <div class="form-section">
+            <h3>⏰ Alert Frequency</h3>
+            <div class="radio-group">
+              <label class="radio-label">
+                <input type="radio" name="frequency" value="realtime" />
+                <span
+                  >Real-time (immediate alerts for significant changes)</span
+                >
+              </label>
+              <label class="radio-label">
+                <input type="radio" name="frequency" value="hourly" />
+                <span>Hourly updates</span>
+              </label>
+              <label class="radio-label">
+                <input type="radio" name="frequency" value="daily" checked />
+                <span>Daily summary (recommended)</span>
+              </label>
+              <label class="radio-label">
+                <input type="radio" name="frequency" value="weekly" />
+                <span>Weekly summary</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Health Profile -->
+          <div class="form-section">
+            <h3>🏥 Health Profile</h3>
+            <p class="section-description">
+              Help us personalize your alerts based on your health needs
+            </p>
+
+            <div class="form-group">
+              <label>Do you have any of these conditions?</label>
+              <div class="checkbox-group">
+                <label class="checkbox-label">
+                  <input
+                    type="checkbox"
+                    name="condition_asthma"
+                    value="asthma"
+                  />
+                  <span>Asthma</span>
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" name="condition_copd" value="copd" />
+                  <span>COPD (Chronic Obstructive Pulmonary Disease)</span>
+                </label>
+                <label class="checkbox-label">
+                  <input
+                    type="checkbox"
+                    name="condition_heart"
+                    value="heart"
+                  />
+                  <span>Heart disease</span>
+                </label>
+                <label class="checkbox-label">
+                  <input
+                    type="checkbox"
+                    name="condition_allergies"
+                    value="allergies"
+                  />
+                  <span>Severe allergies</span>
+                </label>
+                <label class="checkbox-label">
+                  <input
+                    type="checkbox"
+                    name="condition_other"
+                    value="other"
+                  />
+                  <span>Other respiratory condition</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="form-actions">
+            <button type="submit" class="btn-primary btn-large">
+              🔔 Start Receiving Alerts
+            </button>
+            <button
+              type="button"
+              class="btn-secondary"
+              onclick="closeModal('notificationModal')"
+            >
+              Maybe Later
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <footer>
       <div class="data-attribution">
         <strong>Data Sources:</strong>
@@ -398,7 +534,8 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/esri-leaflet@3.0.11/dist/esri-leaflet.js"></script>
     <script src="../js/i18n.js?v=1.1"></script>
-    
+
     <script src="../js/globalApp.js?v=1.1"></script>
+    <script src="../js/modal.js?v=1.1"></script>
   </body>
 </html>

@@ -161,16 +161,21 @@ function manageNotificationPreferences() {
 // Populate form with existing preferences
 function populateNotificationForm(subscriber) {
   // Email and phone
-  document.getElementById('userEmail').value = subscriber.email || '';
-  document.getElementById('userPhone').value = subscriber.phone || '';
+  const userEmailInput = document.getElementById('userEmail');
+  if (userEmailInput) userEmailInput.value = subscriber.email || '';
+  
+  const userPhoneInput = document.getElementById('userPhone');
+  if (userPhoneInput) userPhoneInput.value = subscriber.phone || '';
   
   // Notification methods
-  document.querySelector('input[name="notifyEmail"]').checked = 
-    subscriber.notificationMethods?.email || false;
-  document.querySelector('input[name="notifySMS"]').checked = 
-    subscriber.notificationMethods?.sms || false;
-  document.querySelector('input[name="notifyWhatsApp"]').checked = 
-    subscriber.notificationMethods?.whatsapp || false;
+  const notifyEmailCheckbox = document.querySelector('input[name="notifyEmail"]');
+  if (notifyEmailCheckbox) notifyEmailCheckbox.checked = subscriber.notificationMethods?.email || false;
+  
+  const notifySmsCheckbox = document.querySelector('input[name="notifySMS"]');
+  if (notifySmsCheckbox) notifySmsCheckbox.checked = subscriber.notificationMethods?.sms || false;
+  
+  const notifyWhatsAppCheckbox = document.querySelector('input[name="notifyWhatsApp"]');
+  if (notifyWhatsAppCheckbox) notifyWhatsAppCheckbox.checked = subscriber.notificationMethods?.whatsapp || false;
   
   // Frequency
   const freqRadio = document.querySelector(`input[name="frequency"][value="${subscriber.frequency}"]`);
@@ -189,15 +194,14 @@ function populateNotificationForm(subscriber) {
   }
   
   // Other health factors
-  if (subscriber.healthProfile?.pregnant) {
-    document.querySelector('input[name="pregnant"]').checked = true;
-  }
-  if (subscriber.healthProfile?.outdoorWorker) {
-    document.querySelector('input[name="outdoor_worker"]').checked = true;
-  }
-  if (subscriber.healthProfile?.athlete) {
-    document.querySelector('input[name="athlete"]').checked = true;
-  }
+  const pregnantCheckbox = document.querySelector('input[name="pregnant"]');
+  if (pregnantCheckbox) pregnantCheckbox.checked = subscriber.healthProfile?.pregnant || false;
+  
+  const outdoorWorkerCheckbox = document.querySelector('input[name="outdoor_worker"]');
+  if (outdoorWorkerCheckbox) outdoorWorkerCheckbox.checked = subscriber.healthProfile?.outdoorWorker || false;
+  
+  const athleteCheckbox = document.querySelector('input[name="athlete"]');
+  if (athleteCheckbox) athleteCheckbox.checked = subscriber.healthProfile?.athlete || false;
   
   // Threshold
   const thresholdRadio = document.querySelector(`input[name="threshold"][value="${subscriber.threshold}"]`);
@@ -205,10 +209,12 @@ function populateNotificationForm(subscriber) {
   
   // Locations
   if (subscriber.locations?.home) {
-    document.getElementById('homeLocation').value = subscriber.locations.home;
+    const homeLocationInput = document.getElementById('homeLocation');
+    if (homeLocationInput) homeLocationInput.value = subscriber.locations.home;
   }
   if (subscriber.locations?.work) {
-    document.getElementById('workLocation').value = subscriber.locations.work;
+    const workLocationInput = document.getElementById('workLocation');
+    if (workLocationInput) workLocationInput.value = subscriber.locations.work;
   }
 }
 

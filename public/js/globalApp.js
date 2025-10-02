@@ -344,6 +344,12 @@ function displayIntegratedAirQualityData(data, cityName, lat, lon) {
   updateHealthRecommendations(aqi, components, weatherData);
   document.getElementById("pollutionSection").classList.add("show");
   document.getElementById("healthSection").style.display = "block";
+
+  // Add notification prompt to health section
+  if (typeof addNotificationPromptToHealthSection === "function") {
+    addNotificationPromptToHealthSection();
+    checkAndShowNotificationPrompt(aqi, cityName);
+  }
 }
 
 /**

@@ -742,6 +742,10 @@ router.post("/notifications/subscribe", async (req, res) => {
       `[Notifications] Subscriber saved: ${email} (ID: ${subscriber._id})`
     );
 
+    if (!subscriber) {
+      await sendWelcomeEmail(subscriber);
+    }
+
     res.json({
       success: true,
       subscriberId: subscriber._id,
@@ -834,6 +838,37 @@ router.delete("/notifications/unsubscribe/:subscriberId", async (req, res) => {
   } catch (error) {
     console.error("[Notifications] Unsubscribe error:", error);
     res.status(500).json({ error: "Failed to unsubscribe" });
+  }
+});
+
+// Resubscribe endpoint
+router.post("/notifications/resubscribe/:subscriberId", async (req, res) => {
+  try {
+    const { subscriberId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(subscriberId)) {
+      return res.status(400).json({ error: "Invalid subscriber ID format" });
+    }
+
+    const subscriber = await Subscriber.findByIdAndUpdate(
+      subscriberId,
+      { active: true },
+      { new: true }
+    );
+
+    if (!subscriber) {
+      return res.status(404).json({ error: "Subscriber not found" });
+    }
+
+    console.log(`[Notifications] Resubscribed: ${subscriber.email}`);
+
+    res.json({
+      success: true,
+      message: "Successfully resubscribed to notifications",
+      subscriberId: subscriber._id,
+    });
+  } catch (error) {
+    console.error("[Notifications] Resubscribe error:", error);
+    res.status(500).json({ error: "Failed to resubscribe" });
   }
 });
 
@@ -1349,6 +1384,91 @@ async function sendEmailNotification(
   }
 }
 
+async function sendWelcomeEmail(subscriber) {
+  const emailHTML = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background: white; padding: 30px; border: 1px solid #e5e7eb; }
+        .advice { background: #f9fafb; padding: 15px; border-left: 4px solid #667eea; margin: 15px 0; }
+        .advice ul { margin: 10px 0; padding-left: 20px; }
+        .footer { text-align: center; padding: 20px; color: #6b7280; font-size: 12px; }
+        .button { display: inline-block; padding: 12px 24px; background: #667eea; color: white; text-decoration: none; border-radius: 6px; margin: 15px 0; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>🎉 Welcome to Global TEMPO Alerts!</h1>
+          <p>You're now subscribed to personalized air quality notifications.</p>
+        </div>
+        <div class="content">
+          <h2>Hello ${subscriber.email},</h2>
+          <p>Thank you for subscribing! We're excited to help you stay informed about the air you breathe.</p>
+          
+          <div class="advice">
+            <h3>What to expect:</h3>
+            <ul>
+              <li>Alerts when the air quality in your monitored locations reaches the threshold you set.</li>
+              <li>Notifications according to your chosen frequency (${subscriber.frequency}).</li>
+              <li>Personalized health tips based on your profile.</li>
+            </ul>
+          </div>
+          
+          <a href="https://globaltempo.netlify.app/app" class="button">
+            Explore the App
+          </a>
+          
+          <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;">
+          
+          <p style="font-size: 14px; color: #6b7280;">
+            You can manage your preferences at any time.
+          </p>
+        </div>
+        <div class="footer">
+          <p>Global TEMPO Air Quality Monitoring</p>
+          <p><a href="https://globaltempo.netlify.app/unsubscribe/${subscriber.id}" style="color: #6b7280;">Unsubscribe</a> | <a href="https://globaltempo.netlify.app/preferences/${subscriber.id}" style="color: #6b7280;">Update Preferences</a></p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  try {
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
+      console.error(
+        "[Email] Welcome Email Error: EMAIL_USER and EMAIL_PASSWORD must be set."
+      );
+      return;
+    }
+
+    const transporter = nodemailer.createTransport({
+      service: process.env.EMAIL_SERVICE || "gmail",
+      auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASSWORD },
+    });
+
+    await transporter.sendMail({
+      from: '"Global TEMPO Alerts" <alerts@globaltempo.com>',
+      to: subscriber.email,
+      subject: "🎉 Welcome to Global TEMPO Air Quality Alerts!",
+      html: emailHTML,
+    });
+
+    console.log(
+      `[Email] Welcome email sent successfully to ${subscriber.email}`
+    );
+  } catch (error) {
+    console.error(
+      `[Email] Failed to send welcome email to ${subscriber.email}:`,
+      error
+    );
+  }
+}
+
 // Schedule notifications check (run every hour)
 // In production, use a proper job scheduler like node-cron or Bull
 /*
@@ -1401,7 +1521,9 @@ router.post("/notifications/test", async (req, res) => {
   try {
     const { email } = req.body;
     if (!email) {
-      return res.status(400).json({ error: "Email is required in the request body" });
+      return res
+        .status(400)
+        .json({ error: "Email is required in the request body" });
     }
 
     // Create a mock subscriber object for the test
