@@ -689,6 +689,7 @@ router.post("/notifications/subscribe", async (req, res) => {
     }
 
     // Check if subscriber already exists
+    const isNewSubscriber = !(await Subscriber.findOne({ email }));
     let subscriber = await Subscriber.findOne({ email });
     if (subscriber) {
       // Update existing subscriber
@@ -742,7 +743,7 @@ router.post("/notifications/subscribe", async (req, res) => {
       `[Notifications] Subscriber saved: ${email} (ID: ${subscriber._id})`
     );
 
-    if (!subscriber) {
+    if (isNewSubscriber) {
       await sendWelcomeEmail(subscriber);
     }
 
