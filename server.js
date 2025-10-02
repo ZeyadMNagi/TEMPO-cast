@@ -63,7 +63,7 @@ if (process.env.NODE_ENV === "production") {
 }
 
 // --- GEMS Image Service Integration ---
-const GEMS_API_KEY = process.env.GEMS_API_KEY;
+const GEMS_API_KEY = process.env.OPEN_API_GEMS;
 const GEMS_DATA_DIR = path.join(require("os").tmpdir(), "gems_data");
 const GEMS_IMAGE_BOUNDS = [
   [-34, 48],
