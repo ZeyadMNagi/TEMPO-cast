@@ -1,21 +1,3 @@
-function showNotificationModalOnLoad() {
-  const hasSubscribed = localStorage.getItem("aq_notifications_subscribed");
-  const lastShown = localStorage.getItem("aq_notification_modal_shown");
-
-  if (hasSubscribed) return;
-
-  if (lastShown) {
-    const daysSinceShown =
-      (Date.now() - parseInt(lastShown)) / (1000 * 60 * 60 * 24);
-    if (daysSinceShown < 7) return;
-  }
-
-  setTimeout(() => {
-    document.getElementById("notificationModal").classList.add("show");
-    localStorage.setItem("aq_notification_modal_shown", Date.now().toString());
-  }, 10000);
-}
-
 function showNotificationModalForPoorAQI(aqi) {
   if (aqi >= 101) {
     const hasSubscribed = localStorage.getItem("aq_notifications_subscribed");
@@ -62,7 +44,7 @@ function closeModal(modalId) {
 // Auto-trigger notification modal based on AQI
 function checkAndShowNotificationPrompt(aqi, cityName) {
   // Don't show if already subscribed
-  const hasSubscribed = localStorage.getItem('aq_notifications_subscribed');
+  const hasSubscribed = localStorage.getItem("aq_notifications_subscribed");
   if (hasSubscribed) return;
 
   // Show for poor air quality
@@ -70,10 +52,12 @@ function checkAndShowNotificationPrompt(aqi, cityName) {
     // Show after 3 seconds when AQI is unhealthy
     setTimeout(() => {
       const shouldShow = confirm(
-        `⚠️ Air quality in ${cityName} is ${getAQICategory(aqi).label} (AQI: ${aqi}).\n\n` +
-        `Would you like to receive personalized air quality alerts to protect your health?`
+        `⚠️ Air quality in ${cityName} is ${
+          getAQICategory(aqi).label
+        } (AQI: ${aqi}).\n\n` +
+          `Would you like to receive personalized air quality alerts to protect your health?`
       );
-      
+
       if (shouldShow) {
         showNotificationPreferences();
       }
@@ -83,15 +67,15 @@ function checkAndShowNotificationPrompt(aqi, cityName) {
 
 // Add notification prompt button to health section
 function addNotificationPromptToHealthSection() {
-  const healthSection = document.getElementById('healthSection');
+  const healthSection = document.getElementById("healthSection");
   if (!healthSection) return;
 
   // Check if already subscribed
-  const hasSubscribed = localStorage.getItem('aq_notifications_subscribed');
+  const hasSubscribed = localStorage.getItem("aq_notifications_subscribed");
   if (hasSubscribed) {
     // Show subscribed status
-    const statusDiv = document.createElement('div');
-    statusDiv.className = 'notification-status';
+    const statusDiv = document.createElement("div");
+    statusDiv.className = "notification-status";
     statusDiv.innerHTML = `
       <div style="background: #ecfdf5; border: 2px solid #10b981; border-radius: 8px; padding: 15px; margin: 15px 0;">
         <div style="display: flex; align-items: center; gap: 10px;">
@@ -111,8 +95,8 @@ function addNotificationPromptToHealthSection() {
     healthSection.insertBefore(statusDiv, healthSection.firstChild);
   } else {
     // Show subscribe prompt
-    const promptDiv = document.createElement('div');
-    promptDiv.className = 'notification-prompt';
+    const promptDiv = document.createElement("div");
+    promptDiv.className = "notification-prompt";
     promptDiv.innerHTML = `
       <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; padding: 20px; margin: 15px 0; color: white;">
         <div style="display: flex; align-items: center; justify-content: space-between; gap: 15px;">
@@ -139,15 +123,15 @@ function addNotificationPromptToHealthSection() {
 
 // Manage existing subscription
 function manageNotificationPreferences() {
-  const subscriberId = localStorage.getItem('aq_notification_subscriber_id');
+  const subscriberId = localStorage.getItem("aq_notification_subscriber_id");
   if (subscriberId) {
     // Load existing preferences and open modal
     showNotificationPreferences();
-    
+
     // Optionally load and populate existing preferences
     fetch(`/api/notifications/preferences/${subscriberId}`)
-      .then(response => response.json())
-      .then(data => {
+      .then((response) => response.json())
+      .then((data) => {
         if (data.success && data.subscriber) {
           populateNotificationForm(data.subscriber);
         }
@@ -161,146 +145,173 @@ function manageNotificationPreferences() {
 // Populate form with existing preferences
 function populateNotificationForm(subscriber) {
   // Email and phone
-  const userEmailInput = document.getElementById('userEmail');
-  if (userEmailInput) userEmailInput.value = subscriber.email || '';
-  
-  const userPhoneInput = document.getElementById('userPhone');
-  if (userPhoneInput) userPhoneInput.value = subscriber.phone || '';
-  
+  const userEmailInput = document.getElementById("userEmail");
+  if (userEmailInput) userEmailInput.value = subscriber.email || "";
+
+  const userPhoneInput = document.getElementById("userPhone");
+  if (userPhoneInput) userPhoneInput.value = subscriber.phone || "";
+
   // Notification methods
-  const notifyEmailCheckbox = document.querySelector('input[name="notifyEmail"]');
-  if (notifyEmailCheckbox) notifyEmailCheckbox.checked = subscriber.notificationMethods?.email || false;
-  
+  const notifyEmailCheckbox = document.querySelector(
+    'input[name="notifyEmail"]'
+  );
+  if (notifyEmailCheckbox)
+    notifyEmailCheckbox.checked =
+      subscriber.notificationMethods?.email || false;
+
   const notifySmsCheckbox = document.querySelector('input[name="notifySMS"]');
-  if (notifySmsCheckbox) notifySmsCheckbox.checked = subscriber.notificationMethods?.sms || false;
-  
-  const notifyWhatsAppCheckbox = document.querySelector('input[name="notifyWhatsApp"]');
-  if (notifyWhatsAppCheckbox) notifyWhatsAppCheckbox.checked = subscriber.notificationMethods?.whatsapp || false;
-  
+  if (notifySmsCheckbox)
+    notifySmsCheckbox.checked = subscriber.notificationMethods?.sms || false;
+
+  const notifyWhatsAppCheckbox = document.querySelector(
+    'input[name="notifyWhatsApp"]'
+  );
+  if (notifyWhatsAppCheckbox)
+    notifyWhatsAppCheckbox.checked =
+      subscriber.notificationMethods?.whatsapp || false;
+
   // Frequency
-  const freqRadio = document.querySelector(`input[name="frequency"][value="${subscriber.frequency}"]`);
+  const freqRadio = document.querySelector(
+    `input[name="frequency"][value="${subscriber.frequency}"]`
+  );
   if (freqRadio) freqRadio.checked = true;
-  
+
   // Health conditions
-  subscriber.healthProfile?.conditions?.forEach(condition => {
-    const checkbox = document.querySelector(`input[name="condition_${condition}"]`);
+  subscriber.healthProfile?.conditions?.forEach((condition) => {
+    const checkbox = document.querySelector(
+      `input[name="condition_${condition}"]`
+    );
     if (checkbox) checkbox.checked = true;
   });
-  
+
   // Age group
-  const ageSelect = document.getElementById('ageGroup');
+  const ageSelect = document.getElementById("ageGroup");
   if (ageSelect && subscriber.healthProfile?.ageGroup) {
     ageSelect.value = subscriber.healthProfile.ageGroup;
   }
-  
+
   // Other health factors
   const pregnantCheckbox = document.querySelector('input[name="pregnant"]');
-  if (pregnantCheckbox) pregnantCheckbox.checked = subscriber.healthProfile?.pregnant || false;
-  
-  const outdoorWorkerCheckbox = document.querySelector('input[name="outdoor_worker"]');
-  if (outdoorWorkerCheckbox) outdoorWorkerCheckbox.checked = subscriber.healthProfile?.outdoorWorker || false;
-  
+  if (pregnantCheckbox)
+    pregnantCheckbox.checked = subscriber.healthProfile?.pregnant || false;
+
+  const outdoorWorkerCheckbox = document.querySelector(
+    'input[name="outdoor_worker"]'
+  );
+  if (outdoorWorkerCheckbox)
+    outdoorWorkerCheckbox.checked =
+      subscriber.healthProfile?.outdoorWorker || false;
+
   const athleteCheckbox = document.querySelector('input[name="athlete"]');
-  if (athleteCheckbox) athleteCheckbox.checked = subscriber.healthProfile?.athlete || false;
-  
+  if (athleteCheckbox)
+    athleteCheckbox.checked = subscriber.healthProfile?.athlete || false;
+
   // Threshold
-  const thresholdRadio = document.querySelector(`input[name="threshold"][value="${subscriber.threshold}"]`);
+  const thresholdRadio = document.querySelector(
+    `input[name="threshold"][value="${subscriber.threshold}"]`
+  );
   if (thresholdRadio) thresholdRadio.checked = true;
-  
+
   // Locations
   if (subscriber.locations?.home) {
-    const homeLocationInput = document.getElementById('homeLocation');
+    const homeLocationInput = document.getElementById("homeLocation");
     if (homeLocationInput) homeLocationInput.value = subscriber.locations.home;
   }
   if (subscriber.locations?.work) {
-    const workLocationInput = document.getElementById('workLocation');
+    const workLocationInput = document.getElementById("workLocation");
     if (workLocationInput) workLocationInput.value = subscriber.locations.work;
   }
 }
 
 // Enhanced form submission with API integration
 function setupNotificationFormSubmission() {
-  const form = document.getElementById('notificationForm');
+  const form = document.getElementById("notificationForm");
   if (!form) return;
 
-  form.addEventListener('submit', async (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    
+
     // Show loading state
     const submitButton = form.querySelector('button[type="submit"]');
     const originalText = submitButton.textContent;
     submitButton.disabled = true;
-    submitButton.textContent = '⏳ Subscribing...';
-    
+    submitButton.textContent = "⏳ Subscribing...";
+
     try {
       // Gather form data
       const formData = new FormData(form);
       const preferences = {
-        email: formData.get('email'),
-        phone: formData.get('phone'),
+        email: formData.get("email"),
+        phone: formData.get("phone"),
         notificationMethods: {
-          email: formData.get('notifyEmail') === 'on',
-          sms: formData.get('notifySMS') === 'on',
-          whatsapp: formData.get('notifyWhatsApp') === 'on'
+          email: formData.get("notifyEmail") === "on",
+          sms: formData.get("notifySMS") === "on",
+          whatsapp: formData.get("notifyWhatsApp") === "on",
         },
-        frequency: formData.get('frequency'),
+        frequency: formData.get("frequency"),
         healthProfile: {
           conditions: [],
-          ageGroup: formData.get('ageGroup'),
-          pregnant: formData.get('pregnant') === 'yes',
-          outdoorWorker: formData.get('outdoor_worker') === 'yes',
-          athlete: formData.get('athlete') === 'yes'
+          ageGroup: formData.get("ageGroup"),
+          pregnant: formData.get("pregnant") === "yes",
+          outdoorWorker: formData.get("outdoor_worker") === "yes",
+          athlete: formData.get("athlete") === "yes",
         },
-        threshold: formData.get('threshold'),
+        threshold: formData.get("threshold"),
         locations: {
-          home: formData.get('homeLocation'),
-          work: formData.get('workLocation')
-        }
+          home: formData.get("homeLocation"),
+          work: formData.get("workLocation"),
+        },
       };
-      
+
       // Gather health conditions
-      ['asthma', 'copd', 'heart', 'allergies', 'other'].forEach(condition => {
+      ["asthma", "copd", "heart", "allergies", "other"].forEach((condition) => {
         if (formData.get(`condition_${condition}`)) {
           preferences.healthProfile.conditions.push(condition);
         }
       });
-      
+
       // Check if updating or creating
-      let subscriberId = localStorage.getItem('aq_notification_subscriber_id');
+      let subscriberId = localStorage.getItem("aq_notification_subscriber_id");
 
       // Validate if the stored ID is a valid MongoDB ObjectId (24 hex chars)
-      const isValidObjectId = subscriberId && /^[0-9a-fA-F]{24}$/.test(subscriberId);
+      const isValidObjectId =
+        subscriberId && /^[0-9a-fA-F]{24}$/.test(subscriberId);
       if (!isValidObjectId) {
-        localStorage.removeItem('aq_notification_subscriber_id');
+        localStorage.removeItem("aq_notification_subscriber_id");
         subscriberId = null; // Force a new subscription
       }
 
-      let endpoint = subscriberId 
+      let endpoint = subscriberId
         ? `/api/notifications/update/${subscriberId}`
-        : '/api/notifications/subscribe';
-      let method = subscriberId ? 'PUT' : 'POST';
-      
+        : "/api/notifications/subscribe";
+      let method = subscriberId ? "PUT" : "POST";
+
       // Send to backend
       let response = await fetch(endpoint, {
         method: method,
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(preferences)
+        body: JSON.stringify(preferences),
       });
-      
-      if (!response.ok && (response.status === 404 || response.status === 400)) {
-        console.log('Subscriber ID not found on server. Clearing local ID and creating a new subscription.');
-        localStorage.removeItem('aq_notification_subscriber_id');
-        
+
+      if (
+        !response.ok &&
+        (response.status === 404 || response.status === 400)
+      ) {
+        console.log(
+          "Subscriber ID not found on server. Clearing local ID and creating a new subscription."
+        );
+        localStorage.removeItem("aq_notification_subscriber_id");
+
         // Switch to POST and try again
-        endpoint = '/api/notifications/subscribe';
-        method = 'POST';
+        endpoint = "/api/notifications/subscribe";
+        method = "POST";
         // Re-fetch with the correct method
-        response = await fetch(endpoint, { 
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(preferences)
+        response = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(preferences),
         });
       }
 
@@ -309,31 +320,42 @@ function setupNotificationFormSubmission() {
       if (data.success) {
         // Store subscriber ID
         if (data.subscriberId) {
-          localStorage.setItem('aq_notification_subscriber_id', data.subscriberId);
+          localStorage.setItem(
+            "aq_notification_subscriber_id",
+            data.subscriberId
+          );
         }
-        localStorage.setItem('aq_notifications_subscribed', 'true');
-        localStorage.setItem('aq_notification_preferences', JSON.stringify(preferences));
-        
+        localStorage.setItem("aq_notifications_subscribed", "true");
+        localStorage.setItem(
+          "aq_notification_preferences",
+          JSON.stringify(preferences)
+        );
+
         // Show success message
-        form.style.display = 'none';
-        document.getElementById('notificationSuccess').style.display = 'block';
-        
+        const successDiv = document.getElementById("notificationSuccess");
+        if (form) form.style.display = "none";
+        if (successDiv) {
+          successDiv.style.display = "block";
+        }
+
         // Update UI
         setTimeout(() => {
           addNotificationPromptToHealthSection();
         }, 3000);
 
-        console.log('📬 Notification preferences:', preferences);
-        console.log(data)
-        
-        console.log('✅ Notification preferences saved successfully');
+        console.log("📬 Notification preferences:", preferences);
+        console.log(data);
+
+        console.log("✅ Notification preferences saved successfully");
       } else {
-        throw new Error(data.error || 'Failed to save preferences');
+        throw new Error(data.error || "Failed to save preferences");
       }
-      
     } catch (error) {
-      console.error('Error saving preferences:', error);
-      alert('There was an error saving your preferences. Please try again.\n\nError: ' + error.message);
+      console.error("Error saving preferences:", error);
+      alert(
+        "There was an error saving your preferences. Please try again.\n\nError: " +
+          error.message
+      );
       submitButton.disabled = false;
       submitButton.textContent = originalText;
     }
@@ -341,51 +363,57 @@ function setupNotificationFormSubmission() {
 }
 
 function enhanceDisplayIntegratedAirQualityData(originalFunction) {
-  return function(...args) {
+  return function (...args) {
     // Call original function
     const result = originalFunction.apply(this, args);
-    
+
     // Get AQI and city name from the display
-    const aqiValue = parseInt(document.getElementById('aqiValue')?.textContent);
-    const cityName = document.getElementById('cityName')?.textContent.split('(')[0].trim();
-    
+    const aqiValue = parseInt(document.getElementById("aqiValue")?.textContent);
+    const cityName = document
+      .getElementById("cityName")
+      ?.textContent.split("(")[0]
+      .trim();
+
     // Add notification prompt to health section
     addNotificationPromptToHealthSection();
-    
+
     // Check if should show notification modal
     if (!isNaN(aqiValue) && cityName) {
       checkAndShowNotificationPrompt(aqiValue, cityName);
     }
-    
+
     return result;
   };
 }
 
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', () => {
-  showNotificationModalOnLoad();
-
-  // Setup form submission
+// Initialize on page load for the main app
+document.addEventListener("DOMContentLoaded", () => {
+  // Setup form submission for any notification forms that exist
   setupNotificationFormSubmission();
-  
-  // Enhance existing function if it exists
-  if (typeof displayIntegratedAirQualityData === 'function') {
-    const original = displayIntegratedAirQualityData;
-    displayIntegratedAirQualityData = function(...args) {
-      const result = original.apply(this, args);
-      
+
+  // Enhance existing function if it exists on the page (likely app/index.html)
+  if (typeof displayIntegratedAirQualityData === "function") {
+    const originalDisplayData = displayIntegratedAirQualityData;
+    displayIntegratedAirQualityData = function (...args) {
+      const result = originalDisplayData.apply(this, args);
+
       // Add notification features after display
       setTimeout(() => {
-        const aqiValue = parseInt(document.getElementById('aqiValue')?.textContent);
-        const cityName = document.getElementById('cityName')?.textContent.split('(')[0].trim();
-        
+        const aqiValue = parseInt(
+          document.getElementById("aqiValue")?.textContent
+        );
+        const cityName = document
+          .getElementById("cityName")
+          ?.textContent.split("(")[0]
+          .trim();
+
         addNotificationPromptToHealthSection();
-        
+
         if (!isNaN(aqiValue) && cityName) {
           checkAndShowNotificationPrompt(aqiValue, cityName);
         }
       }, 500);
-      
+
       return result;
     };
   }
