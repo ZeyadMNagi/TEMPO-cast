@@ -166,13 +166,14 @@ async function fetchCitySuggestions(query) {
 
 function displaySearchResults(cities) {
   const resultsContainer = document.getElementById("searchResults");
-  resultsContainer.innerHTML = "";
   if (cities.length === 0) {
     resultsContainer.innerHTML =
       '<div class="search-item">No cities found</div>';
     resultsContainer.style.display = "block";
     return;
   }
+
+  const fragment = document.createDocumentFragment();
   cities.forEach((city) => {
     const item = document.createElement("div");
     item.className = "search-item";
@@ -184,9 +185,13 @@ function displaySearchResults(cities) {
       4
     )}</small>
     </div>`;
-    item.onclick = () => selectCity(city);
-    resultsContainer.appendChild(item);
+    item.addEventListener("click", () => selectCity(city));
+    fragment.appendChild(item);
   });
+
+  // Clear previous results and append all new items at once
+  resultsContainer.innerHTML = "";
+  resultsContainer.appendChild(fragment);
   resultsContainer.style.display = "block";
 }
 
@@ -195,12 +200,14 @@ function selectCity(city) {
     city.state ? ", " + city.state : ""
   }, ${city.country}`;
   hideSearchResults();
+
   const locationDisplay = document.getElementById("locationDisplay");
   locationDisplay.innerHTML = `📍 <strong>${city.name}${
     city.state ? ", " + city.state : ""
   }</strong><br>
     <small>Coordinates: ${city.lat.toFixed(4)}, ${city.lon.toFixed(4)}</small>`;
   locationDisplay.style.display = "block";
+
   console.log("Selected city info:", city);
   fetchLocationData(city.lat, city.lon, city.name);
   zoomToLocation(city.lat, city.lon);
@@ -223,13 +230,11 @@ async function fetchLocationData(lat, lon, cityName = "") {
       data = await response.json();
       console.log("Fetched data from /api/complete:", data);
 
-      // Cache the data
       dataCache.current = data.current;
       dataCache.forecast = data.forecast;
       dataCache.historical = data.historical;
       dataCache.timestamp = Date.now();
 
-      // Use city name from various sources
       if (!cityName) {
         cityName =
           data.location ||
@@ -239,7 +244,6 @@ async function fetchLocationData(lat, lon, cityName = "") {
       }
       console.log("Using city name:", cityName);
 
-      // Display all the integrated data
       displayIntegratedAirQualityData(data.current, cityName, lat, lon);
       generateEnhancedForecast(data.forecast, data.current);
       updateEnhancedHistoricalTrends(data.historical, cityName);
@@ -253,7 +257,6 @@ async function fetchLocationData(lat, lon, cityName = "") {
       data = await response.json();
       console.log("Fetched data from /api/data:", data);
 
-      // Determine city name if not provided
       if (!cityName) {
         cityName =
           data.location ||
@@ -263,17 +266,14 @@ async function fetchLocationData(lat, lon, cityName = "") {
       }
       console.log("Using city name:", cityName);
 
-      // Display all the integrated data
       displayIntegratedAirQualityData(data.current, cityName, lat, lon);
       generateEnhancedForecast(data.forecast, data.current);
       updateEnhancedHistoricalTrends(data.historical, cityName);
     }
 
-    console.log(data);
     hideLoading();
   } catch (error) {
     console.error("Error fetching location data:", error);
-    console.log(dataCache);
     showError("Failed to fetch air quality data.");
     hideLoading();
   }
@@ -321,7 +321,6 @@ function displayIntegratedAirQualityData(data, cityName, lat, lon) {
   console.log("Displaying data for:", cityName, lat, lon);
   console.log("Pollution data:", pollution);
 
-  // Calculate US EPA AQI from the pollutant concentrations
   const aqiData = calculateOverallAQI(components);
   const aqi = aqiData.overall;
   const individualAQIs = aqiData.individual;
@@ -331,13 +330,11 @@ function displayIntegratedAirQualityData(data, cityName, lat, lon) {
   console.log("Calculated EPA AQI:", aqi, "Category:", aqiCategory);
   console.log("Individual AQIs:", individualAQIs);
 
-  // Update AQI display with new EPA values
   document.getElementById("aqiValue").textContent = aqi;
   const categoryElement = document.getElementById("aqiCategory");
   categoryElement.textContent = aqiCategory.label;
   categoryElement.className = `aqi-category aqi-${aqiCategory.class}`;
 
-  // Update pollutant displays with individual AQI values
   document.getElementById("pollutionData").innerHTML =
     createEnhancedPollutantDisplays(components, weatherData, individualAQIs);
 
@@ -345,7 +342,6 @@ function displayIntegratedAirQualityData(data, cityName, lat, lon) {
   document.getElementById("pollutionSection").classList.add("show");
   document.getElementById("healthSection").style.display = "block";
 
-  // Add notification prompt to health section
   if (typeof addNotificationPromptToHealthSection === "function") {
     addNotificationPromptToHealthSection();
     checkAndShowNotificationPrompt(aqi, cityName);
@@ -362,7 +358,6 @@ function calculateIndividualAQI(concentration, pollutant) {
   const breakpoints = AQI_BREAKPOINTS[pollutant];
   if (!breakpoints) return 0;
 
-  // Find the appropriate breakpoint
   let breakpoint = null;
   for (let bp of breakpoints) {
     if (concentration >= bp.cLow && concentration <= bp.cHigh) {
@@ -371,13 +366,11 @@ function calculateIndividualAQI(concentration, pollutant) {
     }
   }
 
-  // If concentration exceeds all breakpoints, use the highest one
   if (
     !breakpoint &&
     concentration > breakpoints[breakpoints.length - 1].cHigh
   ) {
     breakpoint = breakpoints[breakpoints.length - 1];
-    // For concentrations above the highest breakpoint, extend the calculation
     const lastBp = breakpoints[breakpoints.length - 1];
     const aqi =
       ((lastBp.iHigh - lastBp.iLow) / (lastBp.cHigh - lastBp.cLow)) *
@@ -388,7 +381,6 @@ function calculateIndividualAQI(concentration, pollutant) {
 
   if (!breakpoint) return 0;
 
-  // Apply the EPA AQI formula
   const aqi =
     ((breakpoint.iHigh - breakpoint.iLow) /
       (breakpoint.cHigh - breakpoint.cLow)) *
@@ -401,42 +393,34 @@ function calculateIndividualAQI(concentration, pollutant) {
 function calculateOverallAQI(components) {
   const individualAQIs = {};
 
-  // PM2.5 (μg/m³) - direct use
   if (components.pm2_5) {
     individualAQIs.pm2_5 = calculateIndividualAQI(components.pm2_5, "pm2_5");
   }
 
-  // PM10 (μg/m³) - direct use
   if (components.pm10) {
     individualAQIs.pm10 = calculateIndividualAQI(components.pm10, "pm10");
   }
 
-  // O3 (μg/m³) - convert to ppb (μg/m³ / 1.96 ≈ ppb for O3)
   if (components.o3) {
     const o3_ppb = components.o3 / 1.96; // Convert μg/m³ to ppb
-    // Use 8-hour ozone standard for general AQI calculation
     individualAQIs.o3 = calculateIndividualAQI(o3_ppb, "o3_8hr");
   }
 
-  // CO (μg/m³) - convert to ppm (μg/m³ / 1145 ≈ ppm for CO)
   if (components.co) {
     const co_ppm = components.co / 1145; // Convert μg/m³ to ppm
     individualAQIs.co = calculateIndividualAQI(co_ppm, "co");
   }
 
-  // SO2 (μg/m³) - convert to ppb (μg/m³ / 2.62 ≈ ppb for SO2)
   if (components.so2) {
     const so2_ppb = components.so2 / 2.62; // Convert μg/m³ to ppb
     individualAQIs.so2 = calculateIndividualAQI(so2_ppb, "so2");
   }
 
-  // NO2 (μg/m³) - convert to ppb (μg/m³ / 1.88 ≈ ppb for NO2)
   if (components.no2) {
     const no2_ppb = components.no2 / 1.88; // Convert μg/m³ to ppb
     individualAQIs.no2 = calculateIndividualAQI(no2_ppb, "no2");
   }
 
-  // Overall AQI is the highest individual AQI
   const aqiValues = Object.values(individualAQIs).filter((val) => val > 0);
   const overallAQI = aqiValues.length > 0 ? Math.max(...aqiValues) : 0;
 
@@ -510,7 +494,6 @@ function getColorForPollutant(pollutant, value) {
       aqi = calculateIndividualAQI(value / 1145, "co"); // Convert μg/m³ to ppm
       break;
     default:
-      // Fallback to old color system for unknown pollutants
       const thresholds = {
         pm2_5: [12, 35, 55],
         pm10: [54, 154, 254],
@@ -615,7 +598,6 @@ function createEnhancedPollutantDisplays(components, weather, individualAQIs) {
     const color = getColorForPollutant(pollutant.key, value);
     const aqiCategory = getAQICategory(individualAQI);
 
-    // Calculate percentage based on AQI (0-500 scale)
     const percentage = Math.min((individualAQI / 500) * 100, 100);
 
     html += `
@@ -731,7 +713,6 @@ function updateHealthRecommendations(aqi, components, weather) {
   let alertHTML = "";
   let recommendations = [];
 
-  // Health alerts based on US EPA AQI levels
   if (aqi >= 301) {
     alertHTML = `
       <div class="health-alert" style="background: linear-gradient(135deg, #7e0023, #8f3f97); color: white;">
@@ -793,7 +774,6 @@ function updateHealthRecommendations(aqi, components, weather) {
     `;
   }
 
-  // Specific recommendations based on pollutant levels and EPA guidelines
   if (components.pm2_5 > 55.5) {
     recommendations.push(getTranslation("rec_stay_indoors"));
     recommendations.push(getTranslation("rec_wear_mask"));
@@ -806,7 +786,6 @@ function updateHealthRecommendations(aqi, components, weather) {
   }
 
   if (components.no2 / 1.88 > 361) {
-    // Convert to ppb and check
     recommendations.push(getTranslation("rec_avoid_busy_roads"));
   } else if (components.no2 / 1.88 > 101) {
     recommendations.push(getTranslation("rec_avoid_busy_roads"));
@@ -817,7 +796,6 @@ function updateHealthRecommendations(aqi, components, weather) {
     recommendations.push(getTranslation("rec_avoid_peak_sun"));
   }
 
-  // Weather-based recommendations
   if (weather.wind?.speed < 2) {
     recommendations.push(
       "💨 Low wind may trap pollutants - avoid outdoor activities"
@@ -826,7 +804,6 @@ function updateHealthRecommendations(aqi, components, weather) {
     recommendations.push("🌬️ Good wind dispersion may help air quality");
   }
 
-  // General recommendations based on AQI level
   if (aqi >= 101) {
     recommendations.push(
       "👥 Children, elderly, and those with heart/lung conditions should stay indoors"
@@ -897,7 +874,6 @@ function showPollutantInfo(pollutant) {
   const modal = document.getElementById("pollutantModal");
   const body = document.getElementById("pollutantModalBody");
 
-  // For simplicity, we'll handle the main ones. This can be expanded.
   let info = {};
   if (pollutant === "pm2_5") {
     info = {
@@ -1283,10 +1259,6 @@ window.addEventListener("offline", () => {
 
 // Service worker registration for PWA capabilities (in production)
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    // navigator.serviceWorker.register('/sw.js').catch(console.error);
-    // Commented out to avoid 404 errors in demo
-  });
 }
 
 // Enhanced forecast generation with real OpenWeatherMap data
@@ -1302,7 +1274,6 @@ function generateEnhancedForecast(forecastData, currentData) {
     return;
   }
 
-  // Take next 8 forecast points (next 2-3 days typically)
   const forecasts = forecastData.list.slice(0, 8).map((item) => {
     const date = new Date(item.dt * 1000);
     const aqiData = calculateOverallAQI(item.components);
@@ -1327,7 +1298,6 @@ function generateEnhancedForecast(forecastData, currentData) {
 
   forecastTime.textContent = `Updated: ${new Date().toLocaleTimeString()}`;
 
-  // Create enhanced forecast grid
   forecastGrid.innerHTML = forecasts
     .map(
       (forecast, index) => `
@@ -1352,13 +1322,11 @@ function generateEnhancedForecast(forecastData, currentData) {
     )
     .join("");
 
-  // Store forecast data for detailed view
   window.forecastDetails = forecasts;
 
   forecastSection.style.display = "block";
 }
 
-// Get forecast trend
 function getForecastTrend(prevAqi, currentAqi) {
   const diff = currentAqi - prevAqi;
   if (Math.abs(diff) <= 5) return "stable";
@@ -1371,7 +1339,6 @@ function getForecastTrendIcon(prevAqi, currentAqi) {
   return diff > 0 ? "↗️" : "↘️";
 }
 
-// Show detailed forecast information
 function showForecastDetails(index) {
   const forecast = window.forecastDetails[index];
   if (!forecast) return;
@@ -1429,7 +1396,6 @@ function showForecastDetails(index) {
   modal.classList.add("show");
 }
 
-// Generate health advice for forecast
 function generateForecastHealthAdvice(aqi, components) {
   let advice = [];
 
@@ -1464,7 +1430,6 @@ function updateEnhancedHistoricalTrends(historicalData, cityName) {
     return;
   }
 
-  // Process historical data into meaningful trends
   const historical = historicalData.list.map((item) => ({
     timestamp: item.dt,
     date: new Date(item.dt * 1000),
@@ -1472,7 +1437,6 @@ function updateEnhancedHistoricalTrends(historicalData, cityName) {
     components: item.components,
   }));
 
-  // Calculate trend periods
   const trends = calculateHistoricalTrends(historical);
 
   trendsData.innerHTML = trends
@@ -1491,7 +1455,6 @@ function updateEnhancedHistoricalTrends(historicalData, cityName) {
     )
     .join("");
 
-  // Add historical chart if we have enough data
   if (historical.length > 24) {
     addHistoricalChart(historical);
   }
@@ -1499,19 +1462,19 @@ function updateEnhancedHistoricalTrends(historicalData, cityName) {
   trendsSection.style.display = "block";
 }
 
-// Calculate meaningful historical trends
 function calculateHistoricalTrends(historical) {
   const trends = [];
   const now = new Date();
+  const twentyFourHours = 24 * 60 * 60 * 1000;
+  const threeDays = 3 * twentyFourHours;
 
-  // Last 24 hours
-  const last24h = historical.filter((h) => now - h.date <= 24 * 60 * 60 * 1000);
-  if (last24h.length > 0) {
+  const last24hData = historical.filter((h) => now - h.date <= twentyFourHours);
+  if (last24hData.length > 0) {
     const avg = Math.round(
-      last24h.reduce((sum, h) => sum + h.aqi, 0) / last24h.length
+      last24hData.reduce((sum, h) => sum + h.aqi, 0) / last24hData.length
     );
-    const min = Math.min(...last24h.map((h) => h.aqi));
-    const max = Math.max(...last24h.map((h) => h.aqi));
+    const min = Math.min(...last24hData.map((h) => h.aqi));
+    const max = Math.max(...last24hData.map((h) => h.aqi));
     trends.push({
       period: "Past 24 hours",
       avgAqi: avg,
@@ -1519,33 +1482,32 @@ function calculateHistoricalTrends(historical) {
       maxAqi: max,
       value: `Range: ${min}-${max}`,
       description: `Average: ${avg}`,
-      changeType: avg <= 50 ? "improving" : avg <= 100 ? "stable" : "worsening",
+      changeType: avg <= 50 ? "improving" : avg <= 100 ? "stable" : "worsening"
     });
   }
 
-  // Last 3 days vs previous 3 days
   const last3days = historical.filter(
     (h) => now - h.date <= 3 * 24 * 60 * 60 * 1000
   );
   const prev3days = historical.filter(
-    (h) =>
-      now - h.date > 3 * 24 * 60 * 60 * 1000 &&
-      now - h.date <= 6 * 24 * 60 * 60 * 1000
+    (h) => now - h.date > threeDays && now - h.date <= 2 * threeDays
   );
 
-  if (last3days.length > 0 && prev3days.length > 0) {
+  if (last3days.length > 1 && prev3days.length > 1) {
     const lastAvg =
       last3days.reduce((sum, h) => sum + h.aqi, 0) / last3days.length;
     const prevAvg =
       prev3days.reduce((sum, h) => sum + h.aqi, 0) / prev3days.length;
-    const change = ((lastAvg - prevAvg) / prevAvg) * 100;
+    const change = prevAvg > 0 ? ((lastAvg - prevAvg) / prevAvg) * 100 : 0;
 
     trends.push({
       period: "Past 3 days",
       avgAqi: Math.round(lastAvg),
       minAqi: Math.min(...last3days.map((h) => h.aqi)),
       maxAqi: Math.max(...last3days.map((h) => h.aqi)),
-      value: `${change > 0 ? "+" : ""}${change.toFixed(1)}%`,
+      value: `${change > 0 ? "+" : ""}${change.toFixed(
+        1
+      )}%`,
       description:
         change > 0 ? "vs previous 3 days" : "improvement vs previous 3 days",
       changeType:
@@ -1557,7 +1519,6 @@ function calculateHistoricalTrends(historical) {
     });
   }
 
-  // Weekly average
   const avgWeekly = Math.round(
     historical.reduce((sum, h) => sum + h.aqi, 0) / historical.length
   );
@@ -1587,7 +1548,6 @@ function addHistoricalChart(historical) {
     document.getElementById("trendsData").appendChild(chartContainer);
   }
 
-  // Create simple ASCII-style chart for last 24 hours
   const last24h = historical.slice(-24);
   const maxAqi = Math.max(...last24h.map((h) => h.aqi));
   const minAqi = Math.min(...last24h.map((h) => h.aqi));

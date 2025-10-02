@@ -71,6 +71,7 @@ const GEMS_IMAGE_BOUNDS = [
 ];
 
 const gemsImageCache = new NodeCache({ stdTTL: 3600, checkperiod: 120 }); // 1 hour cache
+const gemsTimestampCache = new NodeCache({ stdTTL: 600, checkperiod: 120 }); // 10 minute cache for timestamps
 
 const GEMS_LAYERS = {
   o3: {
@@ -85,6 +86,13 @@ const GEMS_LAYERS = {
 };
 
 async function fetchLatestGemsTimestamp(baseUrl) {
+  // Check cache for timestamp first
+  const cachedTimestamp = gemsTimestampCache.get(baseUrl);
+  if (cachedTimestamp) {
+    console.log(`[GEMS] Using cached timestamp: ${cachedTimestamp}`);
+    return cachedTimestamp;
+  }
+
   const now = new Date();
   const end = now.toISOString().slice(0, 16).replace(/[-T:]/g, "");
   now.setHours(now.getHours() - 24);
@@ -131,7 +139,10 @@ async function fetchLatestGemsTimestamp(baseUrl) {
       }`
     );
 
-    return timestamps.sort().pop();
+    const latestTimestamp = timestamps.sort().pop();
+    // Cache the fetched timestamp
+    gemsTimestampCache.set(baseUrl, latestTimestamp);
+    return latestTimestamp;
   } catch (error) {
     console.error(`[GEMS] fetchLatestGemsTimestamp failed:`, error);
     throw error;
@@ -1044,51 +1055,64 @@ function calculateOverallAQI(components) {
 
 // Check air quality and send notifications (scheduled job)
 async function checkAndNotifySubscribers() {
-  console.log(
-    `[Notifications] Checking AQ for ${notificationSubscribers.size} subscribers`
-  );
-
   const subscribers = await Subscriber.find({ active: true });
   console.log(
     `[Notifications] Checking AQ for ${subscribers.length} active subscribers`
   );
+  if (subscribers.length === 0) return;
 
-  for (const subscriber of subscribers) {
-    if (!subscriber.active) continue;
+  const BATCH_SIZE = 50; // Process 50 subscribers in parallel to avoid API rate limits
+  for (let i = 0; i < subscribers.length; i += BATCH_SIZE) {
+    const batch = subscribers.slice(i, i + BATCH_SIZE);
+    console.log(`[Notifications] Processing batch ${i / BATCH_SIZE + 1}...`);
 
-    try {
-      const coords = parseLocationCoordinates(subscriber.locations.home);
-      if (!coords) continue;
-
-      const aqResponse = await axios.get(
-        `http://api.openweathermap.org/data/2.5/air_pollution`,
-        {
-          params: {
-            lat: coords.lat,
-            lon: coords.lon,
-            appid: process.env.OPENWEATHER_API_KEY,
-          },
-          timeout: 5000,
+    const promises = batch.map(async (subscriber) => {
+      try {
+        const coords = parseLocationCoordinates(subscriber.locations.home);
+        if (!coords) {
+          console.log(`[Notifications] Skipping ${subscriber.email}: invalid coordinates.`);
+          return;
         }
-      );
 
-      const pollution = aqResponse.data.list[0];
-      const components = pollution.components;
+        const aqResponse = await axios.get(
+          `http://api.openweathermap.org/data/2.5/air_pollution`,
+          {
+            params: {
+              lat: coords.lat,
+              lon: coords.lon,
+              appid: process.env.OPENWEATHER_API_KEY,
+            },
+            timeout: 5000,
+          }
+        );
 
-      const aqi = calculateOverallAQI(components).overall;
+        const pollution = aqResponse.data.list[0];
+        const components = pollution.components;
+        const aqi = calculateOverallAQI(components).overall;
 
-      if (shouldNotify(subscriber, aqi)) {
-        await sendNotification(subscriber, aqi, components);
-        subscriber.lastNotified = new Date().toISOString();
-        await subscriber.save();
+        if (shouldNotify(subscriber, aqi)) {
+          await sendNotification(subscriber, aqi, components);
+          subscriber.lastNotified = new Date();
+          await subscriber.save();
+        }
+      } catch (error) {
+        console.error(
+          `[Notifications] Error processing AQ for ${subscriber.email}:`,
+          error.message
+        );
       }
-    } catch (error) {
-      console.error(
-        `[Notifications] Error checking AQ for ${subscriber.email}:`,
-        error.message
-      );
+    });
+
+    // Execute all promises in the batch in parallel
+    await Promise.allSettled(promises);
+
+    // Optional: Add a small delay between batches if needed to respect strict rate limits
+    if (i + BATCH_SIZE < subscribers.length) {
+      console.log("[Notifications] Waiting before next batch...");
+      await new Promise(resolve => setTimeout(resolve, 2000)); // 2-second delay
     }
   }
+  console.log("[Notifications] Finished checking all subscribers.");
 }
 
 function shouldNotify(subscriber, currentAQI) {
@@ -1457,51 +1481,16 @@ async function sendWelcomeEmail(subscriber) {
 }
 
 // Schedule notifications check (run every hour)
-// In production, use a proper job scheduler like node-cron or Bull
-/*
 const cron = require('node-cron');
 
 // Run every hour
 cron.schedule('0 * * * *', () => {
   console.log('[Notifications] Running scheduled check...');
   checkAndNotifySubscribers().catch(console.error);
+}, {
+  scheduled: true,
+  timezone: "UTC"
 });
- 
-// For realtime alerts, run every 15 minutes
-cron.schedule('15 * * * *', async () => {
-  // Only check subscribers with realtime frequency
-  const realtimeSubscribers = await Subscriber.find({ active: true, frequency: 'realtime' });
-  for (const subscriber of realtimeSubscribers) {
-    // Check their locations
-    const coords = parseLocationCoordinates(subscriber.locations.home);
-    if (coords) {
-      try {
-        const aqResponse = await axios.get(
-          `http://api.openweathermap.org/data/2.5/air_pollution`,
-          {
-            params: {
-              lat: coords.lat,
-              lon: coords.lon,
-              appid: process.env.OPENWEATHER_API_KEY,
-            },
-            timeout: 5000,
-          }
-        );
-        
-        const aqi = calculateOverallAQI(aqResponse.data.list[0].components).overall;
-        
-        if (shouldNotify(subscriber, aqi)) {
-          await sendNotification(subscriber, aqi, aqResponse.data.list[0].components);
-          subscriber.lastNotified = new Date().toISOString();
-          await subscriber.save();
-        }
-      } catch (error) {
-        console.error(`[Realtime] Error for ${subscriber.email}:`, error.message);
-      }
-    }
-  }
-});
-*/
 
 // Manual trigger endpoint for testing
 router.post("/notifications/test", async (req, res) => {
