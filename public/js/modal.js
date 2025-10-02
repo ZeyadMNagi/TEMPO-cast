@@ -70,6 +70,12 @@ function addNotificationPromptToHealthSection() {
   const healthSection = document.getElementById("healthSection");
   if (!healthSection) return;
 
+  // Remove existing prompts first to prevent duplication
+  const existingPrompt = healthSection.querySelector(".notification-prompt");
+  if (existingPrompt) existingPrompt.remove();
+  const existingStatus = healthSection.querySelector(".notification-status");
+  if (existingStatus) existingStatus.remove();
+
   // Check if already subscribed
   const hasSubscribed = localStorage.getItem("aq_notifications_subscribed");
   if (hasSubscribed) {
