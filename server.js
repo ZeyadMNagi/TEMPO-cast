@@ -688,11 +688,10 @@ router.post("/notifications/subscribe", async (req, res) => {
       return res.status(400).json({ error: "Valid email is required" });
     }
 
-    const isNewSubscriber = !subscriber;
     let subscriber = await Subscriber.findOne({ email });
+    const isNewSubscriber = !subscriber;
 
-    if (subscriber)
-       {
+    if (subscriber) {
       console.log(`[Notifications] Updating existing subscriber: ${email}`);
       subscriber.set({
         phone: phone,
@@ -701,7 +700,7 @@ router.post("/notifications/subscribe", async (req, res) => {
         healthProfile: healthProfile,
         threshold: threshold,
         locations: locations,
-        active: true, 
+        active: true,
       });
     } else {
       // Create new subscriber
