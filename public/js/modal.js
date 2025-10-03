@@ -358,14 +358,6 @@ function setupNotificationFormSubmission() {
         if (formContainer) formContainer.style.display = "none";
         if (successDiv) successDiv.style.display = "block";
 
-
-        // Show success message
-        const successDiv = document.getElementById("notificationSuccess");
-        if (form) form.style.display = "none";
-        if (successDiv) {
-          successDiv.style.display = "block";
-        }
-
         // Update UI
         setTimeout(() => {
           addNotificationPromptToHealthSection();
