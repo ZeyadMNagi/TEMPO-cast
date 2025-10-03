@@ -222,7 +222,6 @@ async function fetchLocationData(lat, lon, cityName = "") {
   hideError();
 
   try {
-    // First, try to fetch from the /api/complete endpoint for all data
     let response = await fetch(`/api/complete?lat=${lat}&lon=${lon}&days=7`);
     let data;
 
@@ -1135,7 +1134,6 @@ function setupNavigation() {
 }
 
 function initApp() {
-  // Initialize the map only if a map container exists on the current page.
   if (document.getElementById("map")) {
     console.log("Map container found, initializing map for main app.");
     map = L.map("map").setView([40.0, -100.0], 4);
@@ -1147,14 +1145,12 @@ function initApp() {
 
     map.on("click", onMapClick);
 
-    // Initialize layer groups
     groundStationLayer = L.layerGroup();
     tempoLayerGroup = L.layerGroup();
 
-    // Add simulated ground stations
     addSimulatedGroundStations();
 
-    // TEMPO Satellite Layers (example)
+
     const tempoNO2 = L.esri.imageMapLayer({
       url: "https://gis.earthdata.nasa.gov/image/rest/services/C3685896708-LARC_CLOUD/TEMPO_NO2_L3_V04_HOURLY_TROPOSPHERIC_VERTICAL_COLUMN/ImageServer",
       attribution: "NASA TEMPO NO₂",
@@ -1172,7 +1168,6 @@ function initApp() {
     );
   }
 
-  // The i18n.js script handles its own initialization on DOMContentLoaded
   document.querySelectorAll(".modal").forEach((modal) => {
     modal.addEventListener("click", (e) => {
       if (e.target === modal) modal.classList.remove("show");
@@ -1192,7 +1187,7 @@ function initApp() {
       zoomToLocation(parseFloat(lat), parseFloat(lon));
     }
   } else if (map) {
-    // Default view if no location params and map exists
+    getUserLocation();
   }
 
   setupNavigation();
@@ -1217,9 +1212,6 @@ window.addEventListener("resize", () => {
 
 document.addEventListener("DOMContentLoaded", initApp);
 
-// Add some production-ready enhancements
-
-// Performance monitoring (in production)
 const performanceObserver = new PerformanceObserver((list) => {
   list.getEntries().forEach((entry) => {
     if (entry.entryType === "navigation") {

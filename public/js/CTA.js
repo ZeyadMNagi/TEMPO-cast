@@ -175,6 +175,10 @@ function showResourceModal(resource) {
       html = `<h3>EPA Air Trends</h3>
         <p>US Environmental Protection Agency air quality trends and reports. <a href="https://www.epa.gov/air-trends/air-quality-national-summary" target="_blank">View EPA Data</a></p>`;
       break;
+    case "GEMS":
+      html = `<h3>GEMS</h3>
+        <p>Global Environmental Multiscale Model for air quality forecasting. <a href="https://gems.ecmwf.int/" target="_blank">Learn more</a></p>`;
+      break;
     default:
       html = `<p>Resource info not found.</p>`;
   }
