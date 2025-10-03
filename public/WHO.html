@@ -3,93 +3,122 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="./css/articale.css" />
-    <meta
-      property="og:image"
-      content="https://globaltempo.netlify.app/public/assets/logo.jpg"
-    />
-    <link rel="shortcut icon" href="./assets/logo.jpg" type="image/x-icon" />
-
-    <title>Global TEMPO || WHO Instructions</title>
+    <title>WHO Clean Air Guidelines</title>
+    <link rel="stylesheet" href="css/WHO.css" />
   </head>
   <body>
-    <header>
-      <nav>
-        <a href="./index.html" class="logo">Global TEMPO</a>
-        <ul>
-          <li><a href="./index.html#about" class="nav-item">About</a></li>
-          <li><a href="./app/index.html" class="nav-item">App</a></li>
-        </ul>
-        <a href="./app-Global/index.html" class="btn">Global</a>
-      </nav>
-    </header>
-    <div class="content">
-      <main class="container">
-        <h1>WHO Instructions for Air pollution</h1>
-        <h1>How to Protect Yourself from Air Pollution — Verified Guidance</h1>
-
-        <iframe
-          id="frame"
-          src="https://www.youtube.com/embed/FsR2iylJlLE"
-          title="60 Second Science: Air Quality"
-          frameborder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          referrerpolicy="strict-origin-when-cross-origin"
-          allowfullscreen
-        ></iframe>
-
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="hero-content">
+        <h1>WHO Guidelines for Clean Air</h1>
         <p>
-          <strong>Summary:</strong> Short, verified guidance on how to check air
-          quality and reduce your exposure to harmful air pollution (daily
-          pollution, wildfire smoke, and short-term pollution spikes).
-          Recommendations below are from the
-          <a
-            href="https://www.who.int/news-room/fact-sheets/detail/ambient-(outdoor)-air-quality-and-health"
-            target="_blank"
-            >World Health Organization (WHO)</a
-          >
-          and national public-health agencies (EPA, Health Canada, UKHSA / UK
-          Government).
+          The World Health Organization sets global standards to protect the
+          public health from air pollution.
         </p>
+        <button
+          onclick="document.getElementById('tips').scrollIntoView({behavior:'smooth'})"
+        >
+          See the Protection Instruction
+        </button>
+      </div>
 
-        <h2>Why This Matters</h2>
-        <p>
-          Air pollution increases the risk of heart and lung disease and worsens
-          asthma, COPD, and other health conditions. Nearly all people globally
-          breathe air exceeding recommended guideline limits. Reducing exposure
-          during high pollution improves health immediately and over the long
-          term.
-        </p>
+      <div class="hero-visual">
+        <img
+          src="assets/clean-vs-polluted-city.png"
+          src="assets/clean-vs-polluted-city.jpg"
+          alt="Illustration: Clean vs Polluted City"
+        />
+      </div>
+    </section>
 
-        <h2>How to Check Air Quality</h2>
-        <ul>
-          <li>
-            <strong>Official AQI / index services:</strong> In the U.S., use
-            <a href="https://www.airnow.gov/" target="_blank">AirNow (EPA)</a>
-            AQI. Many countries provide an Air Quality Health Index (AQHI) or
-            local AQI. These indices translate pollutant concentrations into
-            easy color-coded health messages. Check before outdoor plans.
-          </li>
-          <li>
-            <strong>Mobile apps & notifications:</strong> Use national apps
-            (e.g.,
-            <a
-              href="https://www.canada.ca/en/environment-climate-change/services/air-quality-health-index-app.html"
-              target="_blank"
-              >WeatherCAN</a
-            >) or widely used apps displaying local AQI and alerts. Many public
-            agencies allow custom alerts.
-          </li>
-          <li>
-            <strong>Understand the index categories:</strong> AQI categories
-            (Good / Moderate / Unhealthy for Sensitive Groups / Unhealthy / Very
-            Unhealthy / Hazardous) indicate when to change behavior (avoid
-            outdoor exertion, close windows, etc.).
-          </li>
-        </ul>
+    <!-- Key Instructions -->
+    <section id="standards" class="guidelines">
+      <h2>Safe Air Pollutant Levels</h2>
+      <div class="grid">
+        <article class="card">
+          <h3>PM2.5</h3>
+          <p>Annual mean < 5 µg/m³</p>
+        </article>
+        <article class="card">
+          <h3>PM10</h3>
+          <p>Annual mean < 15 µg/m³</p>
+        </article>
+        <article class="card">
+          <h3>Ozone (O₃)</h3>
+          <p>8-hour mean < 100 µg/m³</p>
+        </article>
+        <article class="card">
+          <h3>Nitrogen Dioxide (NO₂)</h3>
+          <p>Annual mean < 10 µg/m³</p>
+        </article>
+        <article class="card">
+          <h3>Sulfur Dioxide (SO₂)</h3>
+          <p>24-hour mean < 40 µg/m³</p>
+        </article>
+        <article class="card">
+          <h3>Carbon Monoxide (CO)</h3>
+          <p>8-hour mean < 10,000 µg/m³</p>
+        </article>
+      </div>
+    </section>
 
-        <h2>Basic Protective Measures</h2>
+    <!-- Why It Matters -->
+    <section class="why">
+      <h2>Why These Numbers Matter</h2>
+      <p>
+        Exceeding these limits increases risks of lung disease, heart problems,
+        and contributes to climate change. Clean air saves lives and improves
+        wellbeing.
+      </p>
+      <div class="infographic">
+        <!-- Placeholder for chart/infographic -->
+        <img
+          src="assets/pollution-health-chart.png"
+          src="assets/pollution-health-chart.jpg"
+          alt="Pollution vs Health Risks Chart"
+        />
+      </div>
+    </section>
 
+    <!-- Practical Tips -->
+    <section id="tips" class="tips">
+      <h2>How You Can Protect Yourself</h2>
+      <div class="faq">
+        <details>
+          <summary>Check your local Air Quality Index (AQI)</summary>
+          <p>
+            Monitor your local Air Quality Index (AQI) using reliable apps or
+            websites to stay informed about daily pollution levels.
+          </p>
+        </details>
+        <details>
+          <summary>Wear masks on high-pollution days</summary>
+          <p>
+            Use certified masks to reduce exposure to harmful airborne
+            particles.
+          </p>
+        </details>
+        <details>
+          <summary>Plant trees</summary>
+          <p>
+            Trees help improve air quality and reduce CO₂ in the atmosphere.
+          </p>
+        </details>
+        <details>
+          <summary>Use public transport</summary>
+          <p>
+            Reducing the use of private cars lowers pollution and promotes
+            cleaner air for all.
+          </p>
+        </details>
+      </div>
+    </section>
+
+    <!-- Basic Protective Measures -->
+    <section class="measures">
+      <h2>Basic Protective Measures</h2>
+
+      <div class="measure-block">
         <h3>A. Reduce Outdoor Exposure</h3>
         <ul>
           <li>
@@ -105,7 +134,9 @@
             authorities.
           </li>
         </ul>
+      </div>
 
+      <div class="measure-block">
         <h3>B. Improve Indoor Air Quality</h3>
         <ul>
           <li>
@@ -122,7 +153,9 @@
             avoid frying foods at high heat; no indoor smoking.
           </li>
         </ul>
+      </div>
 
+      <div class="measure-block">
         <h3>C. Personal Protective Equipment (Masks)</h3>
         <ul>
           <li>
@@ -135,126 +168,62 @@
             PM2.5.
           </li>
         </ul>
-
-        <h2>Special Guidance for Vulnerable People</h2>
+      </div>
+    </section>
+    <!-- Special Guidance for Vulnerable People -->
+    <section class="vulnerable">
+      <h2>Special Guidance for Vulnerable People</h2>
+      <div class="vulnerable-block-left">
         <ul>
           <li>
             Children, older adults, pregnant people, and those with heart/lung
-            disease or diabetes should avoid outdoor exertion at AQI > 100.
+            disease or diabetes should avoid outdoor exertion at AQI &gt; 100.
           </li>
-          <li>Keep medications handy and follow clinician’s emergency plan.</li>
+          <li>
+            Keep medications handy and follow your clinician’s emergency plan.
+          </li>
           <li>
             Consider temporary relocation to areas of lower pollution if
             prolonged high pollution is expected.
           </li>
         </ul>
+      </div>
+    </section>
 
-        <h2>Wildfires — Specific Actionable Steps</h2>
-        <ul>
-          <li>Stay indoors with windows closed and run a HEPA air cleaner.</li>
-          <li>
-            Avoid physical exertion outdoors — even healthy adults should reduce
-            strenuous activity.
-          </li>
-          <li>
-            Use N95/FFP2 respirators if going outside; surgical/cloth masks are
-            much less protective.
-          </li>
-          <li>Follow local evacuation and public-safety orders.</li>
-        </ul>
-
-        <h2>Practical Quick Guide</h2>
-        <div class="quick-guide">
-          <strong>AQI ≤ 50 (Good):</strong> Normal activities.<br />
-          <strong>AQI 51–100 (Moderate):</strong> Sensitive people — consider
-          reducing prolonged outdoor exertion.<br />
-          <strong>AQI 101–150 (Unhealthy for sensitive groups):</strong>
-          Children, elderly, respiratory/cardiac conditions — avoid prolonged
-          outdoor exertion; consider indoor air cleaning.<br />
-          <strong>AQI > 150 (Unhealthy / Very Unhealthy / Hazardous):</strong>
-          Everyone should reduce outdoor activities; vulnerable people stay
-          indoors with filtered air or respirators; follow local health
-          advisories.
-        </div>
-
-        <h2>Communications & Public-Health Integration</h2>
-        <ul>
-          <li>
-            Set alerts in your app for AQI thresholds — Health Canada and other
-            agencies support custom notifications.
-          </li>
-          <li>
-            Use clear plain-language messages (color + short action) instead of
-            raw pollutant numbers.
-          </li>
-          <li>
-            Cite sources in your app’s Tips/Resources page (WHO, EPA, Health
-            Canada, UKHSA) for authority.
-          </li>
-        </ul>
-
-        <h2>Sources</h2>
-        <ul>
-          <li>
-            <a
-              href="https://www.who.int/news-room/fact-sheets/detail/ambient-(outdoor)-air-quality-and-health"
-              target="_blank"
-              >WHO — Ambient (outdoor) air quality and health</a
-            >
-          </li>
-          <li>
-            <a
-              href="https://www.airnow.gov/wildfire-smoke-and-indoor-air-quality/"
-              target="_blank"
-              >U.S. EPA — Wildfire smoke & indoor air quality</a
-            >
-          </li>
-          <li>
-            <a
-              href="https://www.canada.ca/en/environment-climate-change/services/air-quality-health-index.html"
-              target="_blank"
-              >Environment and Climate Change Canada / Health Canada — AQHI
-              guidance</a
-            >
-          </li>
-          <li>
-            <a
-              href="https://www.gov.uk/government/collections/air-quality-guidance-and-resources"
-              target="_blank"
-              >UK Health Security Agency / UK Government — Air quality
-              guidance</a
-            >
-          </li>
-        </ul>
-
-        <h2>Short Copy (Ready to Paste)</h2>
-        <p>
-          Protect yourself from air pollution — Check local air quality before
-          going outside. If the Air Quality Index (AQI) is in the “Unhealthy”
-          range, reduce outdoor activity, close windows, and use a HEPA air
-          cleaner indoors if possible. Vulnerable groups (children, elderly,
-          people with heart or lung disease) should take extra precautions or
-          avoid outdoor exposure. For smoke events, wear a certified N95/FFP2
-          respirator if you must go outside. (<a
+    <!-- Resources & References -->
+    <section class="resources">
+      <h2>Resources & References</h2>
+      <ul>
+        <li>
+          <a
             href="https://www.who.int/news-room/fact-sheets/detail/ambient-(outdoor)-air-quality-and-health"
             target="_blank"
-            >Sources: WHO</a
-          >,
-          <a
-            href="https://www.airnow.gov/wildfire-smoke-and-indoor-air-quality/"
-            target="_blank"
-            >EPA</a
-          >,
+          >
+            WHO — Ambient (outdoor) air quality and health
+          </a>
+        </li>
+        <li>
+          <a href="https://www.epa.gov/wildfire-smoke-course" target="_blank">
+            U.S. EPA — Wildfire smoke & indoor air quality
+          </a>
+        </li>
+        <li>
           <a
             href="https://www.canada.ca/en/environment-climate-change/services/air-quality-health-index.html"
             target="_blank"
-            >Health Canada</a
-          >).
-        </p>
-      </main>
-    </div>
-    <footer>
-      <p>&copy; 2025 Global TEMPO. All rights reserved.</p>
-    </footer>
+          >
+            Environment & Climate Change Canada / Health Canada — AQHI guidance
+          </a>
+        </li>
+        <li>
+          <a
+            href="https://www.gov.uk/guidance/air-quality-guidance"
+            target="_blank"
+          >
+            UK Health Security Agency / UK Government — Air quality guidance
+          </a>
+        </li>
+      </ul>
+    </section>
   </body>
 </html>
