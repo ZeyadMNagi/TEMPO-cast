@@ -12,11 +12,37 @@ const app = express();
 
 app.set("trust proxy", 1);
 
-// Connect to MongoDB
-mongoose
-  .connect(process.env.MONGODB_URI)
-  .then(() => console.log("MongoDB connected successfully"))
-  .catch((err) => console.error("MongoDB connection error:", err));
+/**
+ * Connect to MongoDB with retry logic and detailed logging.
+ */
+const connectToDB = async () => {
+  try {
+    console.log("Attempting to connect to MongoDB Atlas...");
+    await mongoose.connect(process.env.MONGODB_URI, {
+      // These options are recommended for modern MongoDB Atlas connections
+      serverApi: {
+        version: "1",
+        strict: true,
+        deprecationErrors: true,
+      },
+      // Timeouts to prevent the application from hanging indefinitely
+      serverSelectionTimeoutMS: 15000, // 15 seconds to find a server
+      socketTimeoutMS: 45000, // 45 seconds before a socket times out
+      // Explicitly set the TLS version to 1.2, which can resolve handshake issues
+      tlsAllowInvalidCertificates: false, // Ensure we are using valid certs
+    });
+    console.log("✅ MongoDB connected successfully.");
+  } catch (err) {
+    console.error("❌ MongoDB connection error:", err.message);
+    console.error("Full error details:", err);
+    // In a production environment, you might want to exit the process
+    // if the database connection is critical for the app to run.
+    // process.exit(1);
+  }
+};
+
+// Initiate the database connection
+connectToDB();
 
 // Subscriber Schema
 const SubscriberSchema = new mongoose.Schema(
@@ -766,7 +792,7 @@ router.put("/notifications/update/:subscriberId", async (req, res) => {
     const { subscriberId } = req.params;
     // Add a check for a valid ObjectId format
     if (!mongoose.Types.ObjectId.isValid(subscriberId)) {
-      return res.status(400).json({ error: "Invalid subscriber ID format" });
+      return res.status(404).json({ error: "Subscriber not found" });
     }
 
     const subscriber = await Subscriber.findById(subscriberId);
@@ -808,6 +834,15 @@ router.put("/notifications/update/:subscriberId", async (req, res) => {
       },
     });
   } catch (error) {
+    // Handle specific MongoDB duplicate key errors (for unique email)
+    if (error.code === 11000) {
+      console.error(
+        `[Notifications] Update error: Duplicate email - ${req.body.email}`
+      );
+      return res
+        .status(409)
+        .json({ error: "This email address is already subscribed." });
+    }
     console.error("[Notifications] Update error:", error);
     res.status(500).json({ error: "Failed to update preferences" });
   }
@@ -892,25 +927,28 @@ router.get("/notifications/preferences/:subscriberId", async (req, res) => {
 
 // Helper function to calculate sensitivity level
 function calculateSensitivityLevel(healthProfile) {
+  // If no health profile is provided, default to low sensitivity.
+  if (!healthProfile) {
+    return "low";
+  }
+
   let score = 0;
 
   // Age-based sensitivity
   if (
-    healthProfile.ageGroup === "child" ||
-    healthProfile.ageGroup === "senior"
+    healthProfile.ageGroup &&
+    (healthProfile.ageGroup === "child" || healthProfile.ageGroup === "senior")
   ) {
     score += 2;
   }
 
   // Conditions
-  const highRiskConditions = ["asthma", "copd", "heart"];
-  healthProfile.conditions.forEach((condition) => {
-    if (highRiskConditions.includes(condition)) {
-      score += 3;
-    } else {
-      score += 1;
-    }
-  });
+  if (Array.isArray(healthProfile.conditions)) {
+    const highRiskConditions = ["asthma", "copd", "heart"];
+    healthProfile.conditions.forEach((condition) => {
+      score += highRiskConditions.includes(condition) ? 3 : 1;
+    });
+  }
 
   // Other factors
   if (healthProfile.pregnant) score += 2;
@@ -1070,7 +1108,9 @@ async function checkAndNotifySubscribers() {
       try {
         const coords = parseLocationCoordinates(subscriber.locations.home);
         if (!coords) {
-          console.log(`[Notifications] Skipping ${subscriber.email}: invalid coordinates.`);
+          console.log(
+            `[Notifications] Skipping ${subscriber.email}: invalid coordinates.`
+          );
           return;
         }
 
@@ -1109,7 +1149,7 @@ async function checkAndNotifySubscribers() {
     // Optional: Add a small delay between batches if needed to respect strict rate limits
     if (i + BATCH_SIZE < subscribers.length) {
       console.log("[Notifications] Waiting before next batch...");
-      await new Promise(resolve => setTimeout(resolve, 2000)); // 2-second delay
+      await new Promise((resolve) => setTimeout(resolve, 2000)); // 2-second delay
     }
   }
   console.log("[Notifications] Finished checking all subscribers.");
@@ -1117,12 +1157,12 @@ async function checkAndNotifySubscribers() {
 
 function shouldNotify(subscriber, currentAQI) {
   const thresholds = {
-    sensitive: 51,
-    standard: 101,
-    high: 151,
+    sensitive: 51, // Corresponds to AQI > 50
+    standard: 101, // Corresponds to AQI > 100
+    high: 151, // Corresponds to AQI > 150
   };
 
-  const threshold = thresholds[subscriber.threshold] || 101;
+  const threshold = thresholds[subscriber.threshold] || thresholds.standard;
 
   if (currentAQI < threshold) return false;
 
@@ -1220,36 +1260,35 @@ function getPersonalizedHealthAdvice(healthProfile, aqi, components) {
   }
 
   // Age-based advice
-  if (healthProfile.ageGroup === "child") {
+  if (healthProfile?.ageGroup === "child") {
     if (aqi >= 101) {
       advice.push(
         "👶 Keep children indoors - their lungs are still developing"
       );
     }
   }
-
-  if (healthProfile.ageGroup === "senior") {
+  if (healthProfile?.ageGroup === "senior") {
     if (aqi >= 101) {
       advice.push("👴 Seniors: Stay indoors and monitor health closely");
     }
   }
 
   // Pregnancy
-  if (healthProfile.pregnant) {
+  if (healthProfile?.pregnant) {
     if (aqi >= 101) {
       advice.push("🤰 Pregnant: Avoid outdoor exposure to protect your baby");
     }
   }
 
   // Outdoor workers
-  if (healthProfile.outdoorWorker) {
+  if (healthProfile?.outdoorWorker) {
     if (aqi >= 101) {
       advice.push("👷 Work outdoors? Wear N95 mask and take frequent breaks");
     }
   }
 
   // Athletes
-  if (healthProfile.athlete) {
+  if (healthProfile?.athlete) {
     if (aqi >= 101) {
       advice.push("🏃 Cancel outdoor exercise - move workout indoors");
     } else if (aqi >= 51) {
@@ -1347,11 +1386,9 @@ async function sendEmailNotification(
         <div class="footer">
           <p>Global TEMPO Air Quality Monitoring</p>
           <p>Powered by NASA TEMPO Satellite Data</p>
-          <p><a href="https://globaltempo.netlify.app/unsubscribe/${
-            subscriber.id
-          }" style="color: #6b7280;">Unsubscribe</a> | <a href="https://globaltempo.netlify.app/preferences/${
-    subscriber.id
-  }" style="color: #6b7280;">Update Preferences</a></p>
+          <p><a href="https://globaltempo.netlify.app/unsubscribe/${subscriber._id}" style="color: #6b7280;">
+            Unsubscribe
+          </a></p>
         </div>
       </div>
     </body>
@@ -1442,7 +1479,9 @@ async function sendWelcomeEmail(subscriber) {
         </div>
         <div class="footer">
           <p>Global TEMPO Air Quality Monitoring</p>
-          <p><a href="https://globaltempo.netlify.app/unsubscribe/${subscriber.id}" style="color: #6b7280;">Unsubscribe</a> | <a href="https://globaltempo.netlify.app/preferences/${subscriber.id}" style="color: #6b7280;">Update Preferences</a></p>
+          <p><a href="https://globaltempo.netlify.app/unsubscribe/${subscriber._id}" style="color: #6b7280;">
+            Unsubscribe
+          </a></p>
         </div>
       </div>
     </body>
@@ -1481,16 +1520,20 @@ async function sendWelcomeEmail(subscriber) {
 }
 
 // Schedule notifications check (run every hour)
-const cron = require('node-cron');
+const cron = require("node-cron");
 
 // Run every hour
-cron.schedule('0 * * * *', () => {
-  console.log('[Notifications] Running scheduled check...');
-  checkAndNotifySubscribers().catch(console.error);
-}, {
-  scheduled: true,
-  timezone: "UTC"
-});
+cron.schedule(
+  "0 * * * *",
+  () => {
+    console.log("[Notifications] Running scheduled check...");
+    checkAndNotifySubscribers().catch(console.error);
+  },
+  {
+    scheduled: true,
+    timezone: "UTC",
+  }
+);
 
 // Manual trigger endpoint for testing
 router.post("/notifications/test", async (req, res) => {

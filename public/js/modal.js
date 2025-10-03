@@ -29,6 +29,21 @@ function useCurrentLocationForNotifications() {
 
 function showNotificationPreferences() {
   document.getElementById("notificationModal").classList.add("show");
+
+  // Check if a user is already subscribed and managing their preferences.
+  // If not, try to load any unsaved preferences from localStorage.
+  const subscriberId = localStorage.getItem("aq_notification_subscriber_id");
+  if (!subscriberId) {
+    const storedPrefs = localStorage.getItem("aq_notification_preferences");
+    if (storedPrefs) {
+      try {
+        const preferences = JSON.parse(storedPrefs);
+        populateNotificationForm(preferences);
+      } catch (e) {
+        console.error("Failed to parse stored preferences:", e);
+      }
+    }
+  }
 }
 
 window.showNotificationPreferences = showNotificationPreferences;
@@ -37,7 +52,7 @@ window.showNotificationModalForPoorAQI = showNotificationModalForPoorAQI;
 function closeModal(modalId) {
   const modal = document.getElementById(modalId);
   if (modal) {
-    modal.style.display = "none";
+    modal.classList.remove("show");
   }
 }
 
@@ -315,13 +330,14 @@ function setupNotificationFormSubmission() {
         method = "POST";
         // Re-fetch with the correct method
         response = await fetch(endpoint, {
-          method: "POST",
+          method: method,
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(preferences),
         });
       }
 
       const data = await response.json();
+      console.log("API Response:", data);
 
       if (data.success) {
         // Store subscriber ID
@@ -336,6 +352,12 @@ function setupNotificationFormSubmission() {
           "aq_notification_preferences",
           JSON.stringify(preferences)
         );
+        // Show success message
+        const successDiv = document.getElementById("notificationSuccess");
+        const formContainer = document.getElementById("notificationForm");
+        if (formContainer) formContainer.style.display = "none";
+        if (successDiv) successDiv.style.display = "block";
+
 
         // Show success message
         const successDiv = document.getElementById("notificationSuccess");

@@ -490,6 +490,105 @@
                 </label>
               </div>
             </div>
+
+            <div class="form-group">
+              <label for="ageGroup">Age Group</label>
+              <select id="ageGroup" name="ageGroup">
+                <option value="unspecified" selected>Prefer not to say</option>
+                <option value="child">Child (0-17)</option>
+                <option value="adult">Adult (18-64)</option>
+                <option value="senior">Senior (65+)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Other Health Factors</label>
+              <div class="checkbox-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" name="pregnant" value="yes" />
+                  <span>Pregnant</span>
+                </label>
+                <label class="checkbox-label">
+                  <input
+                    type="checkbox"
+                    name="outdoor_worker"
+                    value="yes"
+                  />
+                  <span
+                    >Regularly work or exercise outdoors (e.g., construction,
+                    athlete)</span
+                  >
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" name="athlete" value="yes" />
+                  <span
+                    >Athlete (regularly performs high-intensity training
+                    outdoors)</span
+                  >
+                </label>
+              </div>
+            </div>
+          </div>
+          <!-- Location Preferences -->
+          <div class="form-section">
+            <h3>📍 Location Preferences</h3>
+            <p class="section-description">
+              Monitor air quality at specific locations.
+            </p>
+            <div class="form-group">
+              <label for="homeLocation">Home Location</label>
+              <input
+                type="text"
+                id="homeLocation"
+                name="homeLocation"
+                placeholder="e.g., 40.7128, -74.0060 or New York, NY"
+              />
+              <button
+                type="button"
+                onclick="useCurrentLocationForNotifications()"
+                class="btn-link"
+              >
+                Use Current Location
+              </button>
+            </div>
+            <div class="form-group">
+              <label for="workLocation">Work/Other Location</label>
+              <input
+                type="text"
+                id="workLocation"
+                name="workLocation"
+                placeholder="e.g., San Francisco, CA"
+              />
+            </div>
+          </div>
+
+          <!-- Alert Threshold -->
+          <div class="form-section">
+            <h3>⚠️ Alert Threshold</h3>
+            <p class="section-description">
+              Get notified when AQI reaches this level or higher.
+            </p>
+            <div class="radio-group">
+              <label class="radio-label">
+                <input type="radio" name="threshold" value="sensitive" />
+                <span>&gt;50 (Moderate) - For sensitive individuals</span>
+              </label>
+              <label class="radio-label">
+                <input
+                  type="radio"
+                  name="threshold"
+                  value="standard"
+                  checked
+                />
+                <span
+                  >&gt;100 (Unhealthy for Sensitive Groups) - Recommended</span
+                >
+              </label>
+              <label class="radio-label">
+                <input type="radio" name="threshold" value="high" />
+                <span>&gt;150 (Unhealthy) - For significant alerts</span>
+              </label>
+            </div>
           </div>
 
           <!-- Submit Button -->

@@ -30,3 +30,8 @@
   for = "/api/complete"
   [headers.values]
     Cache-Control = "public, max-age=300, s-maxage=300"
+
+[[redirects]]
+  from = "/unsubscribe/:id"
+  to = "/preferences/index.html"
+  status = 200 # Rewrite the URL without changing the browser's address bar.
