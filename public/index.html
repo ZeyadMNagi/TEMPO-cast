@@ -6,6 +6,12 @@
     <link rel="stylesheet" href="./css/style.css" />
     <link rel="stylesheet" href="./css/btn.css" />
     <link rel="stylesheet" href="./css/modal.css" />
+    <link rel="stylesheet" href="css/contact.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
     <title>Global TEMPO || Home</title>
     <meta
       name="description"
@@ -39,6 +45,7 @@
   <body>
     <div class="particles" id="particles"></div>
 
+    <!-- header -->
     <header>
       <nav id="main-nav">
         <a href="#" class="logo" data-i18n="logo_text">Global TEMPO</a>
@@ -50,12 +57,7 @@
             <a href="#about" class="nav-item" data-i18n="nav_about">About</a>
           </li>
           <li>
-            <a href="#resources" class="nav-item" data-i18n="nav_resources"
-              >Resources</a
-            >
-          </li>
-          <li>
-            <a href="./WHO.html" class="nav-item" data-i18n="nav_who"
+            <a href="WHO instructure.html" class="nav-item" data-i18n="nav_who"
               >WHO instructions</a
             >
           </li>
@@ -67,6 +69,17 @@
               >TEMPO Data</a
             >
           </li>
+          <li>
+            <a href="#contact-us" class="nav-item" data-i18n="nav_about"
+              >Contact Us</a
+            >
+          </li>
+          <li>
+            <a href="#resources" class="nav-item" data-i18n="nav_resources"
+              >Resources</a
+            >
+          </li>
+
           <button
             id="lang-toggle-btn"
             class="nav-btn"
@@ -84,6 +97,7 @@
     </header>
 
     <main>
+      <!-- hero -->
       <section id="hero">
         <div class="hero-content">
           <h1
@@ -177,6 +191,7 @@
         </div>
       </section>
 
+      <!-- about -->
       <section id="about" class="about fade-in">
         <h2 data-i18n="about_title">About Global TEMPO</h2>
         <div class="about-icons scale-in">
@@ -202,55 +217,6 @@
         </div>
       </section>
 
-      <section id="resources" class="fade-in">
-        <h2 data-i18n="resources_title">Resources</h2>
-        <div class="resource-cards">
-          <div
-            class="resource-card scale-in"
-            onclick="showResourceModal('WHO')"
-          >
-            <img src="./assets/Logos/WHO.png" alt="WHO" />
-            <span data-i18n="resource_who">WHO Instructions</span>
-          </div>
-          <div
-            class="resource-card scale-in"
-            onclick="showResourceModal('OpenAQ')"
-          >
-            <img src="./assets/logos/openaq.png" alt="OpenAQ" />
-            <span data-i18n="resource_openaq">OpenAQ</span>
-          </div>
-          <div
-            class="resource-card scale-in"
-            onclick="showResourceModal('OpenWeather')"
-          >
-            <img src="./assets/logos/openweather.png" alt="OpenWeather" />
-            <span>OpenWeather</span>
-          </div>
-          <div
-            class="resource-card scale-in"
-            onclick="showResourceModal('TEMPO')"
-          >
-            <img src="./assets/logos/tempo_logo.png" alt="NASA TEMPO" />
-            <span data-i18n="resource_tempo">NASA TEMPO</span>
-          </div>
-          <div
-            class="resource-card scale-in"
-            onclick="showResourceModal('EPA')"
-          >
-            <img src="./assets/logos/epa.png" alt="EPA" />
-            <span data-i18n="resource_epa">EPA Air Trends</span>
-          </div>
-          <div class="resource-card scale-in" onclick="showResourceModal('GEMS')">
-            <img src="./assets/logos/GEMS.png" alt="GEMS" />
-            <span data-i18n="resource_GEMS">GEMS</span>
-        </div>
-       <div class="spacer" style="height: 20px"></div>
-        <div class="disclaimer fade-in" data-i18n="resources_disclaimer">
-          <strong>Note:</strong> Clicking on a resource card opens a modal
-          window with more information about that resource.
-        </div>
-      </section>
-
       <div id="resourceModal" class="modal" style="display: none">
         <div class="modal-content">
           <span class="close" onclick="closeResourceModal()">&times;</span>
@@ -258,6 +224,86 @@
         </div>
       </div>
 
+      <!-- services -->
+      <section class="services-page">
+        <div class="services-header">
+          <h1>Global TEMPO Services</h1>
+          <p>
+            Providing real-time air quality and weather information globally,
+            along with local IoT monitoring.
+          </p>
+        </div>
+
+        <div class="services-list">
+          <!-- Interactive AQI Map -->
+          <div class="service-card">
+            <div class="service-icon">
+              <i class="fa-solid fa-map-marker"></i>
+            </div>
+            <h3 class="service-title">Interactive AQI Map</h3>
+            <p class="service-description">
+              Visualize air quality data anywhere in the world with real-time
+              updates from NASA TEMPO and OpenAQ.
+            </p>
+          </div>
+
+          <!-- Weather & Forecasts -->
+          <div class="service-card">
+            <div class="service-icon">
+              <i class="fa-solid fa-cloud-sun"></i>
+            </div>
+            <h3 class="service-title">Weather & Forecasts</h3>
+            <p class="service-description">
+              Access current weather conditions and hourly forecasts integrated
+              with pollution data for better planning.
+            </p>
+          </div>
+
+          <!-- Local Air Quality Monitoring -->
+          <div class="service-card">
+            <div class="service-icon">
+              <i class="fa-solid fa-wind"></i>
+            </div>
+            <h3 class="service-title">Local Air Quality Monitoring</h3>
+            <p class="service-description">
+              Deploy Arduino-based sensors to measure hyper-local AQI and send
+              data directly to the platform.
+            </p>
+          </div>
+
+          <!-- Air Quality Analytics -->
+          <div class="service-card">
+            <div class="service-icon">
+              <i class="fa-solid fa-chart-line"></i>
+            </div>
+            <h3 class="service-title">Air Quality Analytics</h3>
+            <p class="service-description">
+              Analyze trends in pollution levels, compare satellite and ground
+              data, and visualize insights with charts.
+            </p>
+          </div>
+
+          <!-- Community Data Sharing -->
+          <div class="service-card">
+            <div class="service-icon">
+              <i class="fa-solid fa-users"></i>
+            </div>
+            <h3 class="service-title">Community Data Sharing</h3>
+            <p class="service-description">
+              Enable users to contribute local air quality readings and help
+              build a global community monitoring network.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Font Awesome 6 -->
+      <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      />
+
+      <!-- key features -->
       <section id="keyFeatures" class="fade-in">
         <h2 data-i18n="features_title">Key Features</h2>
         <div class="features-cards">
@@ -299,7 +345,252 @@
           </div>
         </div>
       </section>
+
+      <!-- Team Section -->
+      <section class="team">
+        <h2>Our Team Members</h2>
+        <div class="team-grid">
+          <div class="team-member">
+            <img src="assets/member1.jpg" alt="Omar Abdullah" />
+            <h3>Omar Abdullah</h3>
+            <p>Frontend Developer</p>
+            <div class="icons">
+              <a
+                href="https://wa.me/201094004291"
+                class="whatsapp"
+                target="_blank"
+              >
+                <i class="fab fa-whatsapp"></i>
+              </a>
+              <a
+                href="mailto:omarfawzy5535@gmail.com"
+                class="email"
+                target="_blank"
+              >
+                <i class="fas fa-envelope"></i>
+              </a>
+            </div>
+          </div>
+
+          <div class="team-member">
+            <img src="assets/member2.jpg" alt="Zeyad Mahmoud" />
+            <h3>Zeyad Mahmoud</h3>
+            <p>Fullstack Developer</p>
+            <div class="icons">
+              <a
+                href="https://wa.me/2010555128227"
+                class="whatsapp"
+                target="_blank"
+              >
+                <i class="fab fa-whatsapp"></i>
+              </a>
+              <a
+                href="mailto:zeyadnagi421@gmail.com"
+                class="email"
+                target="_blank"
+              >
+                <i class="fas fa-envelope"></i>
+              </a>
+            </div>
+          </div>
+
+          <div class="team-member">
+            <img src="assets/member3.jpg" alt="Mohamed Said" />
+            <h3>Mohamed Said</h3>
+            <p>Hardware Developer</p>
+            <div class="icons">
+              <a
+                href="https://wa.me/201091599183"
+                class="whatsapp"
+                target="_blank"
+              >
+                <i class="fab fa-whatsapp"></i>
+              </a>
+              <a
+                href="mailto:lifeb9119@gmail.com"
+                class="email"
+                target="_blank"
+              >
+                <i class="fas fa-envelope"></i>
+              </a>
+            </div>
+          </div>
+
+          <div class="team-member">
+            <img src="assets/member4.jpg" alt="Kareem Mahmoud" />
+            <h3>Kareem Mahmoud</h3>
+            <p>Researcher</p>
+            <div class="icons">
+              <a
+                href="https://wa.me/201550422975"
+                class="whatsapp"
+                target="_blank"
+              >
+                <i class="fab fa-whatsapp"></i>
+              </a>
+              <a
+                href="mailto:kareemmahmoud7188@gmail.com"
+                class="email"
+                target="_blank"
+              >
+                <i class="fas fa-envelope"></i>
+              </a>
+            </div>
+          </div>
+
+          <div class="team-member">
+            <img src="assets/member5.jpg" alt="Youssef Mohammed" />
+            <h3>Youssef Mohammed</h3>
+            <p>Business modeler</p>
+            <div class="icons">
+              <a
+                href="https://wa.me/201067941842"
+                class="whatsapp"
+                target="_blank"
+              >
+                <i class="fab fa-whatsapp"></i>
+              </a>
+              <a
+                href="mailto:youseefm645@gmail.com"
+                class="email"
+                target="_blank"
+              >
+                <i class="fas fa-envelope"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- resources -->
+      <section id="resources" class="fade-in">
+        <h2 data-i18n="resources_title">Resources</h2>
+        <div class="resource-cards">
+          <div
+            class="resource-card scale-in"
+            onclick="showResourceModal('WHO')"
+          >
+            <img src="./assets/Logos/WHO.png" alt="WHO" />
+            <span data-i18n="resource_who">WHO Instructions</span>
+          </div>
+          <div
+            class="resource-card scale-in"
+            onclick="showResourceModal('OpenAQ')"
+          >
+            <img src="./assets/logos/openaq.png" alt="OpenAQ" />
+            <span data-i18n="resource_openaq">OpenAQ</span>
+          </div>
+          <div
+            class="resource-card scale-in"
+            onclick="showResourceModal('OpenWeather')"
+          >
+            <img src="./assets/logos/openweather.png" alt="OpenWeather" />
+            <span>OpenWeather</span>
+          </div>
+          <div
+            class="resource-card scale-in"
+            onclick="showResourceModal('TEMPO')"
+          >
+            <img src="./assets/logos/nasa.png" alt="NASA TEMPO" />
+            <span data-i18n="resource_tempo">NASA TEMPO</span>
+          </div>
+          <div
+            class="resource-card scale-in"
+            onclick="showResourceModal('EPA')"
+          >
+            <img src="./assets/logos/epa.png" alt="EPA" />
+            <span data-i18n="resource_epa">EPA Air Trends</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- contact us -->
+      <section class="contact-section" id="contact-us">
+        <h2 class="contact-title">Get in Touch</h2>
+        <div class="contact-container">
+          <!-- Contact Info -->
+          <div class="contact-info">
+            <h5 class="contact-info-title">Customer Service</h5>
+
+            <div class="contact-details">
+              <div class="contact-item">
+                <i class="fas fa-phone-alt contact-icon phone"></i>
+                <a href="tel:+201094004291" class="contact-text" target="_blank"
+                  >+201094004291</a
+                >
+              </div>
+
+              <div class="contact-item">
+                <i class="fab fa-whatsapp contact-icon whatsapp"></i>
+                <a
+                  href="https://wa.me/201094004291"
+                  class="contact-text"
+                  target="_blank"
+                  >+201094004291</a
+                >
+              </div>
+
+              <div class="contact-item">
+                <i class="fas fa-envelope contact-icon email"></i>
+                <a
+                  href="mailto:omarfawzy5535@gmail.com"
+                  class="contact-text"
+                  target="_blank"
+                  >omarfawzy5535@gmail.com</a
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Contact Form -->
+          <div class="contact-inputs">
+            <form class="contact-form">
+              <input
+                type="text"
+                class="contact-input"
+                placeholder="Enter Your Name"
+                maxlength="50"
+                required
+              />
+              <input
+                type="email"
+                class="contact-input"
+                placeholder="Enter Your Email"
+                maxlength="50"
+                required
+              />
+              <textarea
+                class="message-input"
+                placeholder="Enter Your Message"
+                maxlength="150"
+                required
+              ></textarea>
+              <span class="max-length-span">150</span>
+              <button type="submit" class="contact-btn">Submit</button>
+            </form>
+          </div>
+        </div>
+        <script>
+          const textarea = document.querySelector(".message-input");
+          const counter = document.querySelector(".max-length-span");
+          const maxLength = 150;
+
+          textarea.addEventListener("input", () => {
+            const remaining = maxLength - textarea.value.length;
+            counter.textContent = remaining;
+
+            if (remaining <= 0) {
+              counter.style.color = "red";
+              textarea.value = textarea.value.substring(0, maxLength);
+            } else {
+              counter.style.color = "#555";
+            }
+          });
+        </script>
+      </section>
     </main>
+
+    <!-- footer -->
     <footer>
       <p>
         Data Sources:
