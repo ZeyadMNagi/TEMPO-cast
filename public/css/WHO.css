@@ -1,0 +1,299 @@
+/* === Reset & Base === */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  line-height: 1.6;
+  color: #222;
+  background: #f9f9f9;
+}
+a {
+  color: #0056b3;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+button {
+  background: #0056b3;
+  color: #fff;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: 0.3s ease;
+}
+button:hover {
+  background: #003d80;
+}
+
+/* === Hero Section === */
+.hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5rem 8%;
+  margin-top: 20px;
+  background: linear-gradient(to right, #e8f4ff, #f9f9f9);
+  gap: 2rem;
+}
+.hero-content {
+  flex: 1 1 480px;
+  max-width: 600px;
+}
+.hero-content h1 {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: #003d80;
+  line-height: 1.2;
+}
+.hero-content p {
+  margin-bottom: 1.8rem;
+  font-size: 1.25rem;
+  color: #444;
+}
+.hero-content button {
+  font-size: 1.1rem;
+  padding: 0.9rem 1.8rem;
+  border-radius: 8px;
+}
+.hero-visual {
+  flex: 1 1 380px;
+  text-align: center;
+}
+.hero-visual img {
+  max-width: 90%;
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+  object-fit: cover;
+  transition: transform 0.3s;
+}
+.hero-visual img:hover {
+  transform: scale(1.03);
+}
+
+/* === Shared Headings === */
+.guidelines h2,
+.why h2,
+.tips h2,
+.measures h2,
+.resources h2 {
+  font-size: 2rem;
+  color: #003d80;
+  text-align: center;
+  margin-bottom: 30px;
+}
+.vulnerable h2 {
+  font-size: 2rem;
+  text-align: center;
+  color: #a83232;
+}
+
+/* === Guidelines Grid === */
+.guidelines {
+  padding: 4rem 8%;
+  background: #fff;
+  text-align: center;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 2rem;
+}
+.card {
+  background: #f0f8ff;
+  padding: 2rem 1.5rem;
+  border-radius: 14px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 8px 14px rgba(0, 0, 0, 0.12);
+}
+.card h3 {
+  margin-bottom: 0.5rem;
+  color: #0056b3;
+  font-size: 1.3rem;
+}
+.card p {
+  font-size: 1.05rem;
+  color: #333;
+}
+
+/* === Why It Matters === */
+.why {
+  padding: 4rem 8%;
+  background: #f9f9f9;
+  text-align: center;
+}
+.why p {
+  max-width: 720px;
+  margin: 1rem auto 2rem;
+  font-size: 1.1rem;
+  color: #444;
+}
+.infographic img {
+  max-width: 100%;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* === Practical Tips (FAQs) === */
+.tips {
+  padding: 4rem 8%;
+  background: #fff;
+}
+.faq details {
+  margin-bottom: 1rem;
+  background: #eef6ff;
+  padding: 1rem 1.2rem;
+  border-radius: 10px;
+  transition: background 0.3s;
+}
+.faq details[open] {
+  background: #d9ecff;
+}
+.faq summary {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #003d80;
+  cursor: pointer;
+}
+.faq p {
+  margin-top: 0.6rem;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+/* === Blocks (Measures & Vulnerable) === */
+.measures {
+  padding: 4rem 8%;
+  background: #eef6ff;
+}
+.measure-block,
+.vulnerable-block {
+  background: #fff;
+  border-radius: 10px;
+  padding: 1.5rem 2rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  transition: transform 0.25s, box-shadow 0.25s;
+  margin-bottom: 2rem;
+}
+.measure-block {
+  border-left: 6px solid #0056b3;
+}
+.vulnerable-block {
+  border-left: 6px solid #a83232;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1.8rem 2rem;
+}
+.measure-block:hover,
+.vulnerable-block:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+}
+.measure-block h3 {
+  font-size: 1.4rem;
+  color: #0056b3;
+  margin-bottom: 1rem;
+}
+.measure-block ul,
+.vulnerable-block ul {
+  list-style: disc inside;
+  color: #333;
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+.measure-block li,
+.vulnerable-block li {
+  margin-bottom: 0.6rem;
+}
+.vulnerable-block li {
+  margin-bottom: 0.8rem;
+}
+
+/* === Special Guidance for Vulnerable People === */
+.vulnerable {
+  padding: 4rem 8%;
+  background: #fff; /* soft light red background for emphasis */
+  text-align: center;
+}
+
+.vulnerable h2 {
+  font-size: 2rem;
+  color: #0056b3; /* strong red color for heading */
+  margin-bottom: 2rem;
+}
+
+.vulnerable-block-left {
+  background: #fff; /* white card to contrast with background */
+  border-left: 6px solid #0056b3; /* highlight with red stripe */
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(168, 50, 50, 0.15);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.vulnerable-block-left:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(168, 50, 50, 0.2);
+}
+
+.vulnerable-block-left ul {
+  list-style: disc inside;
+  text-align: left;
+  color: #333;
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
+.vulnerable-block-left li {
+  margin-bottom: 0.9rem;
+}
+
+/* === Resources === */
+.resources {
+  padding: 4rem 8%;
+  background: #f9f9f9;
+  text-align: center;
+}
+.resources ul {
+  list-style: none;
+  margin-top: 1.5rem;
+}
+.resources li {
+  margin-bottom: 1rem;
+  font-size: 1.05rem;
+}
+
+/* === Responsive === */
+@media (max-width: 768px) {
+  .hero {
+    flex-direction: column;
+    text-align: center;
+  }
+  .hero-content,
+  .hero-visual {
+    max-width: 100%;
+  }
+}
+@media (max-width: 768px) {
+  .measure-block,
+  .vulnerable-block {
+    padding: 1.5rem;
+  }
+
+  .measure-block h3,
+  .vulnerable-block h3 {
+    font-size: 1.15rem;
+  }
+}
