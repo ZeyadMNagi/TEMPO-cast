@@ -488,6 +488,101 @@ section {
   line-height: 1.5;
 }
 
+/*services*/
+.services-page {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  background-color: #f9f9f9;
+  color: #333;
+  padding: 60px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.services-header {
+  text-align: center;
+  margin-bottom: 50px;
+  max-width: 800px;
+}
+
+.services-header h1 {
+  font-size: 3rem;
+  color: #1a1a1a;
+  font-weight: 700;
+  margin-bottom: 15px;
+}
+
+.services-header p {
+  font-size: 1.25rem;
+  color: #555;
+  line-height: 1.6;
+}
+
+.services-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  width: 100%;
+  max-width: 1200px;
+}
+
+.service-card {
+  background: #fff;
+  border-radius: 15px;
+  padding: 30px 25px;
+  text-align: center;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.service-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 25px rgba(0, 0, 0, 0.15);
+}
+
+.service-icon {
+  font-size: 50px;
+  color: #4e9af1;
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, #4e9af1 0%, #1e3c72 100%);
+  -webkit-text-fill-color: transparent;
+}
+
+.service-title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+  color: #1a1a1a;
+}
+
+.service-description {
+  font-size: 1rem;
+  color: #666;
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .services-header h1 {
+    font-size: 2.2rem;
+  }
+  .services-header p {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .services-header h1 {
+    font-size: 1.8rem;
+  }
+  .services-header p {
+    font-size: 0.95rem;
+  }
+}
+
 /* Modal - Mobile Optimized */
 .modal {
   position: fixed;
@@ -650,6 +745,248 @@ section {
 
 #tips strong {
   color: #d9534f;
+}
+
+/* === Team Section === */
+.team {
+  padding: 4rem 8%;
+  background: #f9f9f9;
+  text-align: center;
+}
+
+.team h2 {
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  color: #0056b3;
+}
+
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 2rem;
+}
+
+.team-member {
+  background: #fff;
+  border-radius: 12px;
+  padding: 2rem 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+
+.team-member:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+}
+
+.team-member img {
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.team-member h3 {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+  color: #0056b3;
+}
+
+.team-member p {
+  font-size: 1rem;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+/* === Social Icons === */
+.icons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.icons a {
+  font-size: 1.2rem;
+  transition: transform 0.25s, color 0.25s;
+}
+
+.icons a.whatsapp {
+  color: #25d366;
+}
+.icons a.email {
+  color: grey;
+}
+
+.icons a:hover {
+  transform: translateY(-3px);
+  opacity: 0.8;
+}
+
+/* === Contact Section === */
+.contact-section {
+  padding: 50px 20px;
+  background-color: #f0f4f8;
+  font-family: Arial, sans-serif;
+}
+
+.contact-title {
+  text-align: center;
+  font-size: 2.2rem;
+  color: #333;
+  margin-bottom: 40px;
+}
+
+/* Flex container for info + form */
+.contact-container {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 30px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* Contact Info */
+.contact-info {
+  flex: 1;
+  min-width: 280px;
+  max-width: 400px;
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 30px 20px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.contact-info-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 60px;
+  margin-top: 10px;
+  color: #222;
+  text-align: center;
+}
+
+.contact-details {
+  display: flex;
+  flex-direction: column;
+  gap: 58px;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-size: 1rem;
+}
+
+.contact-icon {
+  font-size: 1.8rem;
+}
+
+.contact-icon.phone {
+  color: #0077cc;
+}
+.contact-icon.whatsapp {
+  color: #25d366;
+}
+.contact-icon.email {
+  color: grey;
+}
+
+.contact-text {
+  color: #333;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.contact-text:hover {
+  color: #0077cc;
+}
+
+/* Contact Form */
+.contact-inputs {
+  flex: 2;
+  min-width: 300px;
+  max-width: 600px;
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 30px 25px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.contact-input,
+.message-input {
+  padding: 14px 12px;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  outline: none;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.contact-input:focus,
+.message-input:focus {
+  border-color: #0077cc;
+  box-shadow: 0 0 8px rgba(0, 119, 204, 0.2);
+}
+
+.message-input {
+  min-height: 120px;
+  resize: none;
+}
+
+.max-length-span {
+  text-align: right;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.contact-btn {
+  padding: 14px;
+  font-size: 1rem;
+  background-color: #0077cc;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.contact-btn:hover {
+  background-color: #005fa3;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .contact-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+  }
+}
+
+@media (max-width: 480px) {
+  .contact-title {
+    font-size: 1.5rem;
+  }
+  .contact-icon {
+    font-size: 1.2rem;
+  }
+  .contact-input,
+  .message-input {
+    font-size: 0.9rem;
+  }
+  .contact-btn {
+    font-size: 0.9rem;
+    padding: 10px 15px;
+  }
 }
 
 /* Footer - Mobile Optimized */
