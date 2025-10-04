@@ -10,6 +10,14 @@ const nodemailer = require("nodemailer");
 require("dotenv").config();
 const app = express();
 
+// Create a dedicated axios instance for OpenWeatherMap API
+const openWeatherApi = axios.create({
+  baseURL: "http://api.openweathermap.org/data/2.5",
+  params: {
+    appid: process.env.OPENWEATHER_API_KEY,
+  },
+});
+
 app.set("trust proxy", 1);
 
 /**
@@ -299,135 +307,6 @@ const cacheMiddleware = (endpoint) => {
   };
 };
 
-// Optimized API endpoints with caching and parallel requests
-router.get("/data", cacheMiddleware("data"), async (req, res) => {
-  const { lat, lon } = req.query;
-
-  if (!lat || !lon) {
-    return res.status(400).json({ error: "Missing lat/lon" });
-  }
-
-  try {
-    // Use Promise.allSettled for better error handling
-    const [currentPollutionResult, weatherResult, airQualityResult] =
-      await Promise.allSettled([
-        axios.get(`http://api.openweathermap.org/data/2.5/air_pollution`, {
-          params: { lat, lon, appid: process.env.OPENWEATHER_API_KEY },
-          timeout: 5000,
-        }),
-        axios.get(`http://api.openweathermap.org/data/2.5/weather`, {
-          params: {
-            lat,
-            lon,
-            appid: process.env.OPENWEATHER_API_KEY,
-            units: "metric",
-          },
-          timeout: 5000,
-        }),
-        axios
-          .get(`https://api.openaq.org/v3/locations`, {
-            headers: { "X-API-Key": process.env.OPENAQ_API_KEY },
-            params: { coordinates: `${lat},${lon}`, radius: 25000, limit: 1 },
-            timeout: 8000,
-          })
-          .catch(() => null), // Non-blocking failure
-      ]);
-
-    // Handle results
-    if (
-      currentPollutionResult.status === "rejected" ||
-      weatherResult.status === "rejected"
-    ) {
-      throw new Error("Failed to fetch essential data");
-    }
-
-    const combinedData = {
-      ...currentPollutionResult.value.data,
-      weather: weatherResult.value.data,
-    };
-
-    const airQualityData =
-      airQualityResult.status === "fulfilled" && airQualityResult.value
-        ? airQualityResult.value.data.results?.[0] || null
-        : null;
-
-    res.json({
-      location: weatherResult.value.data.name,
-      weather: combinedData,
-      airQuality: airQualityData,
-    });
-  } catch (err) {
-    console.error("API Error:", err.message);
-    res.status(500).json({ error: "Failed to fetch current data" });
-  }
-});
-
-// Optimized forecast endpoint with caching
-router.get("/forecast", cacheMiddleware("forecast"), async (req, res) => {
-  const { lat, lon } = req.query;
-
-  if (!lat || !lon) {
-    return res.status(400).json({ error: "Missing lat/lon" });
-  }
-
-  try {
-    const forecastResponse = await axios.get(
-      `http://api.openweathermap.org/data/2.5/air_pollution/forecast`,
-      {
-        params: { lat, lon, appid: process.env.OPENWEATHER_API_KEY },
-        timeout: 8000,
-      }
-    );
-
-    res.json({
-      coord: forecastResponse.data.coord,
-      forecast: forecastResponse.data.list,
-      totalHours: forecastResponse.data.list.length,
-    });
-  } catch (err) {
-    console.error("Forecast API Error:", err.message);
-    res.status(500).json({ error: "Failed to fetch forecast data" });
-  }
-});
-
-// Optimized historical endpoint with caching
-router.get("/historical", cacheMiddleware("historical"), async (req, res) => {
-  const { lat, lon, days } = req.query;
-
-  if (!lat || !lon) {
-    return res.status(400).json({ error: "Missing lat/lon" });
-  }
-
-  try {
-    const daysBack = Math.min(parseInt(days) || 7, 30); // Limit to 30 days max
-    const endTime = Math.floor(Date.now() / 1000);
-    const startTime = endTime - daysBack * 24 * 60 * 60;
-
-    const historicalResponse = await axios.get(
-      `http://api.openweathermap.org/data/2.5/air_pollution/history`,
-      {
-        params: {
-          lat,
-          lon,
-          start: startTime,
-          end: endTime,
-          appid: process.env.OPENWEATHER_API_KEY,
-        },
-        timeout: 10000,
-      }
-    );
-
-    res.json({
-      coord: historicalResponse.data.coord,
-      historical: historicalResponse.data.list,
-      period: { start: startTime, end: endTime, days: daysBack },
-    });
-  } catch (err) {
-    console.error("Historical API Error:", err.message);
-    res.status(500).json({ error: "Failed to fetch historical data" });
-  }
-});
-
 // Optimized complete endpoint with intelligent caching and parallel processing
 router.get("/complete", cacheMiddleware("complete"), async (req, res) => {
   const { lat, lon, days } = req.query;
@@ -444,39 +323,22 @@ router.get("/complete", cacheMiddleware("complete"), async (req, res) => {
     // Use Promise.allSettled for better error handling
     const [currentRes, forecastRes, weatherRes, historicalRes, airQualityRes] =
       await Promise.allSettled([
-        axios.get(`http://api.openweathermap.org/data/2.5/air_pollution`, {
-          params: { lat, lon, appid: process.env.OPENWEATHER_API_KEY },
+        openWeatherApi.get(`/air_pollution`, {
+          params: { lat, lon },
           timeout: 5000,
         }),
-        axios.get(
-          `http://api.openweathermap.org/data/2.5/air_pollution/forecast`,
-          {
-            params: { lat, lon, appid: process.env.OPENWEATHER_API_KEY },
-            timeout: 8000,
-          }
-        ),
-        axios.get(`http://api.openweathermap.org/data/2.5/weather`, {
-          params: {
-            lat,
-            lon,
-            appid: process.env.OPENWEATHER_API_KEY,
-            units: "metric",
-          },
+        openWeatherApi.get(`/air_pollution/forecast`, {
+          params: { lat, lon },
+          timeout: 8000,
+        }),
+        openWeatherApi.get(`/weather`, {
+          params: { lat, lon, units: "metric" },
           timeout: 5000,
         }),
-        axios.get(
-          `http://api.openweathermap.org/data/2.5/air_pollution/history`,
-          {
-            params: {
-              lat,
-              lon,
-              start: startTime,
-              end: endTime,
-              appid: process.env.OPENWEATHER_API_KEY,
-            },
-            timeout: 10000,
-          }
-        ),
+        openWeatherApi.get(`/air_pollution/history`, {
+          params: { lat, lon, start: startTime, end: endTime },
+          timeout: 10000,
+        }),
         axios
           .get(`https://api.openaq.org/v3/locations`, {
             headers: { "X-API-Key": process.env.OPENAQ_API_KEY },

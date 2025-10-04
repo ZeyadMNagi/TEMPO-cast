@@ -206,6 +206,11 @@ section {
   text-align: center;
 }
 
+/* Add padding to first section on sub-pages to avoid header overlap */
+.who-page .hero {
+  padding-top: 120px;
+}
+
 .hero-content {
   width: 100%;
   max-width: 500px;

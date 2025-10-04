@@ -1,0 +1,79 @@
+/* Styles for TEMPOData.html content */
+
+.data-page-container {
+  max-width: 1100px;
+  margin: 40px auto;
+  padding: 20px;
+  background-color: #f4f7f6;
+  border-radius: 8px;
+}
+
+.info-section {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 30px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
+}
+
+.info-section h2 {
+  font-size: clamp(1.8rem, 4vw, 2.2rem);
+  color: #274375;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 10px;
+}
+
+.info-section p,
+.info-section li {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: #4a5568;
+}
+
+.info-section ul {
+  list-style-type: disc;
+  padding-left: 25px;
+  margin-top: 15px;
+}
+
+.info-section li {
+  margin-bottom: 10px;
+}
+
+.info-section strong {
+  color: #2c5282;
+}
+
+.info-section .image-container {
+  text-align: center;
+  margin: 30px 0;
+}
+
+.info-section img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.info-section .image-caption {
+  font-size: 0.9rem;
+  color: #718096;
+  margin-top: 10px;
+  font-style: italic;
+}
+
+/* Make the footer on this page static */
+body > footer {
+  position: static;
+  margin-top: 40px;
+}
+
+/* Adjust map height to accommodate new content */
+@media (min-width: 768px) {
+  #map {
+    height: 75vh; /* Reduce map height on larger screens */
+    min-height: 500px;
+  }
+}

@@ -221,54 +221,32 @@ async function fetchLocationData(lat, lon, cityName = "") {
   showLoading();
   hideError();
 
+  // All data is now fetched from the single /api/complete endpoint
   try {
     let response = await fetch(`/api/complete?lat=${lat}&lon=${lon}&days=7`);
-    let data;
-
-    if (response.ok) {
-      data = await response.json();
-      console.log("Fetched data from /api/complete:", data);
-
-      dataCache.current = data.current;
-      dataCache.forecast = data.forecast;
-      dataCache.historical = data.historical;
-      dataCache.timestamp = Date.now();
-
-      if (!cityName) {
-        cityName =
-          data.location ||
-          data.current?.weather?.name ||
-          data.airQuality?.city ||
-          `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
-      }
-      console.log("Using city name:", cityName);
-
-      displayIntegratedAirQualityData(data.current, cityName, lat, lon);
-      generateEnhancedForecast(data.forecast, data.current);
-      updateEnhancedHistoricalTrends(data.historical, cityName);
-    } else {
-      // Fallback to the /api/data endpoint if /api/complete fails
-      console.warn(
-        `'/api/complete' failed with status ${response.status}. Falling back to '/api/data'.`
-      );
-      response = await fetch(`/api/data?lat=${lat}&lon=${lon}`);
-      if (!response.ok) throw new Error("API error on fallback");
-      data = await response.json();
-      console.log("Fetched data from /api/data:", data);
-
-      if (!cityName) {
-        cityName =
-          data.location ||
-          data.weather?.weather?.name ||
-          data.airQuality?.city ||
-          `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
-      }
-      console.log("Using city name:", cityName);
-
-      displayIntegratedAirQualityData(data.current, cityName, lat, lon);
-      generateEnhancedForecast(data.forecast, data.current);
-      updateEnhancedHistoricalTrends(data.historical, cityName);
+    if (!response.ok) {
+      throw new Error(`API error! status: ${response.status}`);
     }
+    const data = await response.json();
+    console.log("Fetched data from /api/complete:", data);
+
+    dataCache.current = data.current;
+    dataCache.forecast = data.forecast;
+    dataCache.historical = data.historical;
+    dataCache.timestamp = Date.now();
+
+    if (!cityName) {
+      cityName =
+        data.location ||
+        data.current?.weather?.name ||
+        data.airQuality?.city ||
+        `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
+    }
+    console.log("Using city name:", cityName);
+
+    displayIntegratedAirQualityData(data.current, cityName, lat, lon);
+    generateEnhancedForecast(data.forecast, data.current);
+    updateEnhancedHistoricalTrends(data.historical, cityName);
 
     hideLoading();
   } catch (error) {

@@ -3,10 +3,49 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>WHO Clean Air Guidelines</title>
-    <link rel="stylesheet" href="css/WHO.css" />
+    <title data-i18n="who_title">WHO Clean Air Guidelines</title>
+    <link rel="stylesheet" href="./css/style.css" />
+    <link rel="stylesheet" href="./css/WHO.css" />
+    <link rel="shortcut icon" href="./assets/logo.jpg" type="image/x-icon" />
   </head>
   <body>
+    <header>
+      <nav id="main-nav">
+        <a href="index.html" class="logo" data-i18n="logo_text">Global TEMPO</a>
+        <button class="nav-toggle" id="navToggle" aria-label="Open menu">
+          <span class="hamburger"></span>
+        </button>
+        <ul class="nav-links" id="navLinks">
+          <li>
+            <a href="index.html#about" class="nav-item" data-i18n="nav_about"
+              >About</a
+            >
+          </li>
+          <li>
+            <a href="WHO.html" class="nav-item active" data-i18n="nav_who"
+              >WHO instructions</a
+            >
+          </li>
+          <li>
+            <a
+              href="./app/TEMPOData.html"
+              class="nav-item"
+              data-i18n="nav_tempo_data"
+              >TEMPO Data</a
+            >
+          </li>
+          <li>
+            <a href="hardware.html" class="nav-item">Hardware</a>
+          </li>
+          <li>
+            <a href="index.html#resources" class="nav-item" data-i18n="nav_resources"
+              >Resources</a
+            >
+          </li>
+          <a href="./app/index.html" class="btn" data-i18n="nav_app">APP</a>
+        </ul>
+      </nav>
+    </header>
     <!-- Hero Section -->
     <section class="hero">
       <div class="hero-content">
@@ -225,5 +264,20 @@
         </li>
       </ul>
     </section>
+
+    <script>
+      // Simple script for mobile nav toggle
+      const navToggle = document.getElementById("navToggle");
+      const navLinks = document.getElementById("navLinks");
+      navToggle.addEventListener("click", () => {
+        navLinks.classList.toggle("open");
+        navToggle.classList.toggle("active");
+      });
+
+      // Add scrolled class to header on non-hero pages
+      const header = document.querySelector("header");
+      header.classList.add("scrolled");
+    </script>
+    <script src="./js/i18n.js"></script>
   </body>
 </html>

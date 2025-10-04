@@ -12,6 +12,7 @@
     <script src="https://unpkg.com/esri-leaflet@3.0.11/dist/esri-leaflet.js"></script>
     <link rel="stylesheet" href="../css/style.css" />
     <link id="rtl-stylesheet" rel="stylesheet" href="../css/rtl.css" disabled />
+    <link rel="stylesheet" href="../css/tempo-data.css" />
     <style>
       html,
       body {
@@ -25,10 +26,7 @@
       #map {
         flex-grow: 1;
         width: 100%;
-        height: 95%;
-      }
-      footer {
-        flex-grow: 0;
+        height: 100%; /* Full height by default, adjusted in CSS for larger screens */
       }
       .gems-loading {
         padding: 10px;
@@ -104,6 +102,80 @@
     </header>
 
     <div id="map"></div>
+
+    <main class="data-page-container">
+      <section class="info-section">
+        <h2 data-i18n="data_viewer_intro_title">
+          Visualizing Our Atmosphere
+        </h2>
+        <p data-i18n="data_viewer_intro_p1">
+          The map above provides a multi-layered view of atmospheric data from
+          leading environmental satellites, including NASA's TEMPO and South
+          Korea's GEMS. This powerful tool allows for the visualization of key
+          pollutants like Nitrogen Dioxide (NO₂), Ozone (O₃), and Formaldehyde
+          (HCHO).
+        </p>
+        <div class="image-container">
+          <img
+            src="../assets/Three satlites.jpeg"
+            alt="Diagram showing the orbital paths of TEMPO, GEMS, and Sentinel-4 satellites."
+          />
+          <p class="image-caption" data-i18n="data_viewer_image_caption">
+            A constellation of geostationary satellites, including TEMPO
+            (Americas), GEMS (Asia), and the upcoming Sentinel-4 (Europe), will
+            provide comprehensive global air quality monitoring.
+          </p>
+        </div>
+      </section>
+
+      <section class="info-section">
+        <h2 data-i18n="data_viewer_sources_title">Data Sources Explained</h2>
+        <ul>
+          <li>
+            <strong data-i18n="data_viewer_source_tempo_title"
+              >NASA TEMPO (Tropospheric Emissions: Monitoring of
+              Pollution):</strong
+            >
+            <span data-i18n="data_viewer_source_tempo_desc">
+              A revolutionary instrument on a geostationary satellite providing
+              hourly daylight observations of air pollutants over North
+              America. Its high-resolution data helps scientists track
+              pollution from its source to its impact on communities.</span
+            >
+          </li>
+          <li>
+            <strong data-i18n="data_viewer_source_gems_title"
+              >GEMS (Geostationary Environment Monitoring Spectrometer):</strong
+            >
+            <span data-i18n="data_viewer_source_gems_desc">
+              South Korea's instrument providing similar hourly air quality
+              data over Asia. The GEMS layer on this map shows a forecast image
+              generated from its recent observations.</span
+            >
+          </li>
+        </ul>
+      </section>
+
+      <section class="info-section">
+        <h2 data-i18n="data_viewer_interpret_title">
+          How to Interpret the Data
+        </h2>
+        <p data-i18n="data_viewer_interpret_p1">
+          The map layers use a color scale to represent the concentration of
+          pollutants. Generally, warmer colors (yellow, orange, red) indicate
+          higher concentrations, while cooler colors (blue, green) indicate
+          lower concentrations. These concentrations are often measured in
+          molecules per square centimeter (molec./cm²).
+        </p>
+        <p data-i18n="data_viewer_interpret_p2">
+          By switching between layers, you can compare the distribution of
+          different pollutants and observe how they change over time, offering
+          valuable insights into urban pollution, industrial emissions, and the
+          long-range transport of air pollutants.
+        </p>
+      </section>
+    </main>
+
     <footer>
       <p>
         Developed by
@@ -323,12 +395,17 @@
         });
       });
 
+      // Add scrolled class to header on non-hero pages
+      const header = document.querySelector("header");
+      header.classList.add("scrolled");
+
       // Override setLanguage to update map layers
       const originalSetLanguage = window.setLanguage;
       if (originalSetLanguage) {
         window.setLanguage = async function (lang) {
           await originalSetLanguage(lang);
           updateLayerControl();
+          // Update any new text elements here if they are not covered by the main i18n script
           info.update();
         };
       }
