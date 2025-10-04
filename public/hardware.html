@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Global TEMPO || Hardware</title>
+    <meta
+      name="description"
+      content="Details of the Global TEMPO hardware prototype, an Arduino-based environmental monitoring system."
+    />
+    <link rel="stylesheet" href="./css/style.css" />
+    <link rel="stylesheet" href="./css/hardware.css" />
+    <link rel="shortcut icon" href="./assets/logo.jpg" type="image/x-icon" />
+  </head>
+  <body>
+    <header>
+      <nav id="main-nav">
+        <a href="index.html" class="logo" data-i18n="logo_text">Global TEMPO</a>
+        <button class="nav-toggle" id="navToggle" aria-label="Open menu">
+          <span class="hamburger"></span>
+        </button>
+        <ul class="nav-links" id="navLinks">
+          <li>
+            <a href="index.html#about" class="nav-item" data-i18n="nav_about"
+              >About</a
+            >
+          </li>
+          <li>
+            <a href="WHO instructure.html" class="nav-item" data-i18n="nav_who"
+              >WHO instructions</a
+            >
+          </li>
+          <li>
+            <a
+              href="./app/TEMPOData.html"
+              class="nav-item"
+              data-i18n="nav_tempo_data"
+              >TEMPO Data</a
+            >
+          </li>
+          <li>
+            <a href="hardware.html" class="nav-item">Hardware</a>
+          </li>
+          <li>
+            <a
+              href="index.html#contact-us"
+              class="nav-item"
+              data-i18n="nav_about"
+              >Contact Us</a
+            >
+          </li>
+          <li>
+            <a
+              href="index.html#resources"
+              class="nav-item"
+              data-i18n="nav_resources"
+              >Resources</a
+            >
+          </li>
+          <a href="./app/index.html" class="btn" data-i18n="nav_app">APP</a>
+        </ul>
+      </nav>
+    </header>
+
+    <main class="hardware-container">
+      <section class="hardware-intro animate-on-scroll">
+        <h1>Global TEMPO – Hardware Details</h1>
+        <p>
+          The Global TEMPO project is an environmental monitoring system
+          designed to collect real-time data on key environmental parameters.
+          The system uses an Arduino Uno as its main controller and integrates
+          several sensors to measure atmospheric and water conditions.
+        </p>
+      </section>
+
+      <section class="media-gallery animate-on-scroll">
+        <div class="media-item">
+          <img src="assets/Hardware/Hero.jpeg" alt="Hardware Prototype" />
+        </div>
+        <div class="media-item">
+          <video autoplay loop muted playsinline>
+            <source src="assets/Hardware/Video.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      </section>
+
+      <section class="component-details">
+        <h2>Components</h2>
+        <div class="component">
+          <h3>Arduino Uno</h3>
+          <ul>
+            <li>
+              Acts as the central microcontroller for reading, processing, and
+              managing sensor data.
+            </li>
+            <li>
+              Supports multiple analog and digital inputs for various sensors.
+            </li>
+          </ul>
+        </div>
+        <div class="component">
+          <h3>DHT11 Sensor (Temperature & Humidity)</h3>
+          <ul>
+            <li>Measures ambient temperature and relative humidity.</li>
+            <li>
+              Provides digital readings in Celsius and percentage for accurate
+              environmental monitoring.
+            </li>
+          </ul>
+        </div>
+        <div class="component">
+          <h3>LDR (Light Dependent Resistor)</h3>
+          <ul>
+            <li>Monitors ambient light intensity.</li>
+            <li>
+              Converts light levels into analog voltage readings to track
+              daylight and lighting conditions.
+            </li>
+          </ul>
+        </div>
+        <div class="component">
+          <h3>Rain Sensor (Analog)</h3>
+          <ul>
+            <li>Detects rainfall and measures its intensity.</li>
+            <li>
+              Outputs variable readings depending on the amount of water,
+              enabling precipitation monitoring.
+            </li>
+          </ul>
+        </div>
+        <div class="component">
+          <h3>Water Temperature Sensor (Analog)</h3>
+          <ul>
+            <li>Measures the temperature of water sources or liquids.</li>
+            <li>
+              Provides analog data that can be interpreted to determine water
+              conditions.
+            </li>
+          </ul>
+        </div>
+        <div class="component">
+          <h3>Power Supply</h3>
+          <ul>
+            <li>Operates via USB or a 5V DC adapter.</li>
+            <li>Low-power sensors ensure energy-efficient operation.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="data-transmission animate-on-scroll">
+        <h2>Data Transmission to the Platform</h2>
+        <p>
+          The collected sensor data is transmitted from the Arduino Uno to the
+          Global TEMPO platform using a serial-to-cloud communication setup.
+          Here’s how it works:
+        </p>
+        <ol>
+          <li>
+            <strong>Data Collection:</strong> The Arduino continuously reads
+            data from all connected sensors (DHT11, LDR, Rain, and Water
+            Temperature).
+          </li>
+          <li>
+            <strong>Serial Output:</strong> The processed data is formatted into
+            a structured string (e.g., JSON) and sent over the serial port.
+          </li>
+          <li>
+            <strong>Cloud Connection:</strong> A connected computer or a
+            dedicated Wi-Fi module (like an ESP8266) reads the serial data and
+            forwards it to a cloud-based API endpoint via an HTTP POST request.
+          </li>
+          <li>
+            <strong>Platform Integration:</strong> The API receives the data,
+            validates it, and stores it in a database, making it available for
+            real-time visualization on the Global TEMPO app.
+          </li>
+        </ol>
+      </section>
+
+      <section class="summary animate-on-scroll">
+        <h2>Summary</h2>
+        <p>
+          The Global TEMPO hardware setup enables real-time monitoring of
+          temperature, humidity, light intensity, rainfall, and water
+          temperature. Its modular design allows for future expansion with
+          additional sensors, providing comprehensive environmental data for
+          research and practical applications.
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      <p>
+        Data Sources:
+        <a href="https://www.nasa.gov/tempo" target="_blank">NASA TEMPO</a>,
+        <a href="https://openaq.org" target="_blank">OpenAQ</a>,
+        <a href="https://openweathermap.org" target="_blank">OpenWeather</a>
+      </p>
+      <p>
+        Developed by
+        <a href="https://zeyad.dev" target="_blank">Zeyad M. Khattab</a>
+      </p>
+    </footer>
+
+    <script>
+      // Simple script for mobile nav toggle
+      const navToggle = document.getElementById("navToggle");
+      const navLinks = document.getElementById("navLinks");
+      navToggle.addEventListener("click", () => {
+        navLinks.classList.toggle("open");
+        navToggle.classList.toggle("active");
+      });
+
+      // Add scrolled class to header on non-hero pages
+      const header = document.querySelector("header");
+      header.classList.add("scrolled");
+
+      // Simple script for scroll animations
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("is-visible");
+            }
+          });
+        },
+        { threshold: 0.1 }
+      );
+
+      document
+        .querySelectorAll(".animate-on-scroll")
+        .forEach((el) => observer.observe(el));
+    </script>
+  </body>
+</html>

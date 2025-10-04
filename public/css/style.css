@@ -17,7 +17,7 @@ body {
 }
 
 header {
-  position: absolute;
+  /* position: absolute; */ /* Removing this to make it fixed on all pages by default */
   background-color: transparent;
   color: white;
   width: 100%;
@@ -546,10 +546,7 @@ section {
 
 .service-icon {
   font-size: 50px;
-  color: #4e9af1;
   margin-bottom: 20px;
-  background: linear-gradient(135deg, #4e9af1 0%, #1e3c72 100%);
-  -webkit-text-fill-color: transparent;
 }
 
 .service-title {

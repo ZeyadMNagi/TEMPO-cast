@@ -1,0 +1,142 @@
+body {
+  background-color: #f4f7f6;
+  color: #333;
+  font-family: "DM Sans", sans-serif;
+}
+
+.hardware-container {
+  max-width: 960px;
+  margin: 100px auto 40px;
+  padding: 20px;
+}
+
+section {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 25px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
+}
+
+.hardware-intro h1 {
+  font-size: 2.5rem;
+  color: #274375;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.hardware-intro p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  text-align: center;
+  color: #555;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.media-gallery {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+@media (min-width: 768px) {
+  .media-gallery {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.media-item {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.media-item img,
+.media-item video {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.component-details h2,
+.summary h2 {
+  font-size: 2rem;
+  color: #274375;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 10px;
+}
+
+.component {
+  margin-bottom: 25px;
+}
+
+.component h3 {
+  font-size: 1.4rem;
+  color: #2980b9;
+  margin-bottom: 10px;
+}
+
+.component ul {
+  list-style-type: disc;
+  padding-left: 25px;
+  color: #555;
+}
+
+.component li {
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.data-transmission h2 {
+  font-size: 2rem;
+  color: #274375;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 10px;
+}
+
+.data-transmission p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #555;
+  margin-bottom: 20px;
+}
+
+.data-transmission ol {
+  padding-left: 25px;
+  line-height: 1.7;
+  color: #444;
+}
+
+.component:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.summary p {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: #444;
+}
+
+footer {
+  position: static;
+  margin-top: 40px;
+}
+
+/* Scroll Animations */
+.animate-on-scroll {
+  opacity: 0;
+  transform: translateY(25px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  will-change: opacity, transform;
+}
+
+.animate-on-scroll.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
