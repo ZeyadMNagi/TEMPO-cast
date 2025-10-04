@@ -10,11 +10,22 @@
     "Noto Color Emoji";
 }
 
+html {
+  font-size: 16px; /* Set a base font size for predictable rem units */
+}
+
 body {
   background-color: #f0f8ff;
-  color: #333;
+  color: #374151; /* Slightly softer than pure black for better readability */
   overflow-x: hidden;
+  font-size: 1rem; /* 16px */
+  line-height: 1.6;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
+h1, h2, h3, h4, h5, h6 { line-height: 1.2; margin-bottom: 0.75em; font-weight: 700; color: #1f2937; }
 
 header {
   /* position: absolute; */ /* Removing this to make it fixed on all pages by default */
@@ -175,7 +186,7 @@ nav a.active {
 }
 
 section {
-  padding: 60px 15px 40px;
+  padding: 50px 15px;
   margin: 0;
 }
 
@@ -203,9 +214,10 @@ section {
 }
 
 .hero-content h1 {
-  font-size: 2.2em;
+  font-size: clamp(2.2rem, 5vw, 3.2rem); /* Responsive font size */
   margin-bottom: 15px;
   line-height: 1.2;
+  font-weight: 700;
 }
 
 .hero-content h1 span {
@@ -213,7 +225,7 @@ section {
 }
 
 .hero-content p {
-  font-size: 1.1em;
+  font-size: clamp(1rem, 2.5vw, 1.2rem);
   margin-bottom: 25px;
   line-height: 1.5;
   opacity: 0.95;
@@ -347,13 +359,13 @@ section {
 }
 
 #about h2 {
-  font-size: 2em;
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
   margin-bottom: 20px;
   color: #274375;
 }
 
 #about p {
-  font-size: 1.05em;
+  font-size: 1rem;
   line-height: 1.6;
   margin: 0 auto 20px;
   max-width: 100%;
@@ -390,7 +402,7 @@ section {
 
 /* Resources Section - Mobile First */
 #resources h2 {
-  font-size: 2em;
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
   margin-bottom: 25px;
   color: #274375;
   text-align: center;
@@ -444,7 +456,7 @@ section {
 }
 
 #keyFeatures h2 {
-  font-size: 2em;
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
   margin-bottom: 25px;
   color: #274375;
 }
@@ -507,7 +519,7 @@ section {
 }
 
 .services-header h1 {
-  font-size: 3rem;
+  font-size: clamp(2rem, 5vw, 3rem);
   color: #1a1a1a;
   font-weight: 700;
   margin-bottom: 15px;
@@ -550,7 +562,7 @@ section {
 }
 
 .service-title {
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: 15px;
   color: #1a1a1a;
@@ -564,7 +576,7 @@ section {
 
 @media (max-width: 768px) {
   .services-header h1 {
-    font-size: 2.2rem;
+    font-size: clamp(2rem, 6vw, 2.2rem);
   }
   .services-header p {
     font-size: 1.1rem;
@@ -573,7 +585,7 @@ section {
 
 @media (max-width: 480px) {
   .services-header h1 {
-    font-size: 1.8rem;
+    font-size: 1.9rem;
   }
   .services-header p {
     font-size: 0.95rem;
@@ -752,7 +764,7 @@ section {
 }
 
 .team h2 {
-  font-size: 2rem;
+  font-size: clamp(1.8rem, 4vw, 2.2rem);
   margin-bottom: 2rem;
   color: #0056b3;
 }
@@ -785,7 +797,7 @@ section {
 }
 
 .team-member h3 {
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   margin-bottom: 0.5rem;
   color: #0056b3;
 }
@@ -829,7 +841,7 @@ section {
 
 .contact-title {
   text-align: center;
-  font-size: 2.2rem;
+  font-size: clamp(1.8rem, 4vw, 2.2rem);
   color: #333;
   margin-bottom: 40px;
 }
@@ -856,7 +868,7 @@ section {
 }
 
 .contact-info-title {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   font-weight: 600;
   margin-bottom: 60px;
   margin-top: 10px;
@@ -1232,7 +1244,7 @@ footer a:hover {
   }
 
   section {
-    padding: 80px 40px 60px;
+    padding: 70px 40px;
   }
 
   #hero {
@@ -1249,11 +1261,6 @@ footer a:hover {
     width: 60%;
     max-width: none;
     text-align: left;
-  }
-
-  .hero-content h1 {
-    font-size: 2.8em;
-    margin-bottom: 20px;
   }
 
   .hero-content p {
@@ -1292,11 +1299,6 @@ footer a:hover {
     width: 180px;
     height: 45px;
   }
-
-  #about h2 {
-    font-size: 2.2em;
-  }
-
   #about p {
     font-size: 1.1em;
     max-width: 700px;
@@ -1381,25 +1383,11 @@ footer a:hover {
   }
 
   section {
-    padding: 100px 60px 80px;
+    padding: 90px 60px;
   }
 
   #hero {
     padding: 120px 60px 80px;
-  }
-
-  .hero-content h1 {
-    font-size: 3.2em;
-  }
-
-  .hero-content p {
-    font-size: 1.3em;
-  }
-
-  #about h2,
-  #keyFeatures h2,
-  #resources h2 {
-    font-size: 2.5em;
   }
 
   #about p {
@@ -1427,15 +1415,11 @@ footer a:hover {
 /* LARGE DESKTOP STYLES - 1200px and up */
 @media (min-width: 1200px) {
   section {
-    padding: 120px 100px 100px;
+    padding: 110px 100px;
   }
 
   #hero {
     padding: 140px 100px 100px;
-  }
-
-  .hero-content h1 {
-    font-size: 3.5em;
   }
 
   .canvas {
@@ -1454,7 +1438,7 @@ footer a:hover {
 /* EXTRA LARGE DESKTOP STYLES - 1400px and up */
 @media (min-width: 1400px) {
   section {
-    padding: 140px 200px 120px;
+    padding: 130px 200px;
   }
 
   #hero {
