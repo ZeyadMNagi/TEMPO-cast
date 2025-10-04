@@ -10,6 +10,9 @@ const nodemailer = require("nodemailer");
 require("dotenv").config();
 const app = express();
 
+const PORT = process.env.PORT || 3000;
+
+
 // Create a dedicated axios instance for OpenWeatherMap API
 const openWeatherApi = axios.create({
   baseURL: "http://api.openweathermap.org/data/2.5",
@@ -83,7 +86,6 @@ app.use(
 );
 app.use(express.json());
 const router = express.Router();
-const PORT = process.env.PORT || 3000;
 
 const rateLimit = require("express-rate-limit");
 const limiter = rateLimit({
@@ -1530,7 +1532,6 @@ module.exports.calculateOverallAQI = calculateOverallAQI;
 
 module.exports.handler = serverless(app);
 
-// This part is for local development only
-if (process.env.NODE_ENV !== "production") {
-  app.listen(PORT, () => console.log(`Local server running on port ${PORT}`));
-}
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
