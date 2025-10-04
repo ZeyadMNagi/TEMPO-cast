@@ -498,11 +498,12 @@
 
           <!-- Contact Form -->
           <div class="contact-inputs">
-            <form class="contact-form">
+            <form class="contact-form" id="contactForm">
               <input
                 type="text"
                 class="contact-input"
                 placeholder="Enter Your Name"
+                name="name"
                 maxlength="50"
                 required
               />
@@ -510,12 +511,14 @@
                 type="email"
                 class="contact-input"
                 placeholder="Enter Your Email"
+                name="email"
                 maxlength="50"
                 required
               />
               <textarea
                 class="message-input"
                 placeholder="Enter Your Message"
+                name="message"
                 maxlength="150"
                 required
               ></textarea>
@@ -538,6 +541,51 @@
               textarea.value = textarea.value.substring(0, maxLength);
             } else {
               counter.style.color = "#555";
+            }
+          });
+
+          const contactForm = document.getElementById("contactForm");
+          contactForm.addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const submitBtn = contactForm.querySelector(".contact-btn");
+            const originalBtnText = submitBtn.textContent;
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Sending...";
+
+            const formData = new FormData(contactForm);
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+              const response = await fetch("/api/contact", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(data),
+              });
+
+              const result = await response.json();
+
+              if (response.ok) {
+                submitBtn.style.backgroundColor = "#28a745";
+                submitBtn.textContent = "Sent! ✅";
+                contactForm.reset();
+                counter.textContent = maxLength;
+              } else {
+                throw new Error(result.error || "Failed to send message.");
+              }
+            } catch (error) {
+              console.error("Contact form error:", error);
+              submitBtn.style.backgroundColor = "#dc3545";
+              submitBtn.textContent = "Error ❌";
+              alert("Error: " + error.message);
+            } finally {
+              setTimeout(() => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalBtnText;
+                submitBtn.style.backgroundColor = ""; // Revert to original color
+              }, 3000);
             }
           });
         </script>
